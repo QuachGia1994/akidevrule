@@ -136,12 +136,12 @@ flowchart TD
 ```
 
 1. Syncs `payload/*` into `~/.aki/claudedoc/` (rsync, excludes `ref-ECC/`), removing stale files left by renames, and syncs `agskills/` for Antigravity skill inheritance.
-2. Copies every skill under `claude/skills/*/` into `~/.claude/skills/`, removing old/renamed skill directories (`akidoc-*`, `akiadvise`).
+2. Copies every skill under `claude/skills/*/` into `~/.claude/skills/`, one named folder at a time, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched.
 3. Replaces `~/.claude/CLAUDE.md` with the packaged guidance (timestamped backup first), appending this machine's source-repo path and an `@~/.claude/CLAUDE.local.md` import.
 4. Creates `~/.claude/CLAUDE.local.md` **only if missing** — never overwritten afterward. Put per-machine rules there (build constraints, IDE paths, remote flags); they survive every reinstall.
 5. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/claudedoc/**`, `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.
 6. Installs `~/.claude/hooks/aki-update-check.py` and records the source-repo path in `~/.aki/claudedoc/.source-repo`.
-7. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 13 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 5 skills directly to `~/.gemini/config/skills/` for native auto-discovery, and configures `~/.gemini/config/skills.json` with absolute paths as secondary.
+7. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 13 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 5 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), and configures `~/.gemini/config/skills.json` with absolute paths as secondary.
 
 Re-running the installer updates the same managed files cleanly.
 
@@ -154,6 +154,7 @@ Claude Code loads the rule corpus automatically (harness-guaranteed `@`-imports 
 - `ref-ECC/` — a large reference corpus, not needed for standard operation.
 - API keys, model-router tokens, localhost project permissions, unrelated personal Claude settings.
 - Automatic download/install logic — the update hook is strictly notify-only.
+- Any skill, rule, or file you already have that isn't part of this repo's managed set — every sync (Claude Code and Antigravity skill directories included) touches only the paths/names AkiClaudeDoc itself owns, never a blanket directory wipe.
 
 ## Why `~/.aki/claudedoc`
 

@@ -356,14 +356,29 @@ done <<< "$AG_RULE_MAP"
 echo -e "🧭 Installed $ag_rules_written rule(s) to $GEMINI_RULES_DIR (read by AG, AG IDE and AGY)"
 
 # --- Antigravity skills deployment & inheritance ---
+# Sync is scoped PER skill name (never a blanket directory mirror): --delete only
+# ever prunes stale files *inside* a skill folder Aki itself owns. A user's own
+# unrelated skills sitting alongside them in the same directory are never touched.
+sync_aki_skills() {
+  local dest_root="$1"
+  mkdir -p "$dest_root"
+  for skill_dir in "$REPO_ROOT"/claude/skills/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name="$(basename "$skill_dir")"
+    mkdir -p "$dest_root/$skill_name"
+    rsync -a --delete "$skill_dir" "$dest_root/$skill_name/"
+  done
+  for old_skill in akidoc-rules akidoc-flow-audit akidoc-techbiz-optimizer akiadvise; do
+    rm -rf "$dest_root/$old_skill"
+  done
+}
+
 # 1. Primary: sync directly to ~/.gemini/config/skills/ (standard Global Customizations Root for 100% native auto-discovery)
 GEMINI_SKILLS_DIR="$GEMINI_DIR/config/skills"
-mkdir -p "$GEMINI_SKILLS_DIR"
-rsync -a --delete "$REPO_ROOT/claude/skills/" "$GEMINI_SKILLS_DIR/"
+sync_aki_skills "$GEMINI_SKILLS_DIR"
 
 # 2. Secondary: sync to ~/.aki/claudedoc/agskills & register both absolute and tilde paths in skills.json
-mkdir -p "$INSTALL_ROOT/agskills"
-rsync -a --delete "$REPO_ROOT/claude/skills/" "$INSTALL_ROOT/agskills/"
+sync_aki_skills "$INSTALL_ROOT/agskills"
 
 python3 - <<'PY'
 import json, pathlib

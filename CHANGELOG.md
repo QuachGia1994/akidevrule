@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-25
+
+### Fixed — install.sh could silently delete a user's own Antigravity skills (data-loss bug)
+- `install.sh`: the Antigravity skill sync (`~/.gemini/config/skills/` and `~/.aki/claudedoc/agskills/`) used `rsync -a --delete` against the whole shared skills directory — any skill the user had placed there that wasn't one of Aki's 5 got silently deleted on install/reinstall, no backup, no warning beyond the generic pre-install prompt. Fixed by scoping the sync to one named folder per Aki skill (new `sync_aki_skills()` helper): `--delete` now only prunes stale files *inside* a folder Aki itself owns, and only Aki's own known old/renamed skill names (`akidoc-*`, `akiadvise`) are explicitly removed — mirrors the Claude Code side, which was already safe this way. `bash -n` verified.
+- `README.md`: documented the per-skill-folder sync guarantee at steps 2 and 7, and added an explicit line under "What is excluded" — no sync ever wipes a skill/rule/file outside this repo's own managed set.
+
 ## 2026-07-24
 
 ### Added
