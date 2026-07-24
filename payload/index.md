@@ -12,7 +12,7 @@ Provides reusable rules for agent behavior, coding, content, docs, and stack-spe
 | `RULE-agent-behavior.md` | `agent` | Core | public | Response language, communication-vs-task discrimination (a question is not a request), report-for-fast-reorientation (density, conclusion-first, glossed references), scope discipline, verification, decision boundaries, no model-credit trailers in git artifacts |
 | `RULE-coding.md` | `coding` | Core | public | Philosophy, source-of-truth, verification (narrowest tool; app runs are user-triggered; runtime-only risk that can't run → "unverified" handoff, never a false "Done"), error handling, security |
 | `RULE-design-core.md` | `design` | Contextual (high-sensitivity) | public | Universal pattern philosophy: SSoT, Rule of Three, SRP "and"-test, OCP, composition, module boundaries, name-by-role, anti-patch. Sharpens RULE-coding; applies to every project type — load eagerly on any structural/decomposition decision |
-| `RULE-docs.md` | `docs` | Contextual | public | Docs structure (incl. mandatory `docs/biz/` backbone), plan lifecycle, doc-sync behavior |
+| `RULE-docs.md` | `docs` | Contextual | public | Docs structure (incl. mandatory `docs/biz/` backbone), plan lifecycle, research doc schema (immutable event record: start time/purpose/strategy/checklist/result+verification/decision+cross-refs), doc-sync behavior |
 | `RULE-content-write.md` | `content` | Contextual | public | UI copy, semantic stability, writing style, i18n |
 | `RULE-stack-akiNuxtCf.md` | `stack` | Contextual | **mixed** — group C is ⟨Aki⟩ | Nuxt/Vue/Cloudflare Pages/Workers, Tailwind, i18n, canonical component names, state (useState-first), build & TypeScript, admin layout isolation, dev workflow scripts (killport/D1), layout chrome (breadcrumb/scroll-to-top), layout width (single source of truth in the layout, pages/apps never redeclare max-w), deploy verification after push |
 | `RULE-stack-tauri.md` | `tauri` | Contextual | public | Tauri v2 + Rust: absolute never-block-the-UI rule for any command running a subprocess/network call (`spawn_blocking`), titlebar boundary, version SSOT, IPC capability silent-fail, serde default for persisted JSON, cfg(target_os) scoping, subprocess PATH-resolution cold-start race, salient target context (ship platform) surfaced in the project CLAUDE.md |
@@ -37,7 +37,7 @@ Every file is internally organized into groups **A/B/C** (a topic's broad themes
 | `coding` | A Triết lý & nguồn sự thật · B Chất lượng & sửa code · C An toàn runtime |
 | `design` | A 8 định luật · B Phân rã & quét rừng · C Chốt |
 | `db` | A Nguyên tắc dữ liệu · B Unicode |
-| `docs` | A Cấu trúc topic · B Vòng đời & đồng bộ |
+| `docs` | A Index & Structure · B Lifecycle & Sync |
 | `content` | A Nguyên tắc nội dung · B Văn phong & pattern · C Tách bạch |
 | `seo` | A Meta & cấu trúc · B Hiển thị AI & entity · **C ⟨Aki⟩ API & tooling stack** |
 | `release` | A Versioning core · B Xác định & audit · **C ⟨Aki⟩ Web release artifacts** |

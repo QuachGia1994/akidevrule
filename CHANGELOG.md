@@ -2,9 +2,23 @@
 
 ## 2026-07-25
 
-### Fixed — install.sh could silently delete a user's own Antigravity skills (data-loss bug)
-- `install.sh`: the Antigravity skill sync (`~/.gemini/config/skills/` and `~/.aki/claudedoc/agskills/`) used `rsync -a --delete` against the whole shared skills directory — any skill the user had placed there that wasn't one of Aki's 5 got silently deleted on install/reinstall, no backup, no warning beyond the generic pre-install prompt. Fixed by scoping the sync to one named folder per Aki skill (new `sync_aki_skills()` helper): `--delete` now only prunes stale files *inside* a folder Aki itself owns, and only Aki's own known old/renamed skill names (`akidoc-*`, `akiadvise`) are explicitly removed — mirrors the Claude Code side, which was already safe this way. `bash -n` verified.
-- `README.md`: documented the per-skill-folder sync guarantee at steps 2 and 7, and added an explicit line under "What is excluded" — no sync ever wipes a skill/rule/file outside this repo's own managed set.
+### Added — Docs naming & cross-reference refinements (`RULE-docs.md` A2 + B3)
+- `payload/RULE-docs.md` A2: generalized the "no date prefix in filenames" rule from being nested under Plan-specific B1 to a repo-wide rule for all `docs/*` — content-identifying name first (concise, precise, unique, short preferred), dates recorded in doc metadata not the filename. Added an explicit exception: a compact date suffix (abbreviated month + day, no year, no separator — e.g. `jun24`, `jul27`) may be appended at the end as an optional disambiguator, matching the pre-existing repo example `docs/plan/improve-jun24.md`. B1's filename bullet now points back to A2 instead of restating it, keeping only the plan-specific version-increment convention.
+- `payload/RULE-docs.md` B3: added a rule that code comments should not restate what a doc already explains in detail — when a doc already covers the rationale precisely, comment a reference to that doc (its specific section/heading when only part applies, not necessarily the whole file) instead of duplicating the explanation inline. Keeps the doc as the single source of truth and stops the comment from drifting out of sync with it.
+
+### Added — Research doc schema refinements (`RULE-docs.md` A2 + B2)
+- `payload/RULE-docs.md` A2: stated the current-state-vs-history split as its own rule on `biz/feat/arch` directly (previously only implied inside B2's research rationale) — plus a one-sentence threshold test for when a rationale must move to `research/` instead of staying inline.
+- `payload/RULE-docs.md` B2: added an ADR-style sequential-suffix naming convention for superseded research chains (`topic.md` → `topic-2.md` → `topic-3.md`), and added `ref/` as a valid Decision→Action landing target — always a new distilled lookup doc, never the research doc itself relocated/rewritten.
+
+### Added — Research doc schema (`RULE-docs.md` new B2)
+- `payload/RULE-docs.md`: new B2 "Research doc structure (`docs/research/`)" — a research doc is defined as an immutable event record (never rewritten; revisiting a stale conclusion creates a new doc and stamps the old one `Status: superseded by <path>`), with a required 6-field schema: start time, initial purpose (+ context/constraints at the time), strategy, checklist, result (+ verification evidence and corroborating links — silence on verification reads as false certainty), and decision (action/no-action/follow-up-research/rejected, with outcome links and cross-references to other affected docs). Establishes the event-sourcing split already used for DB design (`db.A`, `RULE-db-design.md`) and for CHANGELOG/plan (append-only, `done/` instead of in-place edits) as the general model for this repo's docs: `arch/feat/biz` hold only current/target state, `research/` holds the reasoning history. Old B2 "Documentation behavior" renumbered to B3.
+- `payload/index.md`: updated the `RULE-docs.md` manifest description to mention the new research schema; address-map comment in `RULE-docs.md` updated to `docs.B1-3`.
+
+### Changed
+- `payload/RULE-docs.md`: reordered group A to Index → Topic folders → Business backbone (was Topic folders → Business backbone → Index), renamed groups to English (`A. Index & Structure`, `B. Lifecycle & Sync`, were Vietnamese `Cấu trúc topic` / `Vòng đời & đồng bộ`). Item addresses shifted: `docs.A1` is now Index (was Topic folders), `docs.A2` is now Topic folders (was Business backbone), `docs.A3` is now Business backbone (was Index).
+- `payload/RULE-docs.md` (now B3): Mermaid policy changed from default-off ("no Mermaid unless...") to prefer-when-complex — use Mermaid whenever plain text is harder to follow for the subject (flows, architecture, state transitions, pipelines).
+- `payload/index.md`: updated the `docs` row in the topic/groups table to match the new English group names.
+- `docs/index.md`: updated the topic-folders address reference from `RULE-docs.A1` to `RULE-docs.A2`.
 
 ## 2026-07-24
 

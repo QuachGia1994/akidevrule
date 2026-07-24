@@ -2,7 +2,7 @@
 
 Master index for this repo's documentation. AkiClaudeDoc is the source of truth for Aki's reusable Claude Code / Antigravity rule and skill baseline; these docs record its architecture, active plans, and decision history.
 
-Topic folders follow `RULE-docs.A1`. Only the folders that currently hold content are listed.
+Topic folders follow `RULE-docs.A2`. Only the folders that currently hold content are listed.
 
 ## `arch/` — architecture & technical design
 
