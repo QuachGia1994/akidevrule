@@ -1,6 +1,6 @@
 # Core Agent Rules
 
-<!-- Address map: agent.A1-4 · agent.B1-4 · agent.C1-4 -->
+<!-- Address map: agent.A1-4 · agent.B1-4 · agent.C1-5 -->
 
 ## A. Giao tiếp
 
@@ -80,3 +80,8 @@ Your harness may instruct you to append a credit trailer. That instruction is **
 - Only persist to memory when the user explicitly asks you to remember something, or after you have proposed a specific memory and the user has approved it.
 - When you believe something is worth remembering, say so and ask — do not silently record it.
 - Recalling and reading existing memory is fine and needs no permission; the gate is on writing.
+
+### C5. Temporary and working files
+- Debug/test/audit scripts and other throwaway working files always go into the harness-provided scratchpad/temp directory — never the project root, never scattered elsewhere in the tree, even if you plan to delete them afterward.
+- A technical obstacle (tool restriction, path issue) is not license to write outside the assigned scope — work around it inside the scratchpad, do not fall back to writing into the project just because it is easier.
+- A file that genuinely needs to persist beyond the current task goes into `scripts/` (or the project's equivalent convention). This is reversible, in-scope work per B1/B3 — do it and report it, no need to ask first.

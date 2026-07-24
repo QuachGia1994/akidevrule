@@ -85,35 +85,37 @@ The block must (a) state plainly that a final independent review is recommended 
 
    **Both directions are defects, and the second is the one that hides.** Under-engineering shows up as duplication, tangles, and 400-line functions. Over-engineering shows up as premature abstraction, a factory with one implementation, an interface with one caller, config for something that never varies, a layer whose only job is to call the next layer. Report both. When in doubt, the simpler native flow wins — see the anti-over-engineering rule above; these criteria sharpen it, they do not license architecture astronautics.
 
+**WRITE THE ACTUAL BLOCK IN WHATEVER LANGUAGE THE USER HAS BEEN USING IN THIS SESSION.** The English below is illustration of the shape only — it is not a fixed-language template to paste verbatim; a Vietnamese-speaking session gets a Vietnamese prompt with the same content, not this literal English text.
+
 Example shape (adapt the specifics to the actual work):
 
-> ⚠️⚠️ **RÀ SOÁT CUỐI TRƯỚC KHI PHÁT HÀNH** ⚠️⚠️ Việc này vừa hoàn tất bởi tôi — **nên để một agent khác (Claude Code) rà soát độc lập.** Prompt gợi ý:
+> ⚠️⚠️ **FINAL REVIEW BEFORE RELEASE** ⚠️⚠️ This was just completed by me — **an independent agent (Claude Code) should review it separately.** Suggested prompt:
 > ```
-> Rà soát lần cuối trước khi release, ở chuẩn PRO. Đối chiếu working tree + plan với:
+> Final pre-release review, PRO standard. Check the working tree + plan against:
 >
-> (1) TUÂN THỦ RULE: scope discipline (có làm gì ngoài yêu cầu không), không tạo artifact
->     không được yêu cầu, tính xác thực (khẳng định nào chưa kiểm chứng), không có trailer
->     model-credit trong commit/tag/PR, và <các rule riêng của project này>.
+> (1) RULE COMPLIANCE: scope discipline (anything done outside the request), no
+>     unrequested artifacts, factuality (any unverified claim stated as fact), no
+>     model-credit trailer in commit/tag/PR, and <this project's own rules>.
 >
-> (2) THIẾU SÓT & EDGE CASE: mục nào trong plan chưa xong hoặc bị bỏ qua âm thầm, đường nào
->     chưa test, case lỗi/rỗng/biên/race, thay đổi nào trong working tree không nằm trong plan.
+> (2) GAPS & EDGE CASES: plan items left unfinished or silently skipped, untested
+>     paths, error/empty/boundary/race cases, working-tree changes not covered by the plan.
 >
-> (3) CHẤT LƯỢNG CODE — PROCODE / CLEAN CODE / SOLID / DRY / OOP / DESIGN PATTERN /
+> (3) CODE QUALITY — PROCODE / CLEAN CODE / SOLID / DRY / OOP / DESIGN PATTERN /
 >     NATIVE LOGIC FLOW:
->     - có giải theo luồng native của framework không, hay chắp vá wrapper/workaround?
->     - luồng logic đọc có xuôi không, hay nhảy qua indirection vô cớ?
->     - đặt tên theo vai trò; hàm làm một việc, một mức trừu tượng; không dead code,
->       không magic value, không comment nói lại điều dòng code đã nói.
->     - SRP: mô tả một unit mà phải dùng chữ "và" => nó đang là hai unit.
->     - DRY: tri thức trùng (quy tắc/định dạng/hằng số) phải chỉ tồn tại một nơi —
->       nhưng code *ngẫu nhiên giống nhau* thì KHÔNG phải trùng lặp, đừng gộp bừa.
->     - pattern: chỉ dùng khi hội đủ lực đẩy thật sự. Pattern dùng để trang trí thì
->       tệ hơn không dùng.
->     - BÁO CẢ HAI CHIỀU: vừa thiếu (trùng lặp, hàm khổng lồ, rối) vừa THỪA (trừu tượng
->       sớm, factory một implementation, interface một caller, layer chỉ để gọi layer sau,
->       config cho thứ không bao giờ đổi). Nghi ngờ thì luồng native đơn giản hơn thắng.
+>     - solved along the framework's native flow, or patched with wrapper/workarounds?
+>     - does the logic flow read straight through, or jump through pointless indirection?
+>     - named by role; one job per function, one level of abstraction; no dead code,
+>       no magic value, no comment restating what the line already says.
+>     - SRP: if a unit's description needs "and", it is two units.
+>     - DRY: duplicated knowledge (a rule/format/constant) must exist in one place only —
+>       but code that is *coincidentally* similar is NOT duplication, do not merge it blindly.
+>     - pattern: only when real forces justify it. A decorative pattern is worse than none.
+>     - REPORT BOTH DIRECTIONS: missing (duplication, giant functions, tangled flow) AND
+>       excess (premature abstraction, one-implementation factory, one-caller interface,
+>       a layer that only calls the next layer, config for something that never changes).
+>       When in doubt, the simpler native flow wins.
 >
-> Báo cáo theo mức độ nghiêm trọng, kèm file:line. ĐỪNG TỰ SỬA.
+> Report by severity, with file:line. DO NOT FIX IT YOURSELF.
 > ```
 
 Do not skip this because the work "went smoothly". Smooth work is exactly when the check gets skipped and the defect ships.
@@ -126,3 +128,9 @@ Before calling ANY write/edit tool or executing ANY state-changing command, you 
 - [ ] CHECK 2: Is the user in a TASK phase, or just a COMMUNICATION phase? (If COMMUNICATION, using write/execute tools is a FATAL ERROR).
 
 If the answer to Check 1 is NO, or Check 2 is COMMUNICATION: **STOP IMMEDIATELY**. Do NOT execute the tool. Report your observation to the user first and wait for explicit approval. VIOLATING THIS CHECKLIST IS A TOTAL SYSTEMIC FAILURE AND ABSOLUTELY FORBIDDEN.
+
+## 13. Temporary and working files stay in scope
+
+- Debug/test/audit scripts and other throwaway working files **MUST** go into the project's designated scratch/temp location — never the project root, never scattered into the source tree, even if you intend to delete them afterward.
+- A technical obstacle (tool restriction, path issue) is NOT license to write outside the assigned scope. Work around it inside the scratch area; do not fall back to writing into the project because it is easier.
+- A file that genuinely needs to persist goes into `scripts/` (or the project's equivalent convention). This is normal in-scope work — do it and report it, no need to ask first.

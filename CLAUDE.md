@@ -23,6 +23,15 @@ Files in `payload/` follow this convention:
 
 Do not rename existing files or introduce new top-level prefixes without updating `payload/index.md`, `claude/skills/akirule/SKILL.md`, `claude/CLAUDE.md`, `README.md`, and `install.sh` consistently.
 
+## Content language
+
+`payload/` and `claude/` are **PUBLIC**, distributed to many users — not just Aki's own. All authored content, including section/group headers (`## A. …`), must be English. Vietnamese is allowed only in these narrow, functional cases:
+- keyword/signal lists that must match a Vietnamese-speaking user's actual words (e.g. Tier 2 routing keywords in `akirule/SKILL.md`)
+- a worked example that specifically needs Vietnamese text to illustrate the point (e.g. accented-vs-unaccented SEO queries, NFC normalization of a Vietnamese name)
+- a literal trigger phrase the user actually types (e.g. `nạp full`, `commit luôn`)
+
+A ready-to-paste prompt template (e.g. in `payload/GEMINI.md`) must not hardcode Vietnamese output either — instruct the agent to compose it in whatever language the current session is using, not ship a fixed-language example as the literal text.
+
 ## Required operating rules
 
 - Use the `akirule` skill before editing durable project files, rule files, skill files, installer behavior, or project instructions.

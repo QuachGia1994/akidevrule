@@ -1,10 +1,26 @@
 # Changelog
 
-## 2026-07-25
+## 2026-07-25 (3)
+
+### Added — Content-language policy for the public corpus
+- `CLAUDE.md` (project root): new "Content language" section — `payload/` and `claude/` are public and distributed beyond Aki, so all authored content, including section/group headers, must be English. Narrow, documented exceptions: Vietnamese keyword/signal lists that must match a Vietnamese-speaking user's words, worked examples that specifically need Vietnamese text (accented-query SEO example, NFC-normalization example), and literal trigger phrases the user actually types (`nạp full`, `commit luôn`). A ready-to-paste prompt template must not hardcode Vietnamese output either — it composes in the session's current language instead. Existing group headers (`## A. Giao tiếp` etc.) across `payload/*.md` predate this policy and are not yet migrated — flagged as a known follow-up, not fixed in this pass.
+- `payload/GEMINI.md`: the "final review" example prompt block was hardcoded Vietnamese; rewrote it in English (illustration only) and added an explicit instruction that the agent must compose the actual block in whatever language the current session is using, not paste the literal example text.
+
+### Added — Temporary/working-file scope discipline (`RULE-agent-behavior.md` new C5 + `GEMINI.md` new rule 13)
+- `payload/RULE-agent-behavior.md`: new C5 "Temporary and working files" — debug/test/audit scripts and other throwaway files go into the harness-provided scratchpad, never the project root or scattered into the tree, even if deleted afterward; a technical obstacle is not license to write outside the assigned scope; files that need to persist go into `scripts/`, done and reported, no need to ask first. Closes a gap where nothing in the corpus addressed *where* an agent's own working files land. Address-map comment updated to `agent.C1-5`.
+- `payload/GEMINI.md`: mirrored the same constraint as new rule 13 (appended at the end, not inserted mid-sequence, to avoid re-numbering directives 0-12 as flagged by a past changelog entry).
+
+## 2026-07-25 (2)
+
+### Fixed — install.sh could silently delete a user's own Antigravity skills (data-loss bug)
+- `install.sh`: the Antigravity skill sync (`~/.gemini/config/skills/` and `~/.aki/claudedoc/agskills/`) used `rsync -a --delete` against the whole shared skills directory — any skill the user had placed there that wasn't one of Aki's 5 got silently deleted on install/reinstall, no backup, no warning beyond the generic pre-install prompt. Fixed by scoping the sync to one named folder per Aki skill (new `sync_aki_skills()` helper): `--delete` now only prunes stale files *inside* a folder Aki itself owns, and only Aki's own known old/renamed skill names (`akidoc-*`, `akiadvise`) are explicitly removed — mirrors the Claude Code side, which was already safe this way. `bash -n` verified.
+- `README.md`: documented the per-skill-folder sync guarantee at steps 2 and 7, and added an explicit line under "What is excluded" — no sync ever wipes a skill/rule/file outside this repo's own managed set.
 
 ### Added — Docs naming & cross-reference refinements (`RULE-docs.md` A2 + B3)
 - `payload/RULE-docs.md` A2: generalized the "no date prefix in filenames" rule from being nested under Plan-specific B1 to a repo-wide rule for all `docs/*` — content-identifying name first (concise, precise, unique, short preferred), dates recorded in doc metadata not the filename. Added an explicit exception: a compact date suffix (abbreviated month + day, no year, no separator — e.g. `jun24`, `jul27`) may be appended at the end as an optional disambiguator, matching the pre-existing repo example `docs/plan/improve-jun24.md`. B1's filename bullet now points back to A2 instead of restating it, keeping only the plan-specific version-increment convention.
 - `payload/RULE-docs.md` B3: added a rule that code comments should not restate what a doc already explains in detail — when a doc already covers the rationale precisely, comment a reference to that doc (its specific section/heading when only part applies, not necessarily the whole file) instead of duplicating the explanation inline. Keeps the doc as the single source of truth and stops the comment from drifting out of sync with it.
+
+## 2026-07-25
 
 ### Added — Research doc schema refinements (`RULE-docs.md` A2 + B2)
 - `payload/RULE-docs.md` A2: stated the current-state-vs-history split as its own rule on `biz/feat/arch` directly (previously only implied inside B2's research rationale) — plus a one-sentence threshold test for when a rationale must move to `research/` instead of staying inline.
