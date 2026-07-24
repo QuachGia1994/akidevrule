@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-25 (4)
+
+### Fixed — RULE-release.md §C5 live-verification command was wrong for the actual stack
+- `payload/RULE-release.md`: §C5's example (`curl .../releases.json`) assumed a public static JSON endpoint that doesn't exist on this stack — `releases.json` is bundled into client JS, not served at a stable path (verified: 404 on app.akinet.me). Also, the CSS class wrapping the version number differs per site (`rl-version`, `release-version`, or none at all on akitao.com), so a class-based grep isn't portable. Replaced with `curl -s https://<domain>/releases/ | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1` — verified live against all 8 AkiNet-family sites (including one with no version CSS class), works regardless of markup since every site renders the literal `v{{version}}` text.
+
 ## 2026-07-25 (3)
 
 ### Added — Content-language policy for the public corpus

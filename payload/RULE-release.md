@@ -158,4 +158,10 @@ Confirm every CHANGELOG version has a matching entry in releases.json and the or
 
 ### C5. Live production verification
 Never trust a deployment CLI's success status alone. A web deploy is only verified when the live production URL explicitly returns the new version data.
-Wait ~3 minutes after a successful push/build, then fetch the live release artifact (e.g., `curl -s -H "Cache-Control: no-cache" https://<production-domain>/releases.json`) to confirm the new version is genuinely serving to the public.
+Wait ~3 minutes after a successful push/build, then fetch the rendered `/releases/` page and grep the version string — do NOT assume a `releases.json` static endpoint exists (it usually doesn't; `releases.json` is typically bundled into client JS, not served at a public path). The version-number CSS class differs per site (`rl-version`, `release-version`, or none at all), so match the semver text itself, not the class:
+
+```
+curl -s https://<production-domain>/releases/ | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1
+```
+
+Confirm the printed version matches what was just released. Verified across the AkiNet ecosystem (8 sites, differing CSS class names, one with no version class at all) — this pattern works regardless of markup since every site renders the version as literal `v{{version}}` text.
