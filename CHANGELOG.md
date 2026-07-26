@@ -8,6 +8,7 @@
 - New skill `claude/skills/akiflow/SKILL.md` — sized multi-agent delivery pipeline (`/akiflow`): strict 3-tier sizing gate (Tier 0 direct by default; Tier 1 Architect plan + adversarial Reviewer; Tier 2 adds business/UX counsel), docs-as-handoff protocol between stages, explicit akirule-file injection for subagents, model/effort assigned by nature of work. Full roster active: Architect + Reviewer (Tier 1), Market + UX-Psych (Tier 2, grounded in RULE-biz.md and METHOD-ux-psych.md). Design record: `docs/plan/akiflow-skill.md`. README skills section updated (five → six skills).
 
 ### Changed
+- `payload/RULE-agent-behavior.md` §C3: new bullet — composed prompts are the highest-frequency auto-wrap offender; never hard-wrap a prompt written for another AI/tool since it is pasted verbatim and inserted newlines become part of the artifact.
 - Rename repository AkiClaudeDoc → akidevrule (part of the akidevflow ecosystem); local source path is now /Volumes/DEV/AkiDevRule; GitHub auto-redirects old URLs.
 
 ## 2026-07-25 (6)
