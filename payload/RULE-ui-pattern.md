@@ -1,6 +1,6 @@
 # UI Pattern — Frontend Enforcement (Nuxt / Vue / Tailwind)
 
-<!-- Address map: ui.A1-4 · ui.B1-4 · ui.C1-5 -->
+<!-- Address map: ui.A1-4 · ui.B1-5 · ui.C1-5 -->
 
 **Tier: Contextual.** Load on any UI authoring/refactor signal, or on an audit signal (see the Audit section). This file is the **UI-specific enforcement** of the universal laws in `RULE-design-core.md` — it does not redefine them. Nuxt/Cloudflare stack mechanics (rendering, i18n, layout chrome, deploy) live in `RULE-stack-akiNuxtCf.md`; this file owns the design-system layer: tokens, class taxonomy, variant API, and UI audit.
 
@@ -84,6 +84,10 @@ Never duplicate a markup + logic block across components "for speed." Use slots,
 ### B4. Documentation duty (Law 1 for knowledge)
 
 A new **global** pattern class or variant must be recorded in the project's pattern library the moment it is created. An undocumented pattern does not exist — the next person or agent will rewrite it and the duplication returns.
+
+### B5. Hover bridge (Law of Usability)
+
+Any `:hover`-triggered menu or tooltip separated from its trigger by a positioning gap **must have a transparent bridging pseudo-element (`::before`/`::after`)** covering the gap to prevent hover loss during cursor movement.
 
 ---
 

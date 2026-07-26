@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-25 (6)
+
+### Added — B5 Hover bridge rule to RULE-ui-pattern.md
+- `payload/RULE-ui-pattern.md`: new B5 "Hover bridge" (Law of Usability) — any `:hover`-triggered menu or tooltip separated from its trigger by a positioning gap must have a transparent bridging pseudo-element (`::before`/`::after`) covering the gap to prevent hover loss during cursor movement. Address-map comment updated to `ui.B1-5`.
+
 ## 2026-07-25 (5)
 
 ### Added — DELETE-body-hang pitfall to RULE-stack-akiNuxtCf.md §A2
