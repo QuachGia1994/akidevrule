@@ -20,8 +20,10 @@ Provides reusable rules for agent behavior, coding, content, docs, and stack-spe
 | `RULE-seo.md` | `seo` | Contextual | **mixed** — group C is ⟨Aki⟩ | Meta limits, schema.org matrix, robots, sitemap, OG, AI visibility, entity linking |
 | `RULE-release.md` | `release` | Contextual | **mixed** — group C is ⟨Aki⟩ | CHANGELOG.md mandatory in every project, release notes vs changelog split, releases.json (web-only), release vs deploy boundary, cold-start version reconstruction, severity-driven bump, version minted only at the release event (`[Unreleased]` buffer, no local drift ahead of production), audit mode |
 | `RULE-db-design.md` | `db` | Contextual | public | Immutability & Event Sourcing, 1NF, Bounded Context (DDD), flat-query discipline — load when designing schema/migration/DB refactor |
+| `RULE-biz.md` | `biz` | Contextual | public | Positioning & audience (one primary audience, falsifiable USP, `docs/biz/` as SSoT, niche-first), offer & pricing (value-based, few tiers, validate before building), messaging & customer psychology (benefit-first, anxiety at decision points, no dark patterns) — load on any market-facing decision |
 | `METHOD-flow-audit.md` | `flow` | Analytical | public | Flow integrity audit method |
 | `METHOD-deep-think.md` | `think` | Analytical | public | Deep-think brain: goal excavation, first principles, critique, conditional techbiz lens; passive via akirule, active via /akithink |
+| `METHOD-ux-psych.md` | `ux` | Analytical | public | UX psychology audit: cognitive-load/recognition/feedback/defaults/motor-cost/mental-model lenses, persona walkthrough protocol (first-run, friction ledger, failure paths, state completeness), severity-weighted output routed through the design system |
 
 Routing logic (which file loads when) is defined in `~/.claude/skills/akirule/SKILL.md`.
 
@@ -46,6 +48,8 @@ Every file is internally organized into groups **A/B/C** (a topic's broad themes
 | `ui` | A Taxonomy & tokens · B Cấu trúc component · C Audit playbook |
 | `think` | A Khung quyết định · B 5 Modules · C Radar |
 | `flow` | A Tư duy flow · B 8 câu hỏi first-principles · C Chốt & output |
+| `biz` | A Positioning & audience · B Offer & pricing · C Messaging & customer psychology |
+| `ux` | A Lenses · B Walkthrough protocol · C Output & decision |
 
 Full item-level breakdown: `docs/research/public-private-abc-restructure.md`.
 

@@ -1,9 +1,9 @@
-# AkiClaudeDoc
+# akidevrule
 
 One install command turns a fresh environment into Aki's full working baseline — for **both Claude Code and Antigravity/Gemini**, generated from one agent-neutral source: a shared rule corpus that loads itself at the right moment, plus a small set of sharp, single-purpose skills.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lacvietanh/AkiClaudeDoc/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/lacvietanh/akidevrule/master/install.sh | bash
 ```
 
 Also available: `bash install.sh` from a local checkout, or the docs-site wrapper `curl -fsSL https://dev.akitao.com/claudedoc/install.sh | bash`. The script is intentionally simple — inspect it before running.
@@ -12,11 +12,12 @@ This Git repository is the source of truth; `dev.akitao.com` is the presentation
 
 ## What you get
 
-### Five skills
+### Six skills
 
 | Skill | Invoke | Purpose |
 |---|---|---|
 | `akirule` | automatic, every conversation | Smart rule router — loads core rules always, contextual rules on signal match, everything on `nạp full` / `load all rules`. Hidden from the `/` menu by design. |
+| `akiflow` | `/akiflow` | Sized multi-agent delivery pipeline. A strict sizing gate classifies the request into Tier 0 (direct, the default), Tier 1 (Architect plan + adversarial Reviewer), or Tier 2 (adds business/UX counsel), spawns only the specialists that tier needs, and hands work between stages through `docs/` files — never chat context. |
 | `akithink` | `/akithink` | Structured deep-thinking session for big, hard-to-reverse, or goal-ambiguous decisions: restate → goal excavation → first principles → mandatory critique → convergence into a `docs/` decision record. Recommends a top-tier model (Opus/Fable). |
 | `akihtmlreport` | `/akihtmlreport` | Distills a dense analysis already in the conversation into one self-contained, ultra-wide `REPORT.html` at the project root — no new analysis, no dropped detail — then opens it locally. Exactly one per project; asks before overwriting. |
 | `akihelp` | `/akihelp` | Live introduction to the whole installed Aki system, rendered by reading `index.md` and skill frontmatters at runtime — it can never go stale. |
@@ -26,14 +27,14 @@ This Git repository is the source of truth; `dev.akitao.com` is the presentation
 
 `payload/` files follow a strict naming convention:
 
-- `RULE-*.md` — constraints: what the agent must or must not do (behavior, coding, design/patterns, docs, content, stacks — Nuxt/Cloudflare + Tauri, UI, SEO, release, DB design).
+- `RULE-*.md` — constraints: what the agent must or must not do (behavior, coding, design/patterns, docs, content, stacks — Nuxt/Cloudflare + Tauri, UI, SEO, release, DB design, business/market).
 - `METHOD-*.md` — analytical frameworks: how to reason through a specific class of problem. Heavy, loaded only when the task is genuinely analytical.
 - `index.md` — file manifest, precedence order, project-binding policy.
 
 `akirule` routes them in three tiers, with deliberately high sensitivity (err toward loading — a false positive costs a few tokens, a false negative causes wrong behavior):
 
 - **Tier 1 — Core, hard-embedded every conversation:** `index.md`, `RULE-agent-behavior.md`, `RULE-coding.md`.
-- **Tier 2 — Contextual, read on signal match:** the constraint rules `RULE-design-core.md` (loaded high-sensitivity — any structural/decomposition decision), `RULE-docs.md`, `RULE-content-write.md`, `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context), `RULE-ui-pattern.md`, `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md` — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 2): `METHOD-flow-audit.md` (refactors, multi-file bugs, fragile flows) and `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking).
+- **Tier 2 — Contextual, read on signal match:** the constraint rules `RULE-design-core.md` (loaded high-sensitivity — any structural/decomposition decision), `RULE-docs.md`, `RULE-content-write.md`, `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context), `RULE-ui-pattern.md`, `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md`, `RULE-biz.md` (market-facing decisions: positioning, pricing, audience) — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 2): `METHOD-flow-audit.md` (refactors, multi-file bugs, fragile flows), `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking), and `METHOD-ux-psych.md` (UX/user-behavior evaluation, onboarding and conversion flows).
 - **Tier 3 — Full load on explicit command:** `nạp full` / `load all rules` reads every `RULE-*`/`METHOD-*` file at once.
 
 No harness magic: Tier 1 uses the `@path` embed syntax; Tier 2 is trigger instructions telling Claude to Read the file from `~/.aki/claudedoc/` when signals match; Tier 3 is the explicit-command escape hatch.
@@ -73,13 +74,16 @@ payload/                          → installed to ~/.aki/claudedoc/
   RULE-seo.md
   RULE-release.md
   RULE-db-design.md
+  RULE-biz.md
   METHOD-flow-audit.md
   METHOD-deep-think.md
+  METHOD-ux-psych.md
   GEMINI.md                       → installed to ~/.gemini/GEMINI.md (NOT a rule file)
 
 claude/                           → installed to ~/.claude/
   CLAUDE.md
   skills/akirule/SKILL.md
+  skills/akiflow/SKILL.md
   skills/akithink/SKILL.md
   skills/akihtmlreport/SKILL.md
   skills/akihelp/SKILL.md
@@ -94,10 +98,10 @@ install.sh
 
 ```mermaid
 flowchart TD
-    subgraph SRC["📦 Source: AkiClaudeDoc Repo"]
-        PAYLOAD["payload/ (13 raw rule files)"]
+    subgraph SRC["📦 Source: akidevrule Repo"]
+        PAYLOAD["payload/ (15 raw rule files)"]
         PGEMINI["payload/GEMINI.md (template)"]
-        CSKILLS["claude/skills/ (5 skills)"]
+        CSKILLS["claude/skills/ (6 skills)"]
         CCLAUDE["claude/CLAUDE.md (template)"]
         CHOOKS["claude/hooks/aki-update-check.py"]
     end
@@ -125,8 +129,8 @@ flowchart TD
     subgraph T3["🚀 3. Antigravity Engine (~/.gemini/)"]
         G_MD["GEMINI.md (Managed prompt global)"]
         G_LOCAL["GEMINI.local.md (Machine local)"]
-        G_RULES["config/rules/akirule-*.md (13 rules with YAML trigger)"]
-        G_SKILLS["config/skills/ (5 skills, native auto-discovery)"]
+        G_RULES["config/rules/akirule-*.md (15 rules with YAML trigger)"]
+        G_SKILLS["config/skills/ (6 skills, native auto-discovery)"]
         G_SJSON["config/skills.json (Inherits agskills, absolute path)"]
     end
 
@@ -141,7 +145,7 @@ flowchart TD
 4. Creates `~/.claude/CLAUDE.local.md` **only if missing** — never overwritten afterward. Put per-machine rules there (build constraints, IDE paths, remote flags); they survive every reinstall.
 5. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/claudedoc/**`, `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.
 6. Installs `~/.claude/hooks/aki-update-check.py` and records the source-repo path in `~/.aki/claudedoc/.source-repo`.
-7. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 13 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 5 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), and configures `~/.gemini/config/skills.json` with absolute paths as secondary.
+7. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 15 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 6 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), and configures `~/.gemini/config/skills.json` with absolute paths as secondary.
 
 Re-running the installer updates the same managed files cleanly.
 
@@ -154,7 +158,7 @@ Claude Code loads the rule corpus automatically (harness-guaranteed `@`-imports 
 - `ref-ECC/` — a large reference corpus, not needed for standard operation.
 - API keys, model-router tokens, localhost project permissions, unrelated personal Claude settings.
 - Automatic download/install logic — the update hook is strictly notify-only.
-- Any skill, rule, or file you already have that isn't part of this repo's managed set — every sync (Claude Code and Antigravity skill directories included) touches only the paths/names AkiClaudeDoc itself owns, never a blanket directory wipe.
+- Any skill, rule, or file you already have that isn't part of this repo's managed set — every sync (Claude Code and Antigravity skill directories included) touches only the paths/names akidevrule itself owns, never a blanket directory wipe.
 
 ## Why `~/.aki/claudedoc`
 
@@ -164,12 +168,12 @@ No sudo, user-local, easy to inspect and delete, consistent with the Aki ecosyst
 
 ```bash
 rm -rf ~/.aki/claudedoc
-rm -rf ~/.claude/skills/{akirule,akithink,akihtmlreport,akihelp,akigitcommit}
+rm -rf ~/.claude/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit}
 rm -f  ~/.claude/hooks/aki-update-check.py
-rm -f  ~/.gemini/GEMINI.md          # restore from a *.akiclaudedoc-backup-* if needed; GEMINI.local.md is left untouched
+rm -f  ~/.gemini/GEMINI.md          # restore from a *.akidevrule-backup-* if needed; GEMINI.local.md is left untouched
 ```
 
-Then remove the AkiClaudeDoc block from `~/.claude/CLAUDE.md` and its entries (permission, skillOverrides, SessionStart hook) from `~/.claude/settings.json` if desired.
+Then remove the akidevrule block from `~/.claude/CLAUDE.md` and its entries (permission, skillOverrides, SessionStart hook) from `~/.claude/settings.json` if desired.
 
 ## Content for dev.akitao.com
 

@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+- New rule `payload/RULE-biz.md` (topic `biz`, Contextual) — business & market rules: one primary audience, falsifiable USP, `docs/biz/` as SSoT, niche-first; value-based pricing, few tiers, validate before building, revenue path stated from day one; benefit-first messaging, anxiety handling at decision points, absolute no-dark-patterns floor. Owns the content of business decisions; the decision process stays in METHOD-deep-think Module 4.
+- New method `payload/METHOD-ux-psych.md` (topic `ux`, Analytical) — UX psychology audit: six lenses (cognitive load, recognition over recall, feedback/status, defaults, motor cost, mental-model/trust), a persona walkthrough protocol (first-run, friction ledger, failure paths, state completeness), severity-weighted output routed through the design system. Routing signals added to `akirule/SKILL.md` (Tier 2) and `install.sh` AG_RULE_MAP for both files; `payload/index.md` manifest and groups table updated.
+- New skill `claude/skills/akiflow/SKILL.md` — sized multi-agent delivery pipeline (`/akiflow`): strict 3-tier sizing gate (Tier 0 direct by default; Tier 1 Architect plan + adversarial Reviewer; Tier 2 adds business/UX counsel), docs-as-handoff protocol between stages, explicit akirule-file injection for subagents, model/effort assigned by nature of work. Full roster active: Architect + Reviewer (Tier 1), Market + UX-Psych (Tier 2, grounded in RULE-biz.md and METHOD-ux-psych.md). Design record: `docs/plan/akiflow-skill.md`. README skills section updated (five → six skills).
+
 ### Changed
 - Rename repository AkiClaudeDoc → akidevrule (part of the akidevflow ecosystem); local source path is now /Volumes/DEV/AkiDevRule; GitHub auto-redirects old URLs.
 

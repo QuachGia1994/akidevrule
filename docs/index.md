@@ -24,6 +24,7 @@ Topic folders follow `RULE-docs.A2`. Only the folders that currently hold conten
 | [release-a5-review.md](plan/done/release-a5-review.md) | `RULE-release.md` §A5 — atomic bump+tag+build for Tauri/artifact apps + pre-bump guard. |
 | [versioning-principle-rewrite.md](plan/done/versioning-principle-rewrite.md) | Versioning rewrite applied to `RULE-release.md` A4/B1–B3: cold-start reconstruction, severity-driven bump, anti-skip invariant, audit mode. |
 | [naming-rule-consolidation.md](plan/done/naming-rule-consolidation.md) | Consolidated naming rules into one callable address (`design.A7` root + domain applications). |
+| [akiflow-skill.md](plan/done/akiflow-skill.md) | Design record for `/akiflow` — sized multi-agent pipeline (3-tier gate, docs-as-handoff, roster grounded in RULE-biz + METHOD-ux-psych), thresholds calibrated against 60 days of real git activity. |
 
 ## `research/` — decision records & exploratory findings
 

@@ -80,6 +80,17 @@ Load if message contains any of:
 - **Keywords:** `refactor`, `restructure`, `simplify`, `fragile`, `complicated`, `flow`, `state machine`, `async chain`, `tại sao phức tạp`, `luồng`, `tracing`, `cause and effect`, `over-guarded`, `conditional`, `timing`, `tái cấu trúc`, `đơn giản hóa`
 - **Context:** fixing a bug spanning multiple files, tracing cause and effect across a chain
 
+### RULE-biz.md
+Load if message or file path contains any of:
+- **Keywords:** `pricing`, `price`, `monetization`, `monetize`, `positioning`, `USP`, `target audience`, `customer`, `market`, `marketing`, `conversion`, `landing page`, `business model`, `revenue`, `tier`, `plan`, `subscription`, `giá`, `định giá`, `kiếm tiền`, `khách hàng`, `thị trường`, `đối tượng`, `chuyển đổi`, `mô hình kinh doanh`, `doanh thu`, `gói`, `định vị`
+- **Paths:** `docs/biz/**`
+- **Context:** any market-facing decision — evaluating an idea's commercial shape, writing/reviewing landing or sales copy, creating or editing `docs/biz/`, deciding what to charge or who the product is for
+
+### METHOD-ux-psych.md
+Load if message contains any of:
+- **Keywords:** `UX`, `user experience`, `usability`, `user behavior`, `user psychology`, `onboarding`, `user flow`, `friction`, `cognitive load`, `empty state`, `first run`, `dead end`, `dark pattern`, `trải nghiệm người dùng`, `tâm lý người dùng`, `hành vi người dùng`, `khó dùng`, `rối`, `luồng người dùng`, `đánh giá giao diện`, `review UI`, `review UX`
+- **Context:** evaluating an interface or flow through user behavior (not just visual styling — that is `RULE-ui-pattern.md`), designing an onboarding/conversion flow, diagnosing "why don't users do X"
+
 ### METHOD-deep-think.md
 Load if message contains any of:
 - **Keywords:** `new feature`, `tính năng mới`, `should we`, `có nên`, `simplest way`, `đơn giản nhất`, `is this worth`, `có đáng`, `tradeoff`, `scope`, `effort`, `value`, `premature`, `complexity`, `abstraction`, `tooling`, `first principles`, `tư duy nguyên bản`, `phản biện`, `mục tiêu tối thượng`, `one-way door`, `quyết định lớn`, `decision record`, `pre-mortem`, `evaluate`, `assess`, `review the approach`, `worth refactoring`, `good idea`, `side effect`, `edge case`, `đánh giá`, `bàn luận`, `nên refactor`, `đánh giá ý tưởng`, `đánh giá chiến lược`, `tác dụng phụ`, `trường hợp biên`
