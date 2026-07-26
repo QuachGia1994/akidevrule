@@ -1,10 +1,10 @@
-# AkiClaudeDoc
+# akidevrule
 
 This repository is the source of truth for Aki's reusable Claude Code rule and skill baseline.
 
 ## Project role
 
-AkiClaudeDoc packages Markdown rules, Claude Code skills, global Claude guidance, and installer fragments so the same baseline can be installed into another user's local Claude environment.
+akidevrule packages Markdown rules, Claude Code skills, global Claude guidance, and installer fragments so the same baseline can be installed into another user's local Claude environment.
 
 Treat this repository as a standards distribution project, not as an application repository.
 

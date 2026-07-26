@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- Rename repository AkiClaudeDoc → akidevrule (part of the akidevflow ecosystem); local source path is now /Volumes/DEV/AkiDevRule; GitHub auto-redirects old URLs.
+
 ## 2026-07-25 (6)
 
 ### Added — B5 Hover bridge rule to RULE-ui-pattern.md

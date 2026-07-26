@@ -15,7 +15,7 @@ Project: một Tauri v2 desktop app (RULE-stack-tauri.md áp dụng) tuân thủ
 ```
 f121b27 1.12.0 - usage monitor freeze self-heal, AG timeout fix, statusline hook v3, New Project button relocation
 1c1f8a0 1.11.0 - pin window across Spaces, proxy-mode locks native Claude monitor, project table narrowed, agent usage decluttered, app-icon menu consolidation
-3e52a99 1.10.1 - update dialog fixes, statusline auto-install, blocking-UI fix, SSH color, AkiClaudeDoc menu
+3e52a99 1.10.1 - update dialog fixes, statusline auto-install, blocking-UI fix, SSH color, akidevrule menu
 ```
 
 Mỗi commit này, trong **một** commit duy nhất: bump `package.json` + `Cargo.toml`, viết CHANGELOG section có số hiệu, và mang theo toàn bộ code thay đổi. Đây chính xác là điều A5 gọi là bug: *"Never bump the manifest `version` field in the same task as the code change. […] A task that ends with 'bumped to 0.2.0' but nothing deployed is the bug."*

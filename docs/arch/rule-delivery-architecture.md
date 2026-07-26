@@ -1,6 +1,6 @@
 # Architecture — how rules reach the two agents
 
-AkiClaudeDoc is the single source of truth for a reusable rule baseline. That baseline has to reach two different agents that load context in fundamentally different ways: **Claude Code** and **Gemini / Antigravity**. This document describes how one source is installed onto a machine and consumed by each.
+akidevrule is the single source of truth for a reusable rule baseline. That baseline has to reach two different agents that load context in fundamentally different ways: **Claude Code** and **Gemini / Antigravity**. This document describes how one source is installed onto a machine and consumed by each.
 
 ## The core asymmetry
 
@@ -15,7 +15,7 @@ AkiClaudeDoc is the single source of truth for a reusable rule baseline. That ba
 ## What the source provides
 
 ```text
-AkiClaudeDoc/
+akidevrule/
   payload/
     index.md, RULE-*.md, METHOD-*.md   → the rule corpus (Claude Code consumes this)
     GEMINI.md                          → Gemini/Antigravity global behavior overrides (NOT a rule file)
@@ -34,7 +34,7 @@ Two distinct `GEMINI.md` files, different jobs:
 
 ```mermaid
 flowchart TD
-    subgraph SRC["AkiClaudeDoc repo — source of truth"]
+    subgraph SRC["akidevrule repo — source of truth"]
         P["payload/ RULE-*.md · METHOD-*.md · index.md"]
         PG["payload/GEMINI.md<br/>AG overrides + version marker"]
         CCSRC["claude/ CLAUDE.md · skills · hooks"]

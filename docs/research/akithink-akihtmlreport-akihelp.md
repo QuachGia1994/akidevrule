@@ -4,7 +4,7 @@ Status: approved by Aki, ready to execute. Date: 2026-07-08. Executor: subagent 
 
 ## Context
 
-This repo (AkiClaudeDoc) is the source of truth for Aki's shared Claude Code rules and skills, installed via `install.sh` to `~/.aki/claudedoc` (payload) and `~/.claude` (skills, global CLAUDE.md, hooks). **Edit only source files in this repo; never edit the installed copies directly.** After edits, run `bash install.sh` to propagate.
+This repo (akidevrule) is the source of truth for Aki's shared Claude Code rules and skills, installed via `install.sh` to `~/.aki/claudedoc` (payload) and `~/.claude` (skills, global CLAUDE.md, hooks). **Edit only source files in this repo; never edit the installed copies directly.** After edits, run `bash install.sh` to propagate.
 
 This spec adds a structured deep-thinking system (one METHOD "brain", two consumption modes), renames the `akiadvise` skill to `akihtmlreport` with refinements, and adds an `akihelp` skill that introduces the whole Aki system.
 

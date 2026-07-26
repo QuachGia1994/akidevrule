@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AkiClaudeDoc update-check hook (Claude Code SessionStart).
+"""akidevrule update-check hook (Claude Code SessionStart).
 
 Notify-only. Compares the installed CHANGELOG.md top entry against the public
 repo copy; if the remote has newer entries, prints a user-visible notice
@@ -19,8 +19,8 @@ import sys
 import time
 import urllib.request
 
-REMOTE_URL = "https://raw.githubusercontent.com/lacvietanh/AkiClaudeDoc/master/CHANGELOG.md"
-CHANGELOG_URL_HUMAN = "https://github.com/lacvietanh/AkiClaudeDoc/blob/master/CHANGELOG.md"
+REMOTE_URL = "https://raw.githubusercontent.com/lacvietanh/akidevrule/master/CHANGELOG.md"
+CHANGELOG_URL_HUMAN = "https://github.com/lacvietanh/akidevrule/blob/master/CHANGELOG.md"
 THROTTLE_OK_HOURS = 24    # after a definitive result, wait a full day
 THROTTLE_FAIL_HOURS = 1   # after offline/timeout, retry sooner so a notice is not lost
 NETWORK_TIMEOUT = 3       # seconds
@@ -116,7 +116,7 @@ def main():
     update_cmd = (
         f"cd {repo} && git pull && bash install.sh"
         if repo
-        else "pull the AkiClaudeDoc repo and run: bash install.sh"
+        else "pull the akidevrule repo and run: bash install.sh"
     )
 
     delta_lines = []
@@ -128,7 +128,7 @@ def main():
         delta = delta[:max_delta].rstrip() + "\n… (see full changelog at the link below)"
 
     banner = (
-        "📢 AkiClaudeDoc has a new update available\n"
+        "📢 akidevrule has a new update available\n"
         f"   Latest: {remote_head}   |   Installed: {local_head}   "
         f"({len(new_entries)} new entries)\n"
         f"   Update:    {update_cmd}\n"
@@ -136,7 +136,7 @@ def main():
         f"{delta}"
     )
     context = (
-        "The AkiClaudeDoc shared-rule corpus has a newer version available.\n"
+        "The akidevrule shared-rule corpus has a newer version available.\n"
         f"Installed: {local_head}. Latest: {remote_head}.\n"
         f"To update, run: {update_cmd}\n\n"
         "What's new (from CHANGELOG.md):\n" + "\n".join(delta_lines)

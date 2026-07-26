@@ -1,4 +1,4 @@
-# AkiClaudeDoc — Improvement Plan (Jun 24)
+# akidevrule — Improvement Plan (Jun 24)
 
 Status: pending  
 Scope: `claude/skills/akirule/SKILL.md`

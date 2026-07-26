@@ -2,7 +2,7 @@
 
 **Ngày tạo:** 2026-07-22  
 **Cập nhật lần cuối:** 2026-07-23 15:25:00 (UTC+7)  
-**Phạm vi:** Google Antigravity IDE (Bản Đen), Antigravity 2.0 Standalone App (Bản Trắng), `agy` CLI, AkiClaudeDoc Ecosystem Integration  
+**Phạm vi:** Google Antigravity IDE (Bản Đen), Antigravity 2.0 Standalone App (Bản Trắng), `agy` CLI, akidevrule Ecosystem Integration  
 **Trạng thái:** Confirmed / Empirical Evidence Verified  
 
 ---
@@ -27,7 +27,7 @@ Từ phiên bản 2.0, hệ sinh thái Google Antigravity chia thành 2 ứng d�
 - **Skills & Customizations Spec:** `https://antigravity.google/docs/skills`
 
 ### 2.2. Cơ chế Nạp Quy tắc (Daemon-less Native Discovery)
-- **Không có tiến trình chạy ngầm:** Hệ thống `AkiClaudeDoc` chỉ đóng vai trò script cài đặt tĩnh (`install.sh`), copy/biên dịch file rule vào đĩa local (`~/.gemini/GEMINI.md`). `AkiClaudeDoc` không chạy bất kỳ daemon/background process nào.
+- **Không có tiến trình chạy ngầm:** Hệ thống `akidevrule` chỉ đóng vai trò script cài đặt tĩnh (`install.sh`), copy/biên dịch file rule vào đĩa local (`~/.gemini/GEMINI.md`). `akidevrule` không chạy bất kỳ daemon/background process nào.
 - **Client Native Discovery:** Khi khởi chạy phiên làm việc mới, chính Antigravity Client (App Trắng, IDE Đen, hoặc `agy` CLI) thực hiện lệnh đọc đĩa (`File I/O`) để nạp các file quy tắc và nhét vào khối thẻ `<user_rules>` của System Prompt gửi tới LLM Model.
 
 ---
@@ -62,10 +62,10 @@ Khi cả `GEMINI.md` và `AGENTS.md` cùng tồn tại ở một cấp độ ho�
 
 ---
 
-## 4. Mô hình Phối hợp trong Hệ sinh thái AkiClaudeDoc
+## 4. Mô hình Phối hợp trong Hệ sinh thái akidevrule
 
 ```text
-[AkiClaudeDoc Centralized Repo]
+[akidevrule Centralized Repo]
 <source-repo>/payload/          (đường dẫn thật của máy nằm ở ~/.aki/claudedoc/.source-repo)
           │
           │ (Chạy `bash install.sh` tĩnh)

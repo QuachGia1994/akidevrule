@@ -1,4 +1,4 @@
-# Chuẩn hoá AkiClaudeDoc — tách chung/riêng + tái cấu trúc A/B/C
+# Chuẩn hoá akidevrule — tách chung/riêng + tái cấu trúc A/B/C
 
 **Ngày**: 2026-07-19 · **Trạng thái**: ✅ Đã thực thi lên `payload/` + `claude/` + propagate **Loại**: decision record + execution tracker (bản md này để agent tự dõi theo khi thực thi).
 
@@ -8,7 +8,7 @@
 
 ## 1. Vấn đề (restate)
 
-AkiClaudeDoc là repo **public** (đã share, auto-load qua `akirule`). Nó ra đời **trước** khi `AkiNuxtCf/UNIDOC` tồn tại, nên một phần nội dung thực chất là **đặc thù riêng hệ sinh thái Aki** (canonical component names, `aki-info-detect`, `usePageSeo`, `releases.json`…) — thứ giờ đã có nhà riêng là UNIDOC. Ba việc:
+akidevrule là repo **public** (đã share, auto-load qua `akirule`). Nó ra đời **trước** khi `AkiNuxtCf/UNIDOC` tồn tại, nên một phần nội dung thực chất là **đặc thù riêng hệ sinh thái Aki** (canonical component names, `aki-info-detect`, `usePageSeo`, `releases.json`…) — thứ giờ đã có nhà riêng là UNIDOC. Ba việc:
 
 1. Tách bạch cái **chung** (auto, public, mọi người) khỏi cái **riêng** (đặc thù Aki).
 2. Sau khi tách, **tinh gọn** phần còn lại thành nhóm rõ ràng.
@@ -22,7 +22,7 @@ Xung đột mục tiêu đã nhận diện: **"sạch để public" ↔ "tiện 
 
 ## 3. Phát hiện gốc (first principles)
 
-- **Doctrine tách public/private ĐÃ tồn tại**: `UNIDOC/arch/knowledge-governance.md §3` + `UNIDOC/plan/done/2026-07-05-standard-public-allocation.md`. Luật: AkiClaudeDoc = public, tự đứng được, không nhắc UNIDOC/site nào. → Đây là **audit tuân thủ**, không phải bài toán mới.
+- **Doctrine tách public/private ĐÃ tồn tại**: `UNIDOC/arch/knowledge-governance.md §3` + `UNIDOC/plan/done/2026-07-05-standard-public-allocation.md`. Luật: akidevrule = public, tự đứng được, không nhắc UNIDOC/site nào. → Đây là **audit tuân thủ**, không phải bài toán mới.
 - **Rò rỉ chỉ ở 3 file lai**, không phải cả 14: `RULE-seo`, `RULE-release`, `RULE-stack-akiNuxtCf`. 11 file còn lại đã universal đúng chuẩn.
 - **Phần Aki-private trong `stack` gần như đã mirror sẵn** trong STANDARD qua `(mirror:)`. Đây vừa là gánh nặng đồng bộ 2 chiều thủ công (drift-prone), vừa là cơ hội: cô lập được rõ ràng.
 
