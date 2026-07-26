@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-25 (5)
+
+### Added — DELETE-body-hang pitfall to RULE-stack-akiNuxtCf.md §A2
+- `payload/RULE-stack-akiNuxtCf.md`: new bullet in "Cloudflare Worker runtime constraints" — never call h3's `readBody()` in a DELETE handler. On workerd, reading a body the runtime never actually attached to a DELETE request hangs the promise instead of rejecting it, and the platform kills the request as a bare 500 with no stack trace; this does NOT reproduce under `nuxt dev` (Node), so it survives local testing and only surfaces in production. Found live on tachnhac.com: an admin task-board delete endpoint hung this way, confirmed via `wrangler pages deployment tail` showing "Workers runtime canceled this request because it detected that your Worker's code had hung". Fix is to carry DELETE payloads via query string on both client and server, never body.
+
 ## 2026-07-25 (4)
 
 ### Fixed — RULE-release.md §C5 live-verification command was wrong for the actual stack

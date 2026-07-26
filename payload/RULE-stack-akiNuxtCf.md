@@ -27,6 +27,7 @@ Nuxt 4 · Vue 3 · Tailwind v4 · @nuxtjs/i18n · @nuxtjs/seo · SweetAlert2 · 
   - `crypto.subtle` operates on bytes — feed it `new TextEncoder().encode(str)`, not the string.
 - Do not enable `nodejs_compat` in `wrangler.toml` unless upstream issues are confirmed fixed
 - Trailing slash: `trailingSlash: true` everywhere (routing, canonical, og:url, sitemap, schema.org) — canonical config lives in the i18n section below
+- Never call h3's `readBody()` in a DELETE handler. On workerd, reading a body the runtime never actually attached to a DELETE request hangs the promise instead of rejecting it — the platform then kills the request as a bare 500 with no stack trace. This reproduces on real Cloudflare Pages/Workers but NOT under `nuxt dev` (Node), so it survives local testing and only surfaces in production. Pass the id (or any DELETE payload) via query string on both client and server instead — never body.
 
 ### A3. Preset and output
 - Use `cloudflare_pages`, not `cloudflare_module`
