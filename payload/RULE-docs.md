@@ -1,6 +1,6 @@
 # Core Docs Rules
 
-<!-- Address map: docs.A1-3 · docs.B1-3 -->
+<!-- Address map: docs.A1-3 · docs.B1-3 · docs.C1-4 -->
 
 ## Goals
 Docs should be readable for both humans and LLMs.
@@ -68,3 +68,51 @@ Required fields, in order:
 - Use Markdown
 - Prefer Mermaid when the subject is complex enough that plain text is harder to follow — flows, architecture, state transitions, or pipelines
 - README should stay focused on setup and entry-level usage unless the project explicitly wants more
+
+## C. Drift audit
+
+B3 is a **process** rule — sync the docs while the code changes. This group is the **verification** rule — check afterwards whether that sync actually held. Every discipline decays, and a topology that mandates plan lifecycles, supersede chains, and a master index needs a way to prove it was followed. Sibling audits own their own domains and must not be restated here: `release.B` (version/CHANGELOG state), `ui.C` (class and token drift), `METHOD-flow-audit.md` (flow and state drift). This group owns **docs-vs-reality** only.
+
+### C1. When it runs — and when it does not
+
+The discriminator is not how big the audit is. It is whether the baseline is stable and whether the findings outlive the session.
+
+- **Runs here** — the tree is clean and the last release is published: the "open the repo after a release, audit before starting the next version" moment. The baseline is stable, so a recorded snapshot stays true.
+- **Not here, unstable baseline** — a long half-finished working tree (some committed, some not, some mid-edit). That needs triage of the tree state, not a docs snapshot, and belongs to the commit workflow (`/akigitcommit` step 0). A "state of the tree today" record is false tomorrow and would fill the `research/` chain with expired findings.
+- **Not here, pre-ship gate** — work finished but not yet pushed, deployed, or released. That is a pass/fail gate whose findings must be *fixed* before shipping rather than filed for posterity: `release.B7`.
+- **Below threshold** — a spot-check of one doc, or anything answerable inline, produces no doc at all. Two docs per question is the failure mode this threshold exists to prevent. The bar for the C2 output is a fan-out across two or more domains, or findings that cannot all be fixed in the current session.
+
+### C2. Output contract — a research doc paired with a plan doc
+
+An audit that qualifies under C1 produces **both**, never only one:
+
+1. **The finding record** — a `docs/research/` doc on the B2 schema, which already fits an audit exactly. *Start time* = when the audit ran · *Initial purpose* = the scope audited plus the version/commit it ran against, since that context is what lets a later reader judge whether the findings still hold · *Strategy* = which domains and lenses · *Checklist* = the steps executed · *Result + Verification* = the findings, with anything only checkable at runtime marked "unverified" per `coding.B3` · *Decision → Action* = a link to the plan doc below.
+2. **The execution doc** — a `docs/plan/` doc per B1 that sequences the fixes and links back to the research doc.
+
+What makes the pair trustworthy:
+- **Name by what was audited — never version-first or date-first** (A2): `audit-ui-jul27.md`, `audit-docs-drift-jul27.md`. The version audited belongs in the *Initial purpose* field, not the filename: a version in the name reads ambiguously against B2's supersede-chain suffix (`audit-ui-2.md` is the second audit; `audit-1.4.2.md` would look like one).
+- **Re-auditing later opens a new doc in the chain** (B2) and never edits the old audit's body. An audit is an event record, not a living document.
+- **A finding deliberately left unscheduled must be recorded as B2's "No action" with its reason.** Silence makes a deliberate deferral indistinguishable from an oversight, and low-severity findings are exactly what a plan doc otherwise swallows.
+
+### C3. What to compare
+
+Walk the topology, checking each doc against what is actually true now:
+- `docs/index.md` — every entry resolves, and nothing that exists is missing from it (A1)
+- `docs/plan/` — an active plan whose work already shipped belongs in `done/` (B1); an active plan nobody is executing is either dead or unstarted and must be labeled as one, not left ambiguous
+- `docs/arch/` — module boundaries, data shapes, and diagrams still match the actual tree
+- `docs/feat/` — the described behavior still matches what the code does
+- `docs/biz/` — where code intent contradicts it, A3 decides: the `biz/` doc wins until it is explicitly changed
+- `docs/research/` — a conclusion whose recorded context no longer holds needs a successor doc plus a `Status: superseded by` line (B2), never an edit to the original
+- `docs/ref/` — commands, paths, and setup steps still run
+- Doc references inside code comments (B3) still point at a heading that exists
+
+### C4. Severity — drift is not one thing
+
+- **Wrong** — the doc states something a reader would act on and be harmed by: a stale command that destroys data, an architecture diagram that routes work to the wrong module. Fix before anything else; a wrong doc is worse than no doc.
+- **Stale** — accurate when written, since superseded. Goes into the plan doc.
+- **Incomplete** — nothing false, something missing.
+- **Cosmetic** — index ordering, a broken relative link.
+
+Report the count per level. Never compress "wrong" and "cosmetic" into one number — an audit that reports "14 drift issues" hides whether the docs are currently dangerous.
+
+Audits are read-only by construction: `agent.B5`.

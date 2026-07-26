@@ -311,13 +311,13 @@ mkdir -p "$GEMINI_RULES_DIR"
 AG_RULE_MAP="RULE-agent-behavior.md|always_on||
 RULE-coding.md|model_decision|Coding philosophy, source-of-truth discipline, error handling and security. Load when writing, reviewing or refactoring code.|
 RULE-design-core.md|model_decision|Universal design laws: single source of truth, Rule of Three, single-responsibility \"and\"-test, composition over inheritance, naming by role. Load on any structural or decomposition decision.|
-RULE-docs.md|model_decision|Documentation structure, plan lifecycle and doc-sync behavior. Load when writing or reorganizing docs and plans.|
+RULE-docs.md|model_decision|Documentation structure, plan lifecycle, doc-sync behavior and the docs-versus-code drift audit. Load when writing or reorganizing docs and plans, or when checking whether existing docs still match the code.|
 RULE-content-write.md|model_decision|UI copy, semantic stability, writing style and i18n. Load when writing user-facing text.|
 RULE-stack-akiNuxtCf.md|glob|Nuxt, Vue, Cloudflare Pages and Workers, Tailwind, i18n, state and build conventions. Load when working in a Nuxt or Cloudflare project.|[\"**/*.vue\", \"**/*.ts\", \"nuxt.config.*\", \"server/**/*.ts\"]
 RULE-stack-tauri.md|glob|Tauri v2 and Rust conventions, including the never-block-the-UI rule for subprocess and network commands. Load when working in a Tauri project.|[\"src-tauri/**\", \"**/*.rs\", \"tauri.conf.json\"]
 RULE-ui-pattern.md|model_decision|Frontend class taxonomy, design tokens, arbitrary-value policy, atomic structure and variant APIs. Load when building or auditing UI components.|
 RULE-seo.md|model_decision|Meta limits, schema.org, robots, sitemap, Open Graph and AI visibility. Load when working on SEO or page metadata.|
-RULE-release.md|model_decision|CHANGELOG discipline, release versus deploy boundary, severity-driven version bumps. Load when preparing a release or writing a changelog.|
+RULE-release.md|model_decision|CHANGELOG discipline, release versus deploy boundary, severity-driven version bumps and the pre-ship gate for finished-but-unpushed work. Load when preparing a release, writing a changelog, or checking whether finished work is actually shippable.|
 RULE-db-design.md|model_decision|Immutability and event sourcing, normalization, bounded contexts, flat-query discipline. Load when designing a schema, migration or database refactor.|
 RULE-biz.md|model_decision|Positioning, audience, USP, pricing, monetization and customer-psychology messaging rules. Load on any market-facing decision or when working on docs/biz content.|
 METHOD-flow-audit.md|model_decision|Method for auditing end-to-end flow integrity. Load when guards and checks keep accumulating around a flow.|

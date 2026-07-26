@@ -1,6 +1,6 @@
 # Release & Versioning Rule
 
-<!-- Address map: release.A1-5 · release.B1-6 · release.C1-4 (⟨Aki⟩) -->
+<!-- Address map: release.A1-5 · release.B1-7 · release.C1-4 (⟨Aki⟩) -->
 
 ## A. Versioning core
 
@@ -118,6 +118,21 @@ Do not report a plan, task, or release/deploy as complete when a migration/infra
 - Release note copy: no em/en dash (`—` `–`); short user-facing sentences, benefit first. See [[RULE-content-write]].
 - Keep terminology stable across versions (e.g. always "Release Notes", not mixed synonyms). See [[RULE-content-write]] semantic stability.
 - Doc/version moves are part of the change, not an afterthought. See [[RULE-docs]].
+
+### B7. Pre-ship gate — work finished, nothing pushed yet
+
+The last moment a mistake is still cheap: the work is done, the tree is clean, and nothing is public. This gate **composes rules that already exist** rather than adding new ones — its value is being one entry point instead of five scattered ones. It is a **pass/fail check, not a report**: every failure is fixed before shipping, and it produces no audit doc (contrast `docs.C`, which records findings precisely because its baseline is already published).
+
+Run in order; each step names the rule that owns it.
+
+1. **Release state** — derive it cold from the repo per B1, never from session memory. `Drifted` blocks everything until A5's recovery has run.
+2. **External-action completeness** — every change whose "done" depends on something outside the repo actually happened: migrations ran against the real target and their postconditions were checked, remote config/env vars/cron registrations are live, and each script sits in its completion location (B5, [[RULE-coding]] B3). A green build proves nothing about the database.
+3. **Record truthfulness** — every closed problem has its `CHANGELOG.md` entry, and no entry claims something step 2 has not cleared (B2). Web stacks additionally need `releases.json` parity (C3).
+4. **Doc sync** — plans whose work shipped moved to `docs/plan/done/`, and `arch`/`feat` docs match what is about to ship ([[RULE-docs]] B1, B3). A doc left stale here becomes next release's drift finding.
+5. **Verification honesty** — anything only checkable at runtime is reported as unverified rather than assumed ([[RULE-coding]] B3). "Untested but I expect it works" is a valid gate output; a silent "Done" is not.
+6. **Version decision** — mint or defer per A4/A5's materiality test. Do not mint a version to mark that a session ended.
+
+Deploy verification is deliberately **not** in this gate — it happens after the push, against the live target, and is owned by the stack rule.
 
 ## C. ⟨Aki⟩ Web release artifacts
 

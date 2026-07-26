@@ -1,6 +1,6 @@
 ---
 name: akiflow
-description: Sized multi-agent delivery pipeline. A strict sizing gate classifies every request into Tier 0 (direct work, the default), Tier 1 (Architect plan + adversarial Reviewer), or Tier 2 (adds business/UX counsel), then spawns only the specialists that tier needs. Stages hand work to each other through docs/ files (never chat context), each subagent is told exactly which akirule files to Read, and model/effort is assigned by the nature of the work (deep judgment vs mechanical fan-out). Explicit invoke only.
+description: Sized multi-agent delivery pipeline. A strict sizing gate classifies every request into Tier 0 (direct work, the default), Tier 1 (Architect plan + adversarial Reviewer), or Tier 2 (adds business/UX counsel), then spawns only the specialists that tier needs. An orthogonal audit mode fans out one read-only agent per rule domain to inspect existing state instead of building. Stages hand work to each other through docs/ files (never chat context), each subagent is told exactly which akirule files to Read, and model/effort is assigned by the nature of the work (deep judgment vs mechanical fan-out). Explicit invoke only.
 ---
 
 # akiflow — sized multi-agent delivery pipeline
@@ -39,6 +39,43 @@ Never ask the user which tier they want. The gate is auditable through this line
 2. **User override wins in both directions.** `tier=N` in the invocation forces that tier; "just do it directly" (or equivalent) forces Tier 0.
 3. **Only invite agents that have actual work.** Tier 2 does not mean every specialist runs — a pure pricing decision needs business counsel and an Architect, not a UX pass.
 4. **A stage that produced no doc did not run.** Each stage's output is a docs/ file (see handoff protocol); no doc means the stage cannot be marked complete.
+
+## Step 1b — audit track (orthogonal to the tier)
+
+The tier signals above all describe **building something new**. A request to inspect what already exists — `audit`, `rà soát`, `drift`, `docs còn khớp code không`, `kiểm tra lại`, `review toàn bộ`, `dọn dẹp` — would otherwise fall to Tier 0 by default and never reach the specialists that exist for it. Audit is not a fourth tier; it is a mode that changes what the stages *produce*. Declare it on the same gate line:
+
+```
+[akiflow] tier=1 mode=audit — trigger: post-release sweep, 3 domains (docs, ui, release)
+```
+
+**Sizing the audit** — by domain count, not by file count:
+- **One domain, one question** → answer inline. No subagents, no doc. Two docs per question is the failure this bound exists to prevent (`RULE-docs.md` C1).
+- **Two or more domains, or findings that outlive the session** → fan out one agent per domain, then synthesize.
+
+**Domain → rule file.** Each subagent Reads only its own domain's file plus `RULE-agent-behavior.md` (for B5), and reports findings in that file's own severity vocabulary:
+
+| Domain | Reads | Owns |
+|---|---|---|
+| docs drift | `RULE-docs.md` §C | docs vs reality: index, plan lifecycle, arch/feat accuracy, research supersede chains |
+| ui | `RULE-ui-pattern.md` §C | class duplication, arbitrary values, token drift |
+| flow | `METHOD-flow-audit.md` | flow breaks, stacked guards, state duplication |
+| release | `RULE-release.md` §B | version state, CHANGELOG/tag/releases.json parity, migration completeness |
+| ux | `METHOD-ux-psych.md` §C | friction, failure paths, state completeness |
+| business | `RULE-biz.md` | positioning/pricing coherence against `docs/biz/` |
+
+**Read-only is the default, and must be restated in every subagent prompt** — they do not inherit akirule, so without it each one will "fix it while I'm here" and the audit dissolves into an unreviewed refactor. Full constraint, including the absolute ban on mutating git state: `RULE-agent-behavior.md` B5.
+
+**Model & effort:** domain sweeps are largely mechanical (grep, compare, list) → cheaper model, low effort, aggregate in-shell. **Severity triage and synthesis stay with the orchestrator on the strong model** — deciding that a finding is *wrong* rather than *cosmetic* is judgment, and it is the one output the user acts on.
+
+**Output depends on the baseline, not the size** — the three situations are genuinely different and only the third produces the doc pair:
+
+| Situation | Baseline | Output | Owner |
+|---|---|---|---|
+| Half-finished working tree | unstable | triage list, no audit doc | `/akigitcommit` step 0 |
+| Done, not yet pushed/deployed | frozen, unpublished | pass/fail gate, fix before shipping | `RULE-release.md` B7 |
+| After a release, before the next version | stable, published | `docs/research/audit-*.md` + `docs/plan/` | `RULE-docs.md` C2 |
+
+Fixes are a **separate run** through the normal gate, sized against the plan doc the audit produced.
 
 ## Step 2 — agent roster
 

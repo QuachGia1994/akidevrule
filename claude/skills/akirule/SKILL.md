@@ -30,8 +30,9 @@ Load if message or file path contains any of:
 ### RULE-docs.md
 Load if message or file path contains any of:
 - **Keywords:** `docs`, `CLAUDE.md`, `README`, `PLAN`, `plan/`, `diagram`, `mermaid`, `architecture`, `arch/`, `doc sync`, `documentation`, `index.md`, `feat/`, `plan lifecycle`, `tài liệu`, `sơ đồ`, `kiến trúc`
+- **Keywords (drift audit):** `drift`, `audit docs`, `stale docs`, `outdated docs`, `out of date`, `docs khớp code`, `còn khớp`, `lệch`, `lỗi thời`, `rà soát tài liệu`, `docs cũ`, `kiểm tra tài liệu`
 - **Paths:** `docs/**`, `PLAN.md`, `CLAUDE.md`, `README.md`, `docs/feat/*`, `docs/arch/*`, `docs/plan/*`
-- **Actions:** creating, editing, moving, or completing any plan or doc file
+- **Actions:** creating, editing, moving, or completing any plan or doc file; checking whether docs still match the code after the fact (`docs.C`)
 
 ### RULE-content-write.md
 Load if message or file path contains any of:
@@ -61,7 +62,8 @@ Load if message or file path contains any of:
 Load if message or file path contains any of:
 - **Keywords:** `release`, `release note`, `release notes`, `changelog`, `CHANGELOG`, `version`, `versioning`, `semver`, `bump`, `bump version`, `major.minor.patch`, `releases.json`, `phát hành`, `phiên bản`, `cập nhật phiên bản`, `nâng version`
 - **Paths:** `CHANGELOG.md`, `app/data/releases.json`, `pages/releases/**`
-- **Actions:** shipping a change that should be recorded for users or maintainers; bumping a version
+- **Keywords (pre-ship gate):** `chưa push`, `trước khi push`, `trước khi deploy`, `sắp release`, `chuẩn bị ship`, `pre-release`, `ready to ship`, `xong chưa`, `đã xong hết chưa`
+- **Actions:** shipping a change that should be recorded for users or maintainers; bumping a version; checking whether finished-but-unpushed work is actually shippable (`release.B7`)
 
 ### RULE-stack-tauri.md
 **Default ON for any Tauri project context.** Skip only when the task is provably unrelated to the Tauri/Rust backend (pure frontend copy change with no `src-tauri` involvement, isolated doc edit). Load if message or file path contains any of:

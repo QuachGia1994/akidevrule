@@ -1,13 +1,32 @@
 ---
 name: akigitcommit
-description: Analyze the working tree and commit changes in clean logical groups. Auto-detects CHANGELOG to switch between domain-grouped mode (3–5 commits by object/feature) and type-grouped mode (feat/fix/refactor). Stages by explicit path, never `git add -A`. Conventional Commits, no co-author trailers, never pushes unless asked.
+description: Analyze the working tree and commit changes in clean logical groups. Triages a long half-finished tree first (finished vs mid-edit vs abandoned vs accidental) before grouping. Auto-detects CHANGELOG to switch between domain-grouped mode (3–5 commits by object/feature) and type-grouped mode (feat/fix/refactor). Stages by explicit path, never `git add -A`. Conventional Commits, no co-author trailers, never pushes unless asked.
 ---
 
 # akigitcommit — scientific grouped commits
 
 Invoke with `/akigitcommit`. Goal: turn a messy working tree into a small set of clean, logically grouped commits — without ever losing staging from one group to the next.
 
-## Mode detection (run first)
+## Step 0 — triage a half-finished tree
+
+**Run this only when the tree is not uniformly finished:** many changed files, a mix of committed and uncommitted work, edits visibly stopped mid-way, or the user asks to audit the tree before committing. A clean, coherent set of changes skips straight to mode detection.
+
+Triage is an audit, so `RULE-agent-behavior.md` B5 applies in full — most importantly: **never run `git add`, `stash`, `checkout`, `restore`, `clean`, or `reset` during triage.** This is exactly the state in which uncommitted work is most valuable and least recoverable, and "tidying up" is the shape the loss usually takes.
+
+Classify every chunk into one of four:
+
+| Class | Signal | Disposition |
+|---|---|---|
+| **Finished** | a closed problem, coherent on its own | proceeds to grouping below |
+| **Mid-edit** | intentional, the author is still on it | hold — do not commit inside someone's unfinished thought |
+| **Abandoned** | an experiment that went nowhere | ask before anything; never discard on your own read |
+| **Accidental** | debug prints, scratch files, temp output in the project tree (`RULE-agent-behavior.md` C5) | flag with the path; do not auto-delete |
+
+**Mid-edit and abandoned cannot be told apart by reading the tree** — only the author knows which one a half-written function is. Present both as unclassified and ask; a guess here silently commits dead code or buries live work.
+
+Output a short list (class, paths, one line each) and let the user confirm before grouping. If the leftovers will not be resolved in this session, they belong in a `docs/plan/` note, not `docs/research/` — a snapshot of today's tree is false tomorrow (`RULE-docs.md` C1).
+
+## Mode detection (run after triage)
 
 Before grouping, check: does the repo have a `CHANGELOG.md`?
 
