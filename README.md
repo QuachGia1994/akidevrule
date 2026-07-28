@@ -17,7 +17,7 @@ This Git repository is the source of truth; `dev.akitao.com` is the presentation
 | Skill | Invoke | Purpose |
 |---|---|---|
 | `akirule` | automatic, every conversation | Smart rule router — loads core rules always, contextual rules on signal match, everything on `nạp full` / `load all rules`. Hidden from the `/` menu by design. |
-| `akiflow` | `/akiflow` | Lead-coordinated specialist board for work needing more than one kind of judgment. The session agent decomposes the request into owned work items, checks a three-condition activation gate, then convenes a named roster in one batch — each specialist carrying a mandatory first-principles + critical-thinking floor and messaging peers directly. Mechanism follows the shortfall: fork for continuity, clean subagent for independence, cheap model for bandwidth. Analysis and execution are separate phases with an explicit decision gate; verification is forked, adversarial review never is. An orthogonal `mode=audit` track fans out one read-only agent per rule domain. Design record: [`docs/arch/akiflow.md`](docs/arch/akiflow.md). |
+| `akiflow` | `/akiflow` | Lead-coordinated **agent council** for work needing more than one kind of judgment. It exists to settle hard questions itself so the owner does not have to: the lead decomposes the request into owned work items, checks a three-condition activation gate, convenes a named roster in one batch, and escalates only what neither the room nor the lead can settle — as a decision, never as an open question. Every specialist carries a mandatory first-principles + critical-thinking floor. Mechanism follows the shortfall: fork for continuity, clean subagent for independence, cheap model for bandwidth. The run lives in a self-pruning workspace under `~/.aki/agent-council/` (agent files + `chat.md` room + lead-owned checklist). Analysis and execution are separate phases with an explicit decision gate; verification is forked, adversarial review never is. An orthogonal `mode=audit` track fans out one read-only agent per rule domain. Design record: [`docs/arch/akiflow.md`](docs/arch/akiflow.md). |
 | `akithink` | `/akithink` | Structured deep-thinking session for big, hard-to-reverse, or goal-ambiguous decisions: restate → goal excavation → first principles → mandatory critique → convergence into a `docs/` decision record. Recommends a top-tier model (Opus/Fable). |
 | `akihtmlreport` | `/akihtmlreport` | Distills a dense analysis already in the conversation into one self-contained, ultra-wide `REPORT.html` at the project root — no new analysis, no dropped detail — then opens it locally. Exactly one per project; asks before overwriting. |
 | `akihelp` | `/akihelp` | Live introduction to the whole installed Aki system, rendered by reading `index.md` and skill frontmatters at runtime — it can never go stale. |
@@ -85,6 +85,9 @@ skills/                            → shared Agent Skills corpus (SKILL.md open
                                      unmodified to BOTH ~/.claude/skills/ and ~/.gemini/config/skills/
   akirule/SKILL.md
   akiflow/SKILL.md
+  akiflow/scripts/council-open.sh      (opens + prunes the session workspace)
+  akiflow/scripts/council-read.sh      (slices chat.md without loading it whole)
+  akiflow/references/harness-facts.md  (subagent/cost/model facts, with sources)
   akithink/SKILL.md
   akihtmlreport/SKILL.md
   akihelp/SKILL.md
@@ -146,7 +149,7 @@ flowchart TD
 ```
 
 1. Syncs `payload/*` into `~/.aki/akidevrule/` (rsync, excludes `ref-ECC/`), removing stale files left by renames, and syncs `agskills/` for Antigravity skill inheritance.
-2. Syncs every skill folder under `skills/*/` (whole directory, including any `references/`) into `~/.claude/skills/`, one named folder at a time via `rsync --delete`, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched. `skills/` is a top-level, agent-neutral folder (siblings with `payload/`, not nested under `claude/`) because SKILL.md is a shared open standard both Claude Code and Antigravity/AGY consume identically — see [docs/ref/agent-skills-standard.md](docs/ref/agent-skills-standard.md).
+2. Syncs every skill folder under `skills/*/` (whole directory, including any `references/` or `scripts/`) into `~/.claude/skills/`, one named folder at a time via `rsync --delete`, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched. `skills/` is a top-level, agent-neutral folder (siblings with `payload/`, not nested under `claude/`) because SKILL.md is a shared open standard both Claude Code and Antigravity/AGY consume identically — see [docs/ref/agent-skills-standard.md](docs/ref/agent-skills-standard.md).
 3. Replaces `~/.claude/CLAUDE.md` with the packaged guidance (timestamped backup first), appending this machine's source-repo path and an `@~/.claude/CLAUDE.local.md` import.
 4. Creates `~/.claude/CLAUDE.local.md` **only if missing** — never overwritten afterward. Put per-machine rules there (build constraints, IDE paths, remote flags); they survive every reinstall.
 5. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/akidevrule/**`, `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.
@@ -174,6 +177,7 @@ No sudo, user-local, easy to inspect and delete, consistent with the Aki ecosyst
 
 ```bash
 rm -rf ~/.aki/akidevrule
+rm -rf ~/.aki/agent-council     # /akiflow session workspaces (self-prunes at 30 days anyway)
 rm -rf ~/.claude/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,aki-article-writer}
 rm -f  ~/.claude/hooks/aki-update-check.py
 rm -f  ~/.gemini/GEMINI.md          # restore from a *.akidevrule-backup-* if needed; GEMINI.local.md is left untouched

@@ -1,6 +1,14 @@
-# Architecture — akiflow, a lead-coordinated specialist board
+# Architecture — akiflow, a lead-coordinated agent council
 
 `/akiflow` is the multi-agent skill in this baseline. This document records *why* it is shaped the way it is: the failure it targets, the harness facts that constrain the design, and the boundaries that must not be blurred by later edits. The runnable contract lives in `skills/akiflow/SKILL.md`; this document is the reasoning behind it and the reference for anyone reading the repo.
+
+## The purpose, which every rule serves
+
+**The council exists to reach the most rigorous decision it can without the owner.** Rigour and offloading are usually in tension — more rigour normally means more questions asked of the person. akiflow resolves that tension by making the *council* absorb the questions: specialists grind against each other, the lead arbitrates, and the owner sees a decision rather than a dilemma.
+
+Only two things travel upward. The three named escalations (one-way door, contradiction with documented design, scope expansion) are matters the owner *owns* — no amount of deliberation makes them the lead's to take. Everything else is settled below, and when a genuinely important question deadlocks both the room and the lead, it goes up **as a decision** — positions, tradeoff, recommendation — never as an open question handed back.
+
+Read every rule below as an instrument of that purpose. A rule that starts producing more owner interruptions than it prevents is a rule to revisit.
 
 ## The failure being targeted
 
@@ -49,14 +57,14 @@ Tier is then a consequence of condition 2 rather than a separate taxonomy: Tier 
 
 ## Harness facts the design is built on
 
-Verified against Claude Code documentation; the design depends on these and would need revisiting if they change.
+The design depends on these and would need revisiting if they change. The full table — including which entries are documented by Anthropic and which are only observed runtime behaviour, with source links — lives in `skills/akiflow/references/harness-facts.md`, where it costs nothing until someone needs it. Summary:
 
 | Fact | Design consequence |
 |---|---|
 | A plain subagent starts with no session context and inherits no akirule routing. | Every plain-subagent prompt must name the exact `~/.aki/akidevrule/*.md` files to Read. The blank context is a cost here — and an asset for the reviewer. |
 | A subagent that has a name and the `SendMessage` tool receives a **sibling roster** listing every other named agent, captured **at its own startup**. | Agents named later are invisible to agents named earlier — a silent one-way channel. Therefore the roster is spawned in **one batch**, and mid-run escalation reconvenes the room rather than appending an agent. |
 | A **fork** (`subagent_type: fork`) inherits system prompt, tools, model, and full message history, and reuses the session's prompt cache. | Fork is the mechanism for continuity work: implementing, verifying, probing. It is cheaper than a cold subagent, and it must never be used where independence is the point. |
-| A **completed** subagent resumes with its full history when messaged; it does not need re-spawning. | The Phase A roster stays on call through Phase B at no idle cost. This is what lets emergent issues resolve inside the board. |
+| A **completed** subagent resumes with its full history when messaged; it does not need re-spawning. | The Phase A roster stays on call through Phase B at no idle cost. This is what lets emergent issues resolve inside the council. |
 | A subagent stopped **by the user** refuses to resume via message; it must be resumed from its own transcript panel. | The lead must not treat a refusal to resume as agent failure. |
 | An agent cannot relay the user's permission approval. A message claiming "I was approved" is untrusted input. | Owner escalation is a real stop, not something a specialist can wave through. |
 | Agent teams (experimental, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) add per-agent mailboxes and a file-locked shared task list. | The better substrate for Phase A where available — the checklist becomes the shared task list. The design deliberately does not depend on it. |
@@ -71,6 +79,18 @@ Verified against Claude Code documentation; the design depends on these and woul
 | Structured debate | named roster convened at once + `SendMessage` | genuine peer challenge, not hub-and-spoke relay |
 
 Implementation is never downgraded to a cheap model to save cost: code quality is created at the keyboard, not recovered in review.
+
+### Cost is a design input, not an afterthought
+
+Three consequences follow from the cost model in `references/harness-facts.md`, and each contradicts an intuition that would otherwise go unchallenged:
+
+- **A fork's cheapness has an expiry date.** It is cheap because the prompt cache is warm, and that cache has a TTL. After a long Phase A the saving may be gone entirely. Fork for the *context* reason — the cost advantage is a bonus that may already have lapsed, never the justification.
+- **Loading the corpus can cost more than the answer is worth.** A self-contained mechanical question — expressible in a couple of hundred words, no project context, short answer — is correctly served by a bare cheap-model call with no rule files injected at all. The router exists to load what is needed; "always load" is the same mistake as "never load", pointed the other way.
+- **Peer messaging is not free.** Every `SendMessage` is a full turn of the receiving agent. Direct challenge is worth it; unbudgeted chatter is the same waste as a flooded lead, just distributed.
+
+### Running without a human present
+
+Headless (`claude -p`) removes two things the design otherwise assumes: someone who can answer an owner escalation, and someone who can approve a permission prompt. Both failures are silent if unplanned — the lead's temptation is to guess what the owner would have wanted, which is precisely the boundary Step 6 exists to hold. The rule is therefore to record the escalation as `BLOCKED: needs owner` in the checklist, continue the other items, and scope the run to what current permissions already allow.
 
 ### The boundary that must never blur
 
@@ -88,7 +108,9 @@ A forked reviewer sees the lead's entire self-justifying chain and will agree wi
 
 ## Two phases, one gate
 
-**Phase A — analysis room.** Roster convened in one batch, named explicitly. Minutes organised **by item**, not chronologically, so each specialist reads only its own items plus a lead-maintained state block. A shared room where everyone reads everything is the main thread's context flood rebuilt N times over; the room is shared *write* space and selective *read* space. No code is written.
+**Phase A — analysis room.** Roster convened in one batch, named explicitly. The room is a meeting, so it is written and read **in time order**, the way a participant experiences one — an earlier design that sharded the record by item was rejected: it makes a conversation unreadable as a conversation, and a specialist cannot tell what it walked into. The context-flood risk is answered by *selective retrieval* instead: fixed heading levels make the room greppable, and `scripts/council-read.sh` slices it by agent, by turn range, or by tail, so nobody has to load the whole file to stay current. No code is written.
+
+**Steering is judgment, not a counter.** Depth is the point of the council, so a long argument is not by itself a problem, and a fixed round limit would punish exactly the deliberation the skill exists to produce. The lead watches for four real signals — ground re-covered with no new evidence, a closing criterion that has stopped getting closer, drift outside the mandates, cost outrunning the value of the decision — which `--stats` and `--index` surface without reading everything. The intervention is minimal by design: one pinned CHECKPOINT line naming what is settled and what is open, addressed only to the agents that are drifting. A room that cannot converge is the lead's call to close, not a reason to keep it running.
 
 **The gate.** The lead closes items and decides. Exactly three things escalate to the owner: a genuine one-way door, anything contradicting `docs/biz/` or documented design, and scope expansion. Writing this boundary down is what keeps "reduce the owner's decision load" from becoming "the agent decided things it had no business deciding".
 
@@ -96,17 +118,24 @@ A forked reviewer sees the lead's entire self-justifying chain and will agree wi
 
 **Loop back.** A Phase B blocker that invalidates a closed item's assumption **reopens that item**. Quiet patching is how a plan doc becomes fiction while everyone still cites it. Reopening is cheap precisely because the roster is still alive.
 
-## Two artifacts, never conflated
+## The session workspace: three artifacts, never conflated
 
-| | Minutes | Checklist / plan |
-|---|---|---|
-| Holds | process, arguments | conclusions and their rationale |
-| Writer | every agent | the lead only |
-| Reader | each agent, own items only | everything downstream, every session |
-| Lifetime | ephemeral (`/tmp/akiflow-<id>.md`), distilled to `docs/research/` only if the argument is worth keeping | durable, `docs/plan/` per `RULE-docs.md` B1 |
-| Cost of losing it | cannot trace a dispute | the project |
+A run lives in `~/.aki/agent-council/<project>/<YYYY.MM.DD-HHMM>-<slug>/`. It sits inside the Aki ecosystem rather than `/tmp` because a council record has value for days, not minutes — but that immediately raises the question `/tmp` used to answer for free: who deletes it. The answer is mechanical, not a rule anyone must remember: `scripts/council-open.sh` prunes sessions older than 30 days every time a run opens, matching the window Claude Code already uses for its own `projects/` directory, so the two age out on the same clock. The slug is the lead's, timestamp-prefixed for uniqueness, chosen to be recognisable a week later.
 
-**Rationale travels with the decision, not with the argument.** The room runs inside subagents, the lead sees only summaries, and a forked implementer inherits the *lead's* context — so it would inherit conclusions stripped of reasons and implement the letter against the spirit, confidently. Every closure therefore writes its ≤3-line rationale into the **checklist**, not the minutes.
+| | Agent file | Room | Checklist / plan |
+|---|---|---|---|
+| Path | `<name>.md` | `chat.md` | `checklist.md` |
+| Writer | that agent | every agent | the lead only |
+| Holds | pinned mandate, private notes | the meeting, in time order | items, closures, rationale |
+| Reader | its owner | anyone, selectively | everything downstream, every session |
+| Lifetime | pruned at 30 days | pruned at 30 days; distil to `docs/research/` only if the argument is worth keeping | durable, `docs/plan/` per `RULE-docs.md` B1 |
+| Cost of losing it | that agent drifts out of mandate | cannot trace a dispute | the project |
+
+The agent file exists because a mandate stated once, at spawn, competes with everything that arrives afterwards; a specialist that can re-read its own mandate mid-room is one that stays inside it. That is cheaper than the alternative — the lead policing scope creep across N agents.
+
+The room's format (`# head` → `## pinned` → `### <time> <agent> #<turn>` → `#### content`) is chosen for **grep, not for reading order**: fixed heading levels are what let a script slice the file. The turn counter is global rather than per-agent so a citation like "turn 14" is unambiguous. Turns are ≤200 words and never hard-wrapped (`RULE-agent-behavior.md` C3) — wrapping breaks both the grep and the next reader.
+
+**Rationale travels with the decision, not with the argument.** The room runs inside subagents, the lead sees only summaries, and a forked implementer inherits the *lead's* context — so it would inherit conclusions stripped of reasons and implement the letter against the spirit, confidently. Every closure therefore writes its ≤3-line rationale into the **checklist**, not the room.
 
 **Docs remain the cross-session handoff.** `SendMessage` dies with the session; multi-week burst work does not. Peer messaging replaces docs *within* a run, never *between* runs.
 
@@ -125,20 +154,20 @@ The literal block lives in the skill and is pasted verbatim into every subagent 
 
 ## Peer-to-peer: what it buys and what it costs
 
-Direct specialist-to-specialist messaging is what makes the board a board rather than a relay through the lead. It introduces four risks, each answered by a rule:
+Direct specialist-to-specialist messaging is what makes the council a council rather than a relay through the lead. It introduces four risks, each answered by a rule:
 
 | Risk | Rule |
 |---|---|
-| **Observability collapse** — the lead cannot see how a peer conclusion was reached | every exchange ends in a one-line `DECISION:` / `CONFLICT:` filed to the lead; the minutes are a self-filed audit log, not a transport |
+| **Observability collapse** — the lead cannot see how a peer conclusion was reached | every exchange ends in a one-line `DECISION:` / `CONFLICT:` filed to the lead; the room is a self-filed audit log, not a transport |
 | **Local consensus** — two agents agreeing arrives looking cross-reviewed, and silent agreement is more dangerous than open disagreement | peer agreement is not a decision; only the lead closes an item |
 | **Ping-pong / deadlock** — no natural timeout | three rounds per pair, then escalate; cyclic chains (A→B→C→A) forbidden |
 | **Hidden cost** — messaging is not free | every message is a full turn of the receiving agent; the budget belongs in the roster brief |
 
 ## Who challenges the lead
 
-The lead cuts the items, so a bad cut means the board debates the wrong squares thoroughly — the one failure no mechanism above catches, because every mechanism operates *within* the item structure.
+The lead cuts the items, so a bad cut means the council debates the wrong squares thoroughly — the one failure no mechanism above catches, because every mechanism operates *within* the item structure.
 
-Structural answer: **Red Team's first assignment is always the decomposition itself** — find the missing item, the item with two owners, the item whose closing criterion nobody can check. Content attacks come after. The lead also keeps a deliberately sparse context (checklist, state block, decisions — never full minutes), because a flooded lead loses arbitration quality at exactly the moment the board most needs it.
+Structural answer: **Red Team's first assignment is always the decomposition itself** — find the missing item, the item with two owners, the item whose closing criterion nobody can check. Content attacks come after. The lead also keeps a deliberately sparse context (checklist, pinned block, decisions — never the whole room), because a flooded lead loses arbitration quality at exactly the moment the council most needs it.
 
 ## Nested subagents
 
@@ -150,11 +179,13 @@ Each of these is the **default** behaviour of a capable model unless forbidden b
 
 1. Forking the adversarial reviewer → a rubber stamp wearing a review's clothes.
 2. Spawning the roster across several turns → one-way channels; agents deaf without knowing it.
-3. The lead reading the whole minutes → the flooded main thread, rebuilt.
+3. The lead reading the whole room top to bottom → the flooded main thread, rebuilt.
 4. Agreement with no falsifier → manufactured consensus.
 5. Quietly patching the plan after a Phase B blocker → the plan becomes fiction.
 6. Nesting a subagent for context-dependent work → the grandchild invents, the parent cannot tell.
 7. Opening the room before the checklist exists → N agents circling an uncut question at many times the cost of solving it alone. **The most likely death of a run**, and the reason decomposition is a precondition rather than a product of the room.
+8. Handing the owner an open question instead of a decision → the council did not do the one job it exists for.
+9. Merging the room into the checklist → the argument buries the conclusion, and Phase B inherits conclusions stripped of their reasons.
 
 ## Relationship to the rest of the baseline
 
@@ -168,4 +199,4 @@ Each of these is the **default** behaviour of a capable model unless forbidden b
 
 ## Non-goals
 
-akiflow is not an always-on pipeline, not a replacement for direct work, and not a way to spend more tokens for the appearance of rigour. Tier 0 remains the default and most requests belong there. It does not define a persistent agent team, a background service, or any state that outlives the run beyond the documents `RULE-docs.md` already governs.
+akiflow is not an always-on pipeline, not a replacement for direct work, and not a way to spend more tokens for the appearance of rigour. Tier 0 remains the default and most requests belong there. It does not define a persistent agent team or a background service. The only state it leaves outside the repo is the session workspace under `~/.aki/agent-council/`, which is self-pruning at 30 days; everything meant to last is a document `RULE-docs.md` already governs.
