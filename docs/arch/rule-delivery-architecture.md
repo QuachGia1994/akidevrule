@@ -50,7 +50,7 @@ flowchart TD
     SKSRC --> INSTALL
     CCSRC --> INSTALL
 
-    INSTALL -->|"rsync, excludes GEMINI.md"| RULES["~/.aki/claudedoc/*.md<br/>rule corpus"]
+    INSTALL -->|"rsync, excludes GEMINI.md"| RULES["~/.aki/akidevrule/*.md<br/>rule corpus"]
     INSTALL -->|"overwrite + backup"| GCLAUDE["~/.claude/CLAUDE.md<br/>+ @CLAUDE.local.md"]
     INSTALL -->|"skills"| SKILLS["~/.claude/skills/akirule …"]
     INSTALL -->|"sed marker, overwrite + backup"| GGEM["~/.gemini/GEMINI.md<br/>managed"]

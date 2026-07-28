@@ -53,7 +53,7 @@ Verified against Claude Code documentation; the design depends on these and woul
 
 | Fact | Design consequence |
 |---|---|
-| A plain subagent starts with no session context and inherits no akirule routing. | Every plain-subagent prompt must name the exact `~/.aki/claudedoc/*.md` files to Read. The blank context is a cost here — and an asset for the reviewer. |
+| A plain subagent starts with no session context and inherits no akirule routing. | Every plain-subagent prompt must name the exact `~/.aki/akidevrule/*.md` files to Read. The blank context is a cost here — and an asset for the reviewer. |
 | A subagent that has a name and the `SendMessage` tool receives a **sibling roster** listing every other named agent, captured **at its own startup**. | Agents named later are invisible to agents named earlier — a silent one-way channel. Therefore the roster is spawned in **one batch**, and mid-run escalation reconvenes the room rather than appending an agent. |
 | A **fork** (`subagent_type: fork`) inherits system prompt, tools, model, and full message history, and reuses the session's prompt cache. | Fork is the mechanism for continuity work: implementing, verifying, probing. It is cheaper than a cold subagent, and it must never be used where independence is the point. |
 | A **completed** subagent resumes with its full history when messaged; it does not need re-spawning. | The Phase A roster stays on call through Phase B at no idle cost. This is what lets emergent issues resolve inside the board. |

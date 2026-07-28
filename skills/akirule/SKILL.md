@@ -6,13 +6,13 @@ user-invocable: false
 
 ## Addressing scheme (recall only — does not affect routing)
 
-Every rule file is internally organized into groups `A`/`B`/`C` and numbered items `1`/`2`/`3…` (e.g. `coding.B2`, `stack.C1`). `topic` = filename minus its `RULE-`/`METHOD-` prefix. This is a naming convention for referring to a specific rule precisely — it has no effect on which files load or when; that is still governed entirely by the tiers below. Full map: `~/.aki/claudedoc/index.md`.
+Every rule file is internally organized into groups `A`/`B`/`C` and numbered items `1`/`2`/`3…` (e.g. `coding.B2`, `stack.C1`). `topic` = filename minus its `RULE-`/`METHOD-` prefix. This is a naming convention for referring to a specific rule precisely — it has no effect on which files load or when; that is still governed entirely by the tiers below. Full map: `~/.aki/akidevrule/index.md`.
 
 ## Tier 1 — Core (harness-guaranteed)
 
-@~/.aki/claudedoc/index.md
-@~/.aki/claudedoc/RULE-agent-behavior.md
-@~/.aki/claudedoc/RULE-coding.md
+@~/.aki/akidevrule/index.md
+@~/.aki/akidevrule/RULE-agent-behavior.md
+@~/.aki/akidevrule/RULE-coding.md
 
 ---
 
@@ -105,7 +105,7 @@ Load if message contains any of:
 **Trigger** — match any of the following (case-insensitive): `nạp full`, `load full`, `full load`, `nạp tất cả rule`, `load all rules`, `full akirule`, `nạp hết rule`
 
 **Protocol — execute in order:**
-1. Run `ls ~/.aki/claudedoc/RULE-*.md ~/.aki/claudedoc/METHOD-*.md` to discover the actual file list
+1. Run `ls ~/.aki/akidevrule/RULE-*.md ~/.aki/akidevrule/METHOD-*.md` to discover the actual file list
 2. Read each file returned (skip anything under `ref-ECC/`)
 3. Output confirmation: `[akirule:full] Loaded: <comma-separated filenames>`
 

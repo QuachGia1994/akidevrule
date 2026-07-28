@@ -2,9 +2,18 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INSTALL_ROOT="$HOME/.aki/claudedoc"
+INSTALL_ROOT="$HOME/.aki/akidevrule"
+LEGACY_INSTALL_ROOT="$HOME/.aki/claudedoc"
 CLAUDE_DIR="$HOME/.claude"
 STAMP="$(date +%Y%m%d%H%M%S)"
+
+# One-time migration: earlier installs used ~/.aki/claudedoc, a leftover from
+# this repo's pre-rename name (AkiClaudeDoc). Rename in place so an existing
+# install doesn't leave an orphaned duplicate directory sitting on disk.
+if [ -d "$LEGACY_INSTALL_ROOT" ] && [ ! -e "$INSTALL_ROOT" ]; then
+  mv "$LEGACY_INSTALL_ROOT" "$INSTALL_ROOT"
+  echo -e "📦 Migrated legacy install root: $LEGACY_INSTALL_ROOT → $INSTALL_ROOT"
+fi
 
 backup() {
   if [ -e "$1" ]; then
@@ -379,7 +388,7 @@ sync_aki_skills() {
 GEMINI_SKILLS_DIR="$GEMINI_DIR/config/skills"
 sync_aki_skills "$GEMINI_SKILLS_DIR"
 
-# 2. Secondary: sync to ~/.aki/claudedoc/agskills & register both absolute and tilde paths in skills.json
+# 2. Secondary: sync to ~/.aki/akidevrule/agskills & register both absolute and tilde paths in skills.json
 sync_aki_skills "$INSTALL_ROOT/agskills"
 
 python3 - <<'PY'
@@ -397,8 +406,8 @@ if skills_json.exists():
 if not isinstance(data.get('entries'), list):
     data['entries'] = []
 
-abs_path = str(pathlib.Path.home() / ".aki" / "claudedoc" / "agskills")
-tilde_path = "~/.aki/claudedoc/agskills"
+abs_path = str(pathlib.Path.home() / ".aki" / "akidevrule" / "agskills")
+tilde_path = "~/.aki/akidevrule/agskills"
 
 for p in [abs_path, tilde_path]:
     if not any(isinstance(e, dict) and e.get('path') == p for e in data['entries']):
@@ -433,9 +442,12 @@ if not isinstance(perms.get('additionalDirectories'), list):
     perms['additionalDirectories'] = []
 
 read_rule = f'Read(//{install_root.lstrip("/")}/**)'
-perms['allow'] = [item for item in perms['allow'] if item != read_rule]
+legacy_read_rule = f'Read(//{str(pathlib.Path.home() / ".aki" / "claudedoc").lstrip("/")}/**)'
+perms['allow'] = [item for item in perms['allow'] if item not in (read_rule, legacy_read_rule)]
 perms['allow'].append(read_rule)
 
+legacy_install_root = str(pathlib.Path.home() / ".aki" / "claudedoc")
+perms['additionalDirectories'] = [d for d in perms['additionalDirectories'] if d != legacy_install_root]
 if install_root not in perms['additionalDirectories']:
     perms['additionalDirectories'].append(install_root)
 

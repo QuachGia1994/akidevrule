@@ -13,7 +13,7 @@ Small, reversible, low-cost-of-error decisions should just be decided. Casual "s
 
 ## Toolbox
 
-At session start, Read `~/.aki/claudedoc/METHOD-deep-think.md`. It is the toolbox for every phase below — do not re-derive the modules from memory.
+At session start, Read `~/.aki/akidevrule/METHOD-deep-think.md`. It is the toolbox for every phase below — do not re-derive the modules from memory.
 
 ## Phase 0 — model check
 
@@ -44,7 +44,7 @@ Converge into a decision record with:
 - assumptions to monitor going forward
 
 Then:
-1. **Always propose writing a decision record** under `docs/`, following `RULE-docs.md` conventions (read `~/.aki/claudedoc/RULE-docs.md` to align the exact path and lifecycle — typically `docs/research/` for the record of how the decision was reached, or `docs/plan/` if it converts directly into an execution plan).
+1. **Always propose writing a decision record** under `docs/`, following `RULE-docs.md` conventions (read `~/.aki/akidevrule/RULE-docs.md` to align the exact path and lifecycle — typically `docs/research/` for the record of how the decision was reached, or `docs/plan/` if it converts directly into an execution plan).
 2. **If** the converged material is large or complex (many decision points, several rejected options, interlocking tradeoffs), additionally suggest `/akihtmlreport` to visualize it. The docs file is the durable source of truth; the HTML is a view, not a replacement — do not suggest the HTML report as a substitute for writing the doc.
 
 ## Interaction rules

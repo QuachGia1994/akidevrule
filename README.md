@@ -38,7 +38,7 @@ This Git repository is the source of truth; `dev.akitao.com` is the presentation
 - **Tier 2 — Contextual, read on signal match:** the constraint rules `RULE-design-core.md` (loaded high-sensitivity — any structural/decomposition decision), `RULE-docs.md` (structure and lifecycle, plus the docs-vs-code drift audit), `RULE-content-write.md`, `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context), `RULE-ui-pattern.md`, `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md`, `RULE-biz.md` (market-facing decisions: positioning, pricing, audience) — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 2): `METHOD-flow-audit.md` (refactors, multi-file bugs, fragile flows), `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking), and `METHOD-ux-psych.md` (UX/user-behavior evaluation, onboarding and conversion flows).
 - **Tier 3 — Full load on explicit command:** `nạp full` / `load all rules` reads every `RULE-*`/`METHOD-*` file at once.
 
-No harness magic: Tier 1 uses the `@path` embed syntax; Tier 2 is trigger instructions telling Claude to Read the file from `~/.aki/claudedoc/` when signals match; Tier 3 is the explicit-command escape hatch.
+No harness magic: Tier 1 uses the `@path` embed syntax; Tier 2 is trigger instructions telling Claude to Read the file from `~/.aki/akidevrule/` when signals match; Tier 3 is the explicit-command escape hatch.
 
 ### Addressing — `topic.A1`, and the `⟨Aki⟩` flag
 
@@ -62,7 +62,7 @@ A `SessionStart` hook compares the installed `CHANGELOG.md` against the public r
 ## Repository layout
 
 ```text
-payload/                          → installed to ~/.aki/claudedoc/
+payload/                          → installed to ~/.aki/akidevrule/
   index.md
   RULE-agent-behavior.md
   RULE-coding.md
@@ -115,8 +115,8 @@ flowchart TD
     INSTALL["⚙️ install.sh"]
     SRC --> INSTALL
 
-    %% TARGET 1: ~/.aki/claudedoc/
-    subgraph T1["📂 1. Shared SSOT Rule Corpus (~/.aki/claudedoc/)"]
+    %% TARGET 1: ~/.aki/akidevrule/
+    subgraph T1["📂 1. Shared SSOT Rule Corpus (~/.aki/akidevrule/)"]
         R_CORPUS["*.md (Raw payload rules)"]
         R_AGSKILLS["agskills/ (Shared skill tree for AG)"]
         R_META[".source-repo & .version"]
@@ -145,12 +145,12 @@ flowchart TD
     INSTALL -->|"deploy native rules, skills & skills.json"| T3
 ```
 
-1. Syncs `payload/*` into `~/.aki/claudedoc/` (rsync, excludes `ref-ECC/`), removing stale files left by renames, and syncs `agskills/` for Antigravity skill inheritance.
+1. Syncs `payload/*` into `~/.aki/akidevrule/` (rsync, excludes `ref-ECC/`), removing stale files left by renames, and syncs `agskills/` for Antigravity skill inheritance.
 2. Syncs every skill folder under `skills/*/` (whole directory, including any `references/`) into `~/.claude/skills/`, one named folder at a time via `rsync --delete`, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched. `skills/` is a top-level, agent-neutral folder (siblings with `payload/`, not nested under `claude/`) because SKILL.md is a shared open standard both Claude Code and Antigravity/AGY consume identically — see [docs/ref/agent-skills-standard.md](docs/ref/agent-skills-standard.md).
 3. Replaces `~/.claude/CLAUDE.md` with the packaged guidance (timestamped backup first), appending this machine's source-repo path and an `@~/.claude/CLAUDE.local.md` import.
 4. Creates `~/.claude/CLAUDE.local.md` **only if missing** — never overwritten afterward. Put per-machine rules there (build constraints, IDE paths, remote flags); they survive every reinstall.
-5. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/claudedoc/**`, `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.
-6. Installs `~/.claude/hooks/aki-update-check.py` and records the source-repo path in `~/.aki/claudedoc/.source-repo`.
+5. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/akidevrule/**`, `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.
+6. Installs `~/.claude/hooks/aki-update-check.py` and records the source-repo path in `~/.aki/akidevrule/.source-repo`.
 7. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 15 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 7 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), and configures `~/.gemini/config/skills.json` with absolute paths as secondary.
 
 Re-running the installer updates the same managed files cleanly.
@@ -166,14 +166,14 @@ Claude Code loads the rule corpus automatically (harness-guaranteed `@`-imports 
 - Automatic download/install logic — the update hook is strictly notify-only.
 - Any skill, rule, or file you already have that isn't part of this repo's managed set — every sync (Claude Code and Antigravity skill directories included) touches only the paths/names akidevrule itself owns, never a blanket directory wipe.
 
-## Why `~/.aki/claudedoc`
+## Why `~/.aki/akidevrule`
 
 No sudo, user-local, easy to inspect and delete, consistent with the Aki ecosystem namespace.
 
 ## Uninstall
 
 ```bash
-rm -rf ~/.aki/claudedoc
+rm -rf ~/.aki/akidevrule
 rm -rf ~/.claude/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,aki-article-writer}
 rm -f  ~/.claude/hooks/aki-update-check.py
 rm -f  ~/.gemini/GEMINI.md          # restore from a *.akidevrule-backup-* if needed; GEMINI.local.md is left untouched

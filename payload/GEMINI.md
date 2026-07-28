@@ -32,7 +32,7 @@ These directives patch Antigravity's known weak spots. They are hard-loaded (no 
 - If you find an improvement outside scope, PROPOSE it — do NOT implement it silently.
 
 ## 3. Always comply with the akirule corpus — and with rule 0
-- The shared rule corpus installed at `~/.aki/claudedoc/` ("akirule") applies to you, not only to other agents. When a task touches an area it covers, follow it.
+- The shared rule corpus installed at `~/.aki/akidevrule/` ("akirule") applies to you, not only to other agents. When a task touches an area it covers, follow it.
 - **Re-assertion of rule 0, by design:** whatever else you are doing, you comply with the prime directive. Never act outside the requested scope.
 
 ## 4. Rule 0 again — no unrequested action, at any cost
