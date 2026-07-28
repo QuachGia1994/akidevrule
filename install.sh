@@ -173,7 +173,7 @@ for skill_dir in "$REPO_ROOT"/claude/skills/*/; do
   [ -d "$skill_dir" ] || continue
   skill_name="$(basename "$skill_dir")"
   mkdir -p "$CLAUDE_DIR/skills/$skill_name"
-  cp "$skill_dir/SKILL.md" "$CLAUDE_DIR/skills/$skill_name/SKILL.md"
+  rsync -a --delete "$skill_dir" "$CLAUDE_DIR/skills/$skill_name/"
 done
 
 # Install the notify-only update-check hook and record this machine's source

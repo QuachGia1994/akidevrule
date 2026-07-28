@@ -12,16 +12,17 @@ This Git repository is the source of truth; `dev.akitao.com` is the presentation
 
 ## What you get
 
-### Six skills
+### Seven skills
 
 | Skill | Invoke | Purpose |
 |---|---|---|
 | `akirule` | automatic, every conversation | Smart rule router — loads core rules always, contextual rules on signal match, everything on `nạp full` / `load all rules`. Hidden from the `/` menu by design. |
-| `akiflow` | `/akiflow` | Sized multi-agent delivery pipeline. A strict sizing gate classifies the request into Tier 0 (direct, the default), Tier 1 (Architect plan + adversarial Reviewer), or Tier 2 (adds business/UX counsel), spawns only the specialists that tier needs, and hands work between stages through `docs/` files — never chat context. An orthogonal `mode=audit` track fans out one read-only agent per rule domain to inspect existing state instead of building. |
+| `akiflow` | `/akiflow` | Lead-coordinated specialist board for work needing more than one kind of judgment. The session agent decomposes the request into owned work items, checks a three-condition activation gate, then convenes a named roster in one batch — each specialist carrying a mandatory first-principles + critical-thinking floor and messaging peers directly. Mechanism follows the shortfall: fork for continuity, clean subagent for independence, cheap model for bandwidth. Analysis and execution are separate phases with an explicit decision gate; verification is forked, adversarial review never is. An orthogonal `mode=audit` track fans out one read-only agent per rule domain. Design record: [`docs/arch/akiflow.md`](docs/arch/akiflow.md). |
 | `akithink` | `/akithink` | Structured deep-thinking session for big, hard-to-reverse, or goal-ambiguous decisions: restate → goal excavation → first principles → mandatory critique → convergence into a `docs/` decision record. Recommends a top-tier model (Opus/Fable). |
 | `akihtmlreport` | `/akihtmlreport` | Distills a dense analysis already in the conversation into one self-contained, ultra-wide `REPORT.html` at the project root — no new analysis, no dropped detail — then opens it locally. Exactly one per project; asks before overwriting. |
 | `akihelp` | `/akihelp` | Live introduction to the whole installed Aki system, rendered by reading `index.md` and skill frontmatters at runtime — it can never go stale. |
 | `akigitcommit` | `/akigitcommit` | Turns a messy working tree into a few clean, logically grouped Conventional Commits. Triages a half-finished tree first — finished vs mid-edit vs abandoned vs accidental, asking rather than guessing — then stages by explicit path, never `git add -A`, never pushes unasked. |
+| `aki-article-writer` | `/aki-article-writer` or natural language | Per-project article writing pipeline: research & fact-verification, SEO metadata, JSON-LD schema, UX-psychology-aware content, and a dedicated Image Scout subagent (Gemini Flash / Haiku) for search → download → visual inspection → ffmpeg processing → slug-named WebP output. One subagent per article; image work is always isolated to a separate lightweight subagent. |
 
 ### A rule corpus that routes itself
 
@@ -88,6 +89,8 @@ claude/                           → installed to ~/.claude/
   skills/akihtmlreport/SKILL.md
   skills/akihelp/SKILL.md
   skills/akigitcommit/SKILL.md
+  skills/aki-article-writer/SKILL.md
+  skills/aki-article-writer/references/article-workflow.md
   hooks/aki-update-check.py
   fragments/settings.akidoc.fragment.json   (illustrative reference only — never apply manually)
 
@@ -101,7 +104,7 @@ flowchart TD
     subgraph SRC["📦 Source: akidevrule Repo"]
         PAYLOAD["payload/ (15 raw rule files)"]
         PGEMINI["payload/GEMINI.md (template)"]
-        CSKILLS["claude/skills/ (6 skills)"]
+        CSKILLS["claude/skills/ (7 skills)"]
         CCLAUDE["claude/CLAUDE.md (template)"]
         CHOOKS["claude/hooks/aki-update-check.py"]
     end
@@ -130,7 +133,7 @@ flowchart TD
         G_MD["GEMINI.md (Managed prompt global)"]
         G_LOCAL["GEMINI.local.md (Machine local)"]
         G_RULES["config/rules/akirule-*.md (15 rules with YAML trigger)"]
-        G_SKILLS["config/skills/ (6 skills, native auto-discovery)"]
+        G_SKILLS["config/skills/ (7 skills, native auto-discovery)"]
         G_SJSON["config/skills.json (Inherits agskills, absolute path)"]
     end
 
@@ -140,12 +143,12 @@ flowchart TD
 ```
 
 1. Syncs `payload/*` into `~/.aki/claudedoc/` (rsync, excludes `ref-ECC/`), removing stale files left by renames, and syncs `agskills/` for Antigravity skill inheritance.
-2. Copies every skill under `claude/skills/*/` into `~/.claude/skills/`, one named folder at a time, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched.
+2. Syncs every skill folder under `claude/skills/*/` (whole directory, including any `references/`) into `~/.claude/skills/`, one named folder at a time via `rsync --delete`, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched.
 3. Replaces `~/.claude/CLAUDE.md` with the packaged guidance (timestamped backup first), appending this machine's source-repo path and an `@~/.claude/CLAUDE.local.md` import.
 4. Creates `~/.claude/CLAUDE.local.md` **only if missing** — never overwritten afterward. Put per-machine rules there (build constraints, IDE paths, remote flags); they survive every reinstall.
 5. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/claudedoc/**`, `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.
 6. Installs `~/.claude/hooks/aki-update-check.py` and records the source-repo path in `~/.aki/claudedoc/.source-repo`.
-7. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 15 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 6 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), and configures `~/.gemini/config/skills.json` with absolute paths as secondary.
+7. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 15 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 7 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), and configures `~/.gemini/config/skills.json` with absolute paths as secondary.
 
 Re-running the installer updates the same managed files cleanly.
 
@@ -168,7 +171,7 @@ No sudo, user-local, easy to inspect and delete, consistent with the Aki ecosyst
 
 ```bash
 rm -rf ~/.aki/claudedoc
-rm -rf ~/.claude/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit}
+rm -rf ~/.claude/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,aki-article-writer}
 rm -f  ~/.claude/hooks/aki-update-check.py
 rm -f  ~/.gemini/GEMINI.md          # restore from a *.akidevrule-backup-* if needed; GEMINI.local.md is left untouched
 ```
