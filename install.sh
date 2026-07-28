@@ -45,7 +45,7 @@ inspect_status() {
     echo -e "📝 Global CLAUDE.md: will \033[1;32mCREATE\033[0m $CLAUDE_DIR/CLAUDE.md"
   fi
 
-  for skill_dir in "$REPO_ROOT"/claude/skills/*/; do
+  for skill_dir in "$REPO_ROOT"/skills/*/; do
     [ -d "$skill_dir" ] || continue
     skill_name="$(basename "$skill_dir")"
     if [ -f "$CLAUDE_DIR/skills/$skill_name/SKILL.md" ]; then
@@ -169,7 +169,7 @@ cp "$REPO_ROOT/CHANGELOG.md" "$INSTALL_ROOT/CHANGELOG.md"
   fi
 } > "$INSTALL_ROOT/.version"
 
-for skill_dir in "$REPO_ROOT"/claude/skills/*/; do
+for skill_dir in "$REPO_ROOT"/skills/*/; do
   [ -d "$skill_dir" ] || continue
   skill_name="$(basename "$skill_dir")"
   mkdir -p "$CLAUDE_DIR/skills/$skill_name"
@@ -364,7 +364,7 @@ echo -e "🧭 Installed $ag_rules_written rule(s) to $GEMINI_RULES_DIR (read by 
 sync_aki_skills() {
   local dest_root="$1"
   mkdir -p "$dest_root"
-  for skill_dir in "$REPO_ROOT"/claude/skills/*/; do
+  for skill_dir in "$REPO_ROOT"/skills/*/; do
     [ -d "$skill_dir" ] || continue
     skill_name="$(basename "$skill_dir")"
     mkdir -p "$dest_root/$skill_name"

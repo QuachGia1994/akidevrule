@@ -19,8 +19,10 @@ akidevrule/
   payload/
     index.md, RULE-*.md, METHOD-*.md   → the rule corpus (Claude Code consumes this)
     GEMINI.md                          → Gemini/Antigravity global behavior overrides (NOT a rule file)
+  skills/                              → shared Agent Skills corpus (SKILL.md open standard); deployed
+                                          unmodified to both agents, see docs/ref/agent-skills-standard.md
   claude/
-    CLAUDE.md, skills/, hooks/         → Claude Code runtime assets
+    CLAUDE.md, hooks/                  → Claude Code-only runtime assets
   GEMINI.md (repo root)                → per-project bootstrap template (copied into a project by hand)
   install.sh                           → installs all of the above onto a machine
 ```
@@ -37,13 +39,15 @@ flowchart TD
     subgraph SRC["akidevrule repo — source of truth"]
         P["payload/ RULE-*.md · METHOD-*.md · index.md"]
         PG["payload/GEMINI.md<br/>AG overrides + version marker"]
-        CCSRC["claude/ CLAUDE.md · skills · hooks"]
+        SKSRC["skills/ (shared open standard)"]
+        CCSRC["claude/ CLAUDE.md · hooks"]
         BOOT["GEMINI.md (root)<br/>per-project bootstrap template"]
     end
 
     INSTALL["install.sh"]
     P --> INSTALL
     PG --> INSTALL
+    SKSRC --> INSTALL
     CCSRC --> INSTALL
 
     INSTALL -->|"rsync, excludes GEMINI.md"| RULES["~/.aki/claudedoc/*.md<br/>rule corpus"]

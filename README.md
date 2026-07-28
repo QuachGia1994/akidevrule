@@ -81,16 +81,19 @@ payload/                          → installed to ~/.aki/claudedoc/
   METHOD-ux-psych.md
   GEMINI.md                       → installed to ~/.gemini/GEMINI.md (NOT a rule file)
 
-claude/                           → installed to ~/.claude/
+skills/                            → shared Agent Skills corpus (SKILL.md open standard), deployed
+                                     unmodified to BOTH ~/.claude/skills/ and ~/.gemini/config/skills/
+  akirule/SKILL.md
+  akiflow/SKILL.md
+  akithink/SKILL.md
+  akihtmlreport/SKILL.md
+  akihelp/SKILL.md
+  akigitcommit/SKILL.md
+  aki-article-writer/SKILL.md
+  aki-article-writer/references/article-workflow.md
+
+claude/                           → Claude Code-only runtime assets, installed to ~/.claude/
   CLAUDE.md
-  skills/akirule/SKILL.md
-  skills/akiflow/SKILL.md
-  skills/akithink/SKILL.md
-  skills/akihtmlreport/SKILL.md
-  skills/akihelp/SKILL.md
-  skills/akigitcommit/SKILL.md
-  skills/aki-article-writer/SKILL.md
-  skills/aki-article-writer/references/article-workflow.md
   hooks/aki-update-check.py
   fragments/settings.akidoc.fragment.json   (illustrative reference only — never apply manually)
 
@@ -104,7 +107,7 @@ flowchart TD
     subgraph SRC["📦 Source: akidevrule Repo"]
         PAYLOAD["payload/ (15 raw rule files)"]
         PGEMINI["payload/GEMINI.md (template)"]
-        CSKILLS["claude/skills/ (7 skills)"]
+        CSKILLS["skills/ (7 skills, shared open standard)"]
         CCLAUDE["claude/CLAUDE.md (template)"]
         CHOOKS["claude/hooks/aki-update-check.py"]
     end
@@ -143,7 +146,7 @@ flowchart TD
 ```
 
 1. Syncs `payload/*` into `~/.aki/claudedoc/` (rsync, excludes `ref-ECC/`), removing stale files left by renames, and syncs `agskills/` for Antigravity skill inheritance.
-2. Syncs every skill folder under `claude/skills/*/` (whole directory, including any `references/`) into `~/.claude/skills/`, one named folder at a time via `rsync --delete`, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched.
+2. Syncs every skill folder under `skills/*/` (whole directory, including any `references/`) into `~/.claude/skills/`, one named folder at a time via `rsync --delete`, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched. `skills/` is a top-level, agent-neutral folder (siblings with `payload/`, not nested under `claude/`) because SKILL.md is a shared open standard both Claude Code and Antigravity/AGY consume identically — see [docs/ref/agent-skills-standard.md](docs/ref/agent-skills-standard.md).
 3. Replaces `~/.claude/CLAUDE.md` with the packaged guidance (timestamped backup first), appending this machine's source-repo path and an `@~/.claude/CLAUDE.local.md` import.
 4. Creates `~/.claude/CLAUDE.local.md` **only if missing** — never overwritten afterward. Put per-machine rules there (build constraints, IDE paths, remote flags); they survive every reinstall.
 5. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/claudedoc/**`, `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.

@@ -11,6 +11,12 @@ Topic folders follow `RULE-docs.A2`. Only the folders that currently hold conten
 | [rule-delivery-architecture.md](arch/rule-delivery-architecture.md) | How one rule source is installed onto a machine and consumed by the two agent families (Claude Code vs Gemini/Antigravity). |
 | [akiflow.md](arch/akiflow.md) | Why `/akiflow` is shaped as a lead-coordinated specialist board: the three single-thread failures it targets, the work item as atomic unit, the harness facts (sibling-roster snapshot, fork context inheritance, subagent resume) the design rests on, the verification-vs-review boundary, and the seven structural failure modes. |
 
+## `ref/` — stable references & lookup docs
+
+| Doc | Purpose |
+|-----|---------|
+| [agent-skills-standard.md](ref/agent-skills-standard.md) | Verified: `SKILL.md` is a shared open standard between Claude Code and Antigravity/AGY, zero per-agent transformation — the reason `skills/` moved out of `claude/` to a top-level, agent-neutral folder. |
+
 ## `plan/` — active plans
 
 | Doc | Status | Purpose |

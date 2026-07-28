@@ -12,7 +12,8 @@ Treat this repository as a standards distribution project, not as an application
 
 - Edit canonical rule and skill content in this Git repository first.
 - `payload/` contains the packaged Aki rule corpus installed to `~/.aki/claudedoc`.
-- `claude/` contains Claude Code runtime assets installed to `~/.claude`.
+- `skills/` contains the shared Agent Skills corpus (the `SKILL.md` open standard) deployed unmodified to both `~/.claude/skills/` and `~/.gemini/config/skills/` — see `docs/ref/agent-skills-standard.md`.
+- `claude/` contains Claude Code-only runtime assets (CLAUDE.md template, hooks, settings fragment) installed to `~/.claude`.
 - `README.md` documents the architecture, file conventions, and install flow for both humans and agents. Read it when you need to understand the full layout or how the smart router works. It is not an agent instruction file — it does not override this CLAUDE.md.
 
 ## File naming conventions
@@ -21,11 +22,11 @@ Files in `payload/` follow this convention:
 - `RULE-*.md` — constraint rules: behavior, coding, content, stack requirements.
 - `METHOD-*.md` — analytical frameworks loaded on demand for auditing or optimization tasks.
 
-Do not rename existing files or introduce new top-level prefixes without updating `payload/index.md`, `claude/skills/akirule/SKILL.md`, `claude/CLAUDE.md`, `README.md`, and `install.sh` consistently.
+Do not rename existing files or introduce new top-level prefixes without updating `payload/index.md`, `skills/akirule/SKILL.md`, `claude/CLAUDE.md`, `README.md`, and `install.sh` consistently.
 
 ## Content language
 
-`payload/` and `claude/` are **PUBLIC**, distributed to many users — not just Aki's own. All authored content, including section/group headers (`## A. …`), must be English. Vietnamese is allowed only in these narrow, functional cases:
+`payload/`, `skills/`, and `claude/` are **PUBLIC**, distributed to many users — not just Aki's own. All authored content, including section/group headers (`## A. …`), must be English. Vietnamese is allowed only in these narrow, functional cases:
 - keyword/signal lists that must match a Vietnamese-speaking user's actual words (e.g. Tier 2 routing keywords in `akirule/SKILL.md`)
 - a worked example that specifically needs Vietnamese text to illustrate the point (e.g. accented-vs-unaccented SEO queries, NFC normalization of a Vietnamese name)
 - a literal trigger phrase the user actually types (e.g. `nạp full`, `commit luôn`)
@@ -38,7 +39,7 @@ A ready-to-paste prompt template (e.g. in `payload/GEMINI.md`) must not hardcode
 - Keep project instructions short and bind them to the current repository instead of duplicating the full shared rule corpus.
 - Changes to rules, skills, install targets, or generated Claude configuration can affect many downstream environments; clarify scope and tradeoffs before broad changes unless the requested edit is explicit.
 - Preserve the separation between packaged source files in this repository and installed runtime files under `~/.aki/claudedoc` or `~/.claude`.
-- Any change to `payload/*` or `claude/skills/*` that adds/removes a topic, changes what a file covers, or changes install behavior must also update `README.md` (file manifest / "What you get" / layout sections) wherever the change makes it stale. `claude/skills/akihelp/SKILL.md` reads live installed state at runtime and never needs manual updates for content — only touch it if the *mechanism* of introducing the system changes. Always update `CHANGELOG.md` for every change to `payload/` or `claude/`.
+- Any change to `payload/*` or `skills/*` that adds/removes a topic, changes what a file covers, or changes install behavior must also update `README.md` (file manifest / "What you get" / layout sections) wherever the change makes it stale. `skills/akihelp/SKILL.md` reads live installed state at runtime and never needs manual updates for content — only touch it if the *mechanism* of introducing the system changes. Always update `CHANGELOG.md` for every change to `payload/`, `skills/`, or `claude/`.
 
 ## Non-goals
 

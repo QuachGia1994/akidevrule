@@ -1,6 +1,6 @@
 # Architecture — akiflow, a lead-coordinated specialist board
 
-`/akiflow` is the multi-agent skill in this baseline. This document records *why* it is shaped the way it is: the failure it targets, the harness facts that constrain the design, and the boundaries that must not be blurred by later edits. The runnable contract lives in `claude/skills/akiflow/SKILL.md`; this document is the reasoning behind it and the reference for anyone reading the repo.
+`/akiflow` is the multi-agent skill in this baseline. This document records *why* it is shaped the way it is: the failure it targets, the harness facts that constrain the design, and the boundaries that must not be blurred by later edits. The runnable contract lives in `skills/akiflow/SKILL.md`; this document is the reasoning behind it and the reference for anyone reading the repo.
 
 ## The failure being targeted
 

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- **Breaking (repo layout): `claude/skills/*` moved to top-level `skills/*`.** Verified via web research that Agent Skills (`SKILL.md` + YAML frontmatter + optional `references/`/`scripts/`/`assets/`) is a shared open standard both Claude Code and Antigravity/AGY natively consume, byte-for-byte, with zero per-agent transformation — unlike `payload/` rules, which do need per-agent frontmatter generation for Antigravity. Nesting skills under `claude/` mislabeled them as Claude-only when the install pipeline already deployed the same folder unmodified to both `~/.claude/skills/` and `~/.gemini/config/skills/`. `skills/` is now a sibling of `payload/`, matching the existing shared-source pattern; `claude/` keeps only genuinely Claude-only assets (`CLAUDE.md` template, hooks, settings fragment). Updated: `install.sh` (3 path references), `README.md` (layout block, mermaid diagram, installer-step prose), root `CLAUDE.md`, `claude/CLAUDE.md`, `docs/arch/akiflow.md`, `docs/arch/rule-delivery-architecture.md`, `docs/plan/improve-jun24.md`. Findings and sources recorded in `docs/ref/agent-skills-standard.md`. Deployed target paths (`~/.claude/skills/`, `~/.gemini/config/skills/`) are unchanged — this only affects the source repo layout; a machine that re-runs `install.sh` needs no manual migration.
+
 ### Fixed
 - `install.sh` Claude Code skill deploy step copied only `SKILL.md`, silently dropping any `references/` subfolder — harmless for the first six skills (flat layout) but broke `aki-article-writer`'s progressive-disclosure layout on Claude Code specifically (Gemini/AGY were already unaffected, since their skill sync used `rsync` on the whole folder). Now uses `rsync -a --delete` on the whole skill directory, same as the Antigravity sync path. README installer-steps text and skill-count mentions (6 → 7) updated to match.
 
