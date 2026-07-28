@@ -1,0 +1,38 @@
+{
+  "about": "https://github.com/lacvietanh/aki-dev-sync",
+  "schema": 1,
+  "notes": "",
+  "tasks": [
+    {
+      "created_at": 1783161634342,
+      "detail": "bám theo các quy tắc khắt khe:\n- coding PRO PATTERN  [cái này đặc biệt phải làm thật kỹ]\n- content rule\n- Dò theo các logic flow tìm deadcode, redudant guard,\n- Docs rule:  drift code với docs, tính năng phức tạp mà chưa có feat|arch tương ứng",
+      "done": false,
+      "id": "task-1783161634342",
+      "pin": true,
+      "title": "bổ sung một skill có quy trình để kiểm tra chặt chẽ mọi thứ lần lượt tuần tự ",
+      "updated_at": 1783161635962,
+      "wish": false
+    },
+    {
+      "created_at": 1783409658609,
+      "detail": "",
+      "done": true,
+      "id": "task-1783409658609",
+      "pin": false,
+      "title": "IMPORTANT: TÁCH BẠCH SHARED PUBLIC AKIRULE VÀ UNIDOC STANDARD cho riêng mình",
+      "updated_at": 1783410944411,
+      "wish": false
+    },
+    {
+      "created_at": 1784707369088,
+      "detail": "CRITICAL: ALWAYS MAKE SURE\u0000",
+      "done": false,
+      "id": "task-1784707369088",
+      "pin": false,
+      "title": "RULE CSS popup hover",
+      "updated_at": 1784707369088,
+      "wish": false
+    }
+  ],
+  "updated_at": 1785147271287
+}
