@@ -9,6 +9,7 @@ Topic folders follow `RULE-docs.A2`. Only the folders that currently hold conten
 | Doc | Purpose |
 |-----|---------|
 | [rule-delivery-architecture.md](arch/rule-delivery-architecture.md) | How one rule source is installed onto a machine and consumed by the two agent families (Claude Code vs Gemini/Antigravity). |
+| [akiflow.md](arch/akiflow.md) | Why `/akiflow` is shaped as a lead-coordinated specialist board: the three single-thread failures it targets, the work item as atomic unit, the harness facts (sibling-roster snapshot, fork context inheritance, subagent resume) the design rests on, the verification-vs-review boundary, and the seven structural failure modes. |
 
 ## `plan/` — active plans
 
@@ -24,7 +25,7 @@ Topic folders follow `RULE-docs.A2`. Only the folders that currently hold conten
 | [release-a5-review.md](plan/done/release-a5-review.md) | `RULE-release.md` §A5 — atomic bump+tag+build for Tauri/artifact apps + pre-bump guard. |
 | [versioning-principle-rewrite.md](plan/done/versioning-principle-rewrite.md) | Versioning rewrite applied to `RULE-release.md` A4/B1–B3: cold-start reconstruction, severity-driven bump, anti-skip invariant, audit mode. |
 | [naming-rule-consolidation.md](plan/done/naming-rule-consolidation.md) | Consolidated naming rules into one callable address (`design.A7` root + domain applications). |
-| [akiflow-skill.md](plan/done/akiflow-skill.md) | Design record for `/akiflow` — sized multi-agent pipeline (3-tier gate, docs-as-handoff, roster grounded in RULE-biz + METHOD-ux-psych), thresholds calibrated against 60 days of real git activity. |
+| [akiflow-skill.md](plan/done/akiflow-skill.md) | Original design record for `/akiflow` — sized multi-agent pipeline (3-tier gate, docs-as-handoff, roster grounded in RULE-biz + METHOD-ux-psych), thresholds calibrated against 60 days of real git activity. **Historical:** the skill was later rewritten as a lead-coordinated specialist board; current design lives in [arch/akiflow.md](arch/akiflow.md). |
 
 ## `research/` — decision records & exploratory findings
 
