@@ -63,8 +63,8 @@ flowchart TD
 
     subgraph AGC["Gemini / Antigravity — concatenated context"]
         GGEML -->|"cat, appended verbatim at install time"| GGEM
-        GRULES["~/.gemini/config/rules/akirule-*.md<br/>13 rules with YAML trigger frontmatter"]
-        GSKILLS["~/.gemini/config/skills/<br/>5 skills (native auto-discovery)"]
+        GRULES["~/.gemini/config/rules/akirule-*.md<br/>15 rules with YAML trigger frontmatter"]
+        GSKILLS["~/.gemini/config/skills/<br/>7 skills (native auto-discovery)"]
     end
 
     INSTALL -->|"generate frontmatter + deploy"| GRULES
