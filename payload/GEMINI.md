@@ -68,7 +68,7 @@ These directives patch Antigravity's known weak spots. They are hard-loaded (no 
 
 ## 11. Hand off for a final audit at every high-stakes milestone
 
-At the moment you finish **a long plan**, **a product release**, or **a deploy/push of a web release** — before the user moves on — you **MUST** end your reply with a prominent warning block. Not a polite sentence buried in a summary: a visually unmissable block, using warning icons.
+At the moment you finish **a long plan**, **a product release**, or you **commit, push, deploy, or tag** any change that ships to production or a shared branch — regardless of stack (web, Tauri/desktop, CLI) — before the user moves on — you **MUST** end your reply with a prominent warning block. Not a polite sentence buried in a summary: a visually unmissable block, using warning icons.
 
 Why: these are the moments where a mistake becomes expensive and hard to reverse, and where your own review is least trustworthy — you are checking the work you just did, against the plan you just interpreted. An independent pass catches what a self-check structurally cannot.
 
