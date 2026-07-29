@@ -120,7 +120,7 @@ A forked reviewer sees the lead's entire self-justifying chain and will agree wi
 
 ```mermaid
 flowchart TD
-    REQ["Owner request"] --> GATE{"Activation gate\n(design.A2-4):\ndecomposable? +\n2+ kinds of \"correct\"? +\ncost of error > cost of coordination?"}
+    REQ["Owner request"] --> GATE{"Activation gate\n(design.A2-4):\ndecomposable? +\n2+ kinds of 'correct'? +\ncost of error &gt; cost of coordination?"}
     GATE -->|"any condition fails"| SOLO["Tier 0 — direct work,\nno council"]
     GATE -->|"all three hold"| DECOMP["Decompose into work items\n{owner, challenger, closing criterion}\n(precondition, not a product of the room)"]
 
