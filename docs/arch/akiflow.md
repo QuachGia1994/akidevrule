@@ -118,6 +118,42 @@ A forked reviewer sees the lead's entire self-justifying chain and will agree wi
 
 **Loop back.** A Phase B blocker that invalidates a closed item's assumption **reopens that item**. Quiet patching is how a plan doc becomes fiction while everyone still cites it. Reopening is cheap precisely because the roster is still alive.
 
+```mermaid
+flowchart TD
+    REQ["Owner request"] --> GATE{"Activation gate\n(design.A2-4):\ndecomposable? +\n2+ kinds of \"correct\"? +\ncost of error > cost of coordination?"}
+    GATE -->|"any condition fails"| SOLO["Tier 0 — direct work,\nno council"]
+    GATE -->|"all three hold"| DECOMP["Decompose into work items\n{owner, challenger, closing criterion}\n(precondition, not a product of the room)"]
+
+    DECOMP --> CONVENE["Convene named roster\nin one batch (sibling-roster snapshot)"]
+
+    subgraph PHASEA["Phase A — analysis room (chat.md, time order)"]
+        CONVENE --> ROOM["Specialists work items,\npeer-challenge via SendMessage"]
+        ROOM --> REDTEAM["Red Team attacks\nthe decomposition itself"]
+        REDTEAM --> STEER{"Lead steering signal?\n(re-covered ground / stalled criterion /\nmandate drift / cost > value)"}
+        STEER -->|"yes"| CHECKPOINT["Pinned CHECKPOINT line\nto drifting agents only"]
+        CHECKPOINT --> ROOM
+        STEER -->|"no, item closes"| CLOSE["Lead closes item\n+ <=3-line rationale -> checklist.md"]
+        CLOSE --> MORE{"Items remain open?"}
+        MORE -->|"yes"| ROOM
+    end
+
+    MORE -->|"no"| DECGATE{"Escalate to owner?\n(one-way door /\ncontradicts docs-biz-design /\nscope expansion)"}
+    DECGATE -->|"yes"| OWNER["Owner decision\n(never handed back as an open question)"]
+    DECGATE -->|"no"| PHASEB
+
+    subgraph PHASEB["Phase B — execution"]
+        PHASEB["Fork implements"] --> FANOUT["Cheap subagents fan out\n(mechanical, bandwidth-limited work)"]
+        FANOUT --> VERIFY["Fork verifies\n(mechanical: did I do what I said)"]
+        VERIFY --> REVIEW["Clean strong subagent reviews\n(judgment: should this have been done)"]
+    end
+
+    REVIEW --> BLOCKER{"Blocker invalidates\na closed item's assumption?"}
+    BLOCKER -->|"yes"| REOPEN["Reopen that item\n(Phase A roster still on call)"]
+    REOPEN --> ROOM
+    BLOCKER -->|"no"| DONE["Done"]
+    OWNER --> PHASEB
+```
+
 ## The session workspace: three artifacts, never conflated
 
 A run lives in `~/.aki/agent-council/<project>/<YYYY.MM.DD-HHMM>-<slug>/`. It sits inside the Aki ecosystem rather than `/tmp` because a council record has value for days, not minutes — but that immediately raises the question `/tmp` used to answer for free: who deletes it. The answer is mechanical, not a rule anyone must remember: `scripts/council-open.sh` prunes sessions older than 30 days every time a run opens, matching the window Claude Code already uses for its own `projects/` directory, so the two age out on the same clock. The slug is the lead's, timestamp-prefixed for uniqueness, chosen to be recognisable a week later.

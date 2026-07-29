@@ -12,7 +12,7 @@ Treat this repository as a standards distribution project, not as an application
 
 - Edit canonical rule and skill content in this Git repository first.
 - `payload/` contains the packaged Aki rule corpus installed to `~/.aki/akidevrule`.
-- `skills/` contains the shared Agent Skills corpus (the `SKILL.md` open standard) deployed unmodified to both `~/.claude/skills/` and `~/.gemini/config/skills/` — see `docs/ref/agent-skills-standard.md`.
+- `skills/` contains the shared Agent Skills corpus (the `SKILL.md` open standard) deployed unmodified to `~/.claude/skills/`, `~/.gemini/config/skills/`, `~/.agents/skills/` (Codex CLI), `~/.kiro/skills/` (Kiro CLI), and `~/.grok/skills/` (Grok CLI) — see `docs/ref/agent-skills-standard.md`.
 - `claude/` contains Claude Code-only runtime assets (CLAUDE.md template, hooks, settings fragment) installed to `~/.claude`.
 - `README.md` documents the architecture, file conventions, and install flow for both humans and agents. Read it when you need to understand the full layout or how the smart router works. It is not an agent instruction file — it does not override this CLAUDE.md.
 
@@ -39,7 +39,9 @@ A ready-to-paste prompt template (e.g. in `payload/GEMINI.md`) must not hardcode
 - Keep project instructions short and bind them to the current repository instead of duplicating the full shared rule corpus.
 - Changes to rules, skills, install targets, or generated Claude configuration can affect many downstream environments; clarify scope and tradeoffs before broad changes unless the requested edit is explicit.
 - Preserve the separation between packaged source files in this repository and installed runtime files under `~/.aki/akidevrule` or `~/.claude`.
-- Any change to `payload/*` or `skills/*` that adds/removes a topic, changes what a file covers, or changes install behavior must also update `README.md` (file manifest / "What you get" / layout sections) wherever the change makes it stale. `skills/akihelp/SKILL.md` reads live installed state at runtime and never needs manual updates for content — only touch it if the *mechanism* of introducing the system changes. Always update `CHANGELOG.md` for every change to `payload/`, `skills/`, or `claude/`.
+- Any change to `payload/*` or `skills/*` that adds/removes a topic, changes what a file covers, or changes install behavior must also update `README.md` (file manifest / "What you get" / layout sections) wherever the change makes it stale.
+- **Any change to `skills/*` (add/remove/rename a skill, or change what a skill covers) must be checked against `skills/akihelp/SKILL.md`.** It reads live installed state at runtime and never needs a content update for the normal case — but when the *mechanism* of introducing the system changes (e.g. a new deploy surface, a new category of thing to introduce), update its steps, not just the other docs.
+- Always update `CHANGELOG.md` for every change to `payload/`, `skills/`, or `claude/`.
 
 ## Non-goals
 

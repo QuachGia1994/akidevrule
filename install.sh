@@ -7,6 +7,17 @@ LEGACY_INSTALL_ROOT="$HOME/.aki/claudedoc"
 CLAUDE_DIR="$HOME/.claude"
 STAMP="$(date +%Y%m%d%H%M%S)"
 
+# Skills are a shared open standard (SKILL.md, see docs/ref/agent-skills-standard.md)
+# consumed natively by several CLIs beyond Claude Code and Antigravity. Each entry
+# is a plain global skills root this installer keeps in sync; add a new CLI here
+# only once its own docs confirm the exact directory (see docs/research/ for the
+# sourcing per CLI — never guess a path).
+CODEX_SKILLS_DIR="$HOME/.agents/skills"   # OpenAI Codex CLI (global/personal scope)
+KIRO_SKILLS_DIR="$HOME/.kiro/skills"      # Kiro CLI
+GROK_SKILLS_DIR="$HOME/.grok/skills"      # Grok CLI (xAI)
+
+OLD_SKILLS=(akidoc-rules akidoc-flow-audit akidoc-techbiz-optimizer akiadvise)
+
 # One-time migration: earlier installs used ~/.aki/claudedoc, a leftover from
 # this repo's pre-rename name (AkiClaudeDoc). Rename in place so an existing
 # install doesn't leave an orphaned duplicate directory sitting on disk.
@@ -65,7 +76,7 @@ inspect_status() {
   done
 
   local old_skills=()
-  for s in akidoc-rules akidoc-flow-audit akidoc-techbiz-optimizer akiadvise; do
+  for s in "${OLD_SKILLS[@]}"; do
     [ -d "$CLAUDE_DIR/skills/$s" ] && old_skills+=("$s")
   done
   if [ ${#old_skills[@]} -gt 0 ]; then
@@ -143,10 +154,33 @@ PY
   done
 
   echo ""
+  echo -e "\033[1;36mOther CLI skill roots synced (harmless if that CLI isn't installed):\033[0m"
+  echo -e "  🤖 Codex CLI : $CODEX_SKILLS_DIR"
+  echo -e "  🤖 Kiro CLI  : $KIRO_SKILLS_DIR"
+  echo -e "  🤖 Grok CLI  : $GROK_SKILLS_DIR"
+
+  echo ""
   echo -e "\033[1;36mHooks deployed:\033[0m"
   echo -e "  📢 aki-update-check (SessionStart, notify-only) — notifies when a new rule version is available"
 
   echo -e "\n\033[1;32m==============================\033[0m"
+}
+
+# Sync is scoped PER skill name (never a blanket directory mirror): --delete only
+# ever prunes stale files *inside* a skill folder Aki itself owns. A user's own
+# unrelated skills sitting alongside them in the same directory are never touched.
+sync_aki_skills() {
+  local dest_root="$1"
+  mkdir -p "$dest_root"
+  for skill_dir in "$REPO_ROOT"/skills/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name="$(basename "$skill_dir")"
+    mkdir -p "$dest_root/$skill_name"
+    rsync -a --delete "$skill_dir" "$dest_root/$skill_name/"
+  done
+  for old_skill in "${OLD_SKILLS[@]}"; do
+    rm -rf "$dest_root/$old_skill"
+  done
 }
 
 inspect_status
@@ -178,22 +212,21 @@ cp "$REPO_ROOT/CHANGELOG.md" "$INSTALL_ROOT/CHANGELOG.md"
   fi
 } > "$INSTALL_ROOT/.version"
 
-for skill_dir in "$REPO_ROOT"/skills/*/; do
-  [ -d "$skill_dir" ] || continue
-  skill_name="$(basename "$skill_dir")"
-  mkdir -p "$CLAUDE_DIR/skills/$skill_name"
-  rsync -a --delete "$skill_dir" "$CLAUDE_DIR/skills/$skill_name/"
-done
+sync_aki_skills "$CLAUDE_DIR/skills"
+
+# Other CLIs that natively consume the same SKILL.md open standard (see
+# docs/ref/agent-skills-standard.md). Each root is synced unconditionally, same
+# as the Antigravity targets below — harmless if that CLI isn't installed on
+# this machine, and picked up the moment it is.
+sync_aki_skills "$CODEX_SKILLS_DIR"
+sync_aki_skills "$KIRO_SKILLS_DIR"
+sync_aki_skills "$GROK_SKILLS_DIR"
 
 # Install the notify-only update-check hook and record this machine's source
 # repo path so the hook can print the correct update command.
 mkdir -p "$CLAUDE_DIR/hooks"
 cp "$REPO_ROOT/claude/hooks/aki-update-check.py" "$CLAUDE_DIR/hooks/aki-update-check.py"
 printf '%s\n' "$REPO_ROOT" > "$INSTALL_ROOT/.source-repo"
-
-for old_skill in akidoc-rules akidoc-flow-audit akidoc-techbiz-optimizer akiadvise; do
-  rm -rf "$CLAUDE_DIR/skills/$old_skill"
-done
 
 # Explicit cleanup for renamed/removed payload files: rsync --delete already
 # removes anything no longer present under payload/, but keep an explicit
@@ -367,23 +400,6 @@ done <<< "$AG_RULE_MAP"
 echo -e "🧭 Installed $ag_rules_written rule(s) to $GEMINI_RULES_DIR (read by AG, AG IDE and AGY)"
 
 # --- Antigravity skills deployment & inheritance ---
-# Sync is scoped PER skill name (never a blanket directory mirror): --delete only
-# ever prunes stale files *inside* a skill folder Aki itself owns. A user's own
-# unrelated skills sitting alongside them in the same directory are never touched.
-sync_aki_skills() {
-  local dest_root="$1"
-  mkdir -p "$dest_root"
-  for skill_dir in "$REPO_ROOT"/skills/*/; do
-    [ -d "$skill_dir" ] || continue
-    skill_name="$(basename "$skill_dir")"
-    mkdir -p "$dest_root/$skill_name"
-    rsync -a --delete "$skill_dir" "$dest_root/$skill_name/"
-  done
-  for old_skill in akidoc-rules akidoc-flow-audit akidoc-techbiz-optimizer akiadvise; do
-    rm -rf "$dest_root/$old_skill"
-  done
-}
-
 # 1. Primary: sync directly to ~/.gemini/config/skills/ (standard Global Customizations Root for 100% native auto-discovery)
 GEMINI_SKILLS_DIR="$GEMINI_DIR/config/skills"
 sync_aki_skills "$GEMINI_SKILLS_DIR"

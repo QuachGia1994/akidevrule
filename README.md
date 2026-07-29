@@ -1,6 +1,6 @@
 # akidevrule
 
-One install command turns a fresh environment into Aki's full working baseline — for **both Claude Code and Antigravity/Gemini**, generated from one agent-neutral source: a shared rule corpus that loads itself at the right moment, plus a small set of sharp, single-purpose skills.
+One install command turns a fresh environment into Aki's full working baseline — for **Claude Code, Antigravity/Gemini, Codex CLI, Kiro CLI, and Grok CLI**, generated from one agent-neutral source: a shared rule corpus that loads itself at the right moment (Claude Code + Antigravity), plus a small set of sharp, single-purpose skills synced to every CLI that natively consumes the shared `SKILL.md` open standard.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lacvietanh/akidevrule/master/install.sh | bash
@@ -143,10 +143,26 @@ flowchart TD
         G_SJSON["config/skills.json (Inherits agskills, absolute path)"]
     end
 
+    %% TARGETS 4-6: other CLIs that natively consume the SKILL.md standard
+    subgraph T4["🧩 4. Codex CLI (~/.agents/skills/)"]
+        X_SKILLS["<skill_name>/SKILL.md"]
+    end
+    subgraph T5["🧩 5. Kiro CLI (~/.kiro/skills/)"]
+        K_SKILLS["<skill_name>/SKILL.md"]
+    end
+    subgraph T6["🧩 6. Grok CLI (~/.grok/skills/)"]
+        R_SKILLS["<skill_name>/SKILL.md"]
+    end
+
     INSTALL -->|"rsync --delete"| T1
     INSTALL -->|"deploy & settings setup"| T2
     INSTALL -->|"deploy native rules, skills & skills.json"| T3
+    INSTALL -->|"sync per skill folder"| T4
+    INSTALL -->|"sync per skill folder"| T5
+    INSTALL -->|"sync per skill folder"| T6
 ```
+
+Targets 4-6 only get the shared skill corpus (no rule corpus / no `CLAUDE.md`/`GEMINI.md`-style overrides — those CLIs have no equivalent hard-load hook this baseline plugs into yet). Each sync is scoped per skill folder name via `rsync -a --delete`, same never-touch-the-rest guarantee as targets 2 and 3, and runs unconditionally — harmless if that CLI isn't installed on the machine, picked up the moment it is.
 
 1. Syncs `payload/*` into `~/.aki/akidevrule/` (rsync, excludes `ref-ECC/`), removing stale files left by renames, and syncs `agskills/` for Antigravity skill inheritance.
 2. Syncs every skill folder under `skills/*/` (whole directory, including any `references/` or `scripts/`) into `~/.claude/skills/`, one named folder at a time via `rsync --delete`, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched. `skills/` is a top-level, agent-neutral folder (siblings with `payload/`, not nested under `claude/`) because SKILL.md is a shared open standard both Claude Code and Antigravity/AGY consume identically — see [docs/ref/agent-skills-standard.md](docs/ref/agent-skills-standard.md).
@@ -155,6 +171,7 @@ flowchart TD
 5. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/akidevrule/**`, `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.
 6. Installs `~/.claude/hooks/aki-update-check.py` and records the source-repo path in `~/.aki/akidevrule/.source-repo`.
 7. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 15 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 7 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), and configures `~/.gemini/config/skills.json` with absolute paths as secondary.
+8. Syncs the same 7 skill folders to `~/.agents/skills/` (Codex CLI), `~/.kiro/skills/` (Kiro CLI), and `~/.grok/skills/` (Grok CLI) — each a plain global skills root these CLIs read natively, synced per skill folder name exactly like step 2. Skills-only: no rule corpus is generated for these targets.
 
 Re-running the installer updates the same managed files cleanly.
 
@@ -167,7 +184,7 @@ Claude Code loads the rule corpus automatically (harness-guaranteed `@`-imports 
 - `ref-ECC/` — a large reference corpus, not needed for standard operation.
 - API keys, model-router tokens, localhost project permissions, unrelated personal Claude settings.
 - Automatic download/install logic — the update hook is strictly notify-only.
-- Any skill, rule, or file you already have that isn't part of this repo's managed set — every sync (Claude Code and Antigravity skill directories included) touches only the paths/names akidevrule itself owns, never a blanket directory wipe.
+- Any skill, rule, or file you already have that isn't part of this repo's managed set — every sync (Claude Code, Antigravity, Codex CLI, Kiro CLI, and Grok CLI skill directories included) touches only the paths/names akidevrule itself owns, never a blanket directory wipe. Verified in practice: `~/.grok/skills/` on this machine already held unrelated pre-existing skills (`best-of-n`, `docx`, `pptx`, …) and they were untouched by the sync.
 
 ## Why `~/.aki/akidevrule`
 
@@ -179,6 +196,9 @@ No sudo, user-local, easy to inspect and delete, consistent with the Aki ecosyst
 rm -rf ~/.aki/akidevrule
 rm -rf ~/.aki/agent-council     # /akiflow session workspaces (self-prunes at 30 days anyway)
 rm -rf ~/.claude/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,aki-article-writer}
+rm -rf ~/.agents/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,aki-article-writer}   # Codex CLI
+rm -rf ~/.kiro/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,aki-article-writer}     # Kiro CLI
+rm -rf ~/.grok/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,aki-article-writer}     # Grok CLI (other, non-Aki skills already in this folder are untouched)
 rm -f  ~/.claude/hooks/aki-update-check.py
 rm -f  ~/.gemini/GEMINI.md          # restore from a *.akidevrule-backup-* if needed; GEMINI.local.md is left untouched
 ```

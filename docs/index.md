@@ -39,6 +39,7 @@ Topic folders follow `RULE-docs.A2`. Only the folders that currently hold conten
 | Doc | Purpose |
 |-----|---------|
 | [antigravity-rule-discovery-architecture.md](research/antigravity-rule-discovery-architecture.md) | How Antigravity/Gemini natively discovers rule files across its three surfaces; verification-status banner separating confirmed from unconfirmed behavior. |
+| [antigravity-claude-skills-native-discovery.md](research/antigravity-claude-skills-native-discovery.md) | Cross-checked whether AG/AGY now reads `~/.claude/skills/` natively (prompted by a local experiment). Two independent sources say no — `~/.gemini/config/skills/` sync stays required. |
 | [public-private-abc-restructure.md](research/public-private-abc-restructure.md) | Decision record for the public/private split and the A/B/C group restructure of `payload/`; full item-level breakdown. |
 | [versioning-critique-akithink.md](research/versioning-critique-akithink.md) | `/akithink` decision record that critiqued and hardened the versioning rewrite before it was applied. |
 | [akithink-akihtmlreport-akihelp.md](research/akithink-akihtmlreport-akihelp.md) | Spec for the akithink / akihtmlreport / akihelp skill expansion. |
