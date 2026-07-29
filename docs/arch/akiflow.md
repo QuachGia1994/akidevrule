@@ -129,7 +129,7 @@ flowchart TD
     subgraph PHASEA["Phase A — analysis room (chat.md, time order)"]
         CONVENE --> ROOM["Specialists work items,\npeer-challenge via SendMessage"]
         ROOM --> REDTEAM["Red Team attacks\nthe decomposition itself"]
-        REDTEAM --> STEER{"Lead steering signal?\n(re-covered ground / stalled criterion /\nmandate drift / cost > value)"}
+        REDTEAM --> STEER{"Lead steering signal?\n(re-covered ground / stalled criterion /\nmandate drift / cost &gt; value)"}
         STEER -->|"yes"| CHECKPOINT["Pinned CHECKPOINT line\nto drifting agents only"]
         CHECKPOINT --> ROOM
         STEER -->|"no, item closes"| CLOSE["Lead closes item\n+ <=3-line rationale -> checklist.md"]
@@ -142,7 +142,7 @@ flowchart TD
     DECGATE -->|"no"| PHASEB
 
     subgraph PHASEB["Phase B — execution"]
-        PHASEB["Fork implements"] --> FANOUT["Cheap subagents fan out\n(mechanical, bandwidth-limited work)"]
+        IMPLEMENT["Fork implements"] --> FANOUT["Cheap subagents fan out\n(mechanical, bandwidth-limited work)"]
         FANOUT --> VERIFY["Fork verifies\n(mechanical: did I do what I said)"]
         VERIFY --> REVIEW["Clean strong subagent reviews\n(judgment: should this have been done)"]
     end
