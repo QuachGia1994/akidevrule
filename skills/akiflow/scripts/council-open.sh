@@ -62,7 +62,7 @@ if [ ! -f "$dir/chat.md" ]; then
 PROBLEM   — (lead: one paragraph, what was actually asked)
 CONTEXT   — (lead: what a specialist must know that it cannot read from the repo)
 GOAL      — (lead: what "done" looks like for the whole session)
-ROSTER    — (lead: every agent name and what it owns)
+ROSTER    — (lead: every agent name, what it owns, and its turn-number block)
 
 <!-- Lead appends CHECKPOINT lines here when the room drifts or gets expensive.
      Everything below this block is the room itself, one turn per '### ' header. -->
@@ -73,9 +73,16 @@ if [ ! -f "$dir/checklist.md" ]; then
   cat > "$dir/checklist.md" <<EOF
 # checklist · $session
 
-<!-- Lead-owned. Every item carries owner, challenger, closing criterion, and a
-     <=3 line rationale written at closure. This file is what Phase B reads;
-     the durable copy goes to docs/plan/ per RULE-docs.md B1. -->
+## requirement ledger
+<!-- Lead-owned, filled before decomposition (Step 0). One line per distinct
+     owner requirement, numbered REQ-1.. — compressed, never weakened. Every
+     item below must name the REQs it covers; an uncovered REQ is a
+     decomposition bug, not a footnote. -->
+
+## items
+<!-- Lead-owned. Every item carries owner, challenger, closing criterion, the
+     REQs it covers, and a <=3 line rationale written at closure. This file is
+     what Phase B reads; the durable copy goes to docs/plan/ per RULE-docs.md B1. -->
 EOF
 fi
 
