@@ -13,6 +13,11 @@
 - Prefer reading current files over relying on memory
 - Use the smallest safe change that solves the task
 - Report blockers early and specifically
+- **Every tool call re-sends the entire conversation.** A turn is not incremental — the whole history is the input each time. So the cost of work is driven by *number of round trips*, not by how much each one does. Three habits follow, and they are not stylistic preferences:
+  - **Read/Edit the file, never `cat`/`sed`/`head` to print-then-read it.** Bash is for what it is uniquely good at: multi-file scans and transforms, pipes and aggregation, genuinely shell-native tasks (git, npm, processes). Shelling out to read one known file spends a round trip to obtain what one tool call already returns.
+  - **Find every edit site before touching any of them, then apply the whole set in one pass.** Editing line by line as sites are discovered turns one change into N full-history round trips. If the sites are not all known yet, that is a signal to search first, not to start editing.
+  - **Batch independent calls into a single turn.** Two lookups that do not depend on each other go out together; waiting for the first to issue the second pays twice for nothing.
+- **Do the menial work through a worker, not personally** — bulk file reading, grep sweeps, inventory scans, log trawls. Main-thread context is the one resource a task cannot get back, and it is spent on the answer, not on the search. Read at orientation depth yourself: indexes, checklists, summaries, and the specific excerpt a decision turns on. "Doing it directly is faster" is true per-step and false per-task. How to brief and price that worker: A5
 
 ### A3. Communication vs task — a question is not a request
 Classify every turn before acting: is it **communication** (a question, discussion, or explanation — "why/how/can we/should we/what if", thinking aloud) or a **task** (an imperative aimed at the code/repo: add, fix, change, remove, commit)?
@@ -27,6 +32,22 @@ The reader often context-switches across many tasks and reads in a terminal; opt
 - **Conclusion first**, then a short table or bullets; prose last.
 - **Never cite a file, path, symbol, or doc bare** — the reader may not be able to open it. Attach a few-word plain-language gloss of what it is (`docs/arch/x.md — how daily views are counted`).
 - Write natural prose, not translated-sounding text; in Vietnamese, avoid transliterated English sentence structure. Say what happened and what it means for the reader before the mechanism.
+
+### A5. Delegating to a worker — more throughput, less spend
+A worker is a subagent, or the same or another CLI called headlessly (`claude -p`, `agy -p`, equivalents).
+
+**Default to delegating exploration.** The bar is not "is this too big for me" but "does this need *my* context to answer" — and searching, listing, and reading-to-find-out do not. Reach for a worker before reaching for a sweep of your own. Do it inline only when the answer is one file you already know, since a worker has a fixed overhead that only pays back on real work.
+
+**Discovery goes to the fastest wide-context tier available, one shot** — on Antigravity that is `agy --model gemini-3.6-flash-medium --mode plan -p "<prompt>"` (prompt last; `-p` swallows the next token). It is fast and holds a very large context; its failure mode is skimming, so the counter is prompt precision rather than a bigger model: name the exact paths, the exact question, and the exact output shape, and leave it nothing to improvise. Keep it to a single call — multi-turn on that CLI degrades badly.
+
+**Know which kind of cheap you are buying.** A stateless cheap call is cheap *per call* and must re-receive its context every time. A persistent worker (`claude -p --session-id <uuid>`, later `--resume <uuid>`) is cheap *per turn after the first*, because its prefix is cached — roughly an eighth of the opening turn, then flat — and it keeps everything **it** was told, though nothing the caller knows. Use the first for one wide question, the second for a worker you will come back to. The session id is scoped to the directory it was created in.
+- **A worker inherits nothing** — not your context, not your rules, not your router. Name the exact rule files it must read and the exact paths or targets it must look at. "Follow the project rules" loads nothing and reads as compliance.
+- **Set both dials, every time: model tier and thinking effort.** An omitted parameter does not fall back to something cheap; it silently inherits the caller's own expensive settings. Silence is an expensive choice made by accident.
+- **Enforce read-only by mechanism, not by wording**, wherever "fixing while I'm here" would be unrecoverable — restrict the worker's tool set, or use the CLI's read-only/plan mode. A prompt-worded ban is one the model can talk itself out of.
+- **If a program will parse the output, use the structured-output flag** rather than asking for JSON in prose.
+- **Ask for the conclusion, not the dump.** Have the worker aggregate in-shell and return the answer; pulling raw search output back into the caller's context is the exact cost the delegation was meant to avoid.
+- **Judgment does not delegate downward.** A cheap tier is for retrieval. Deciding what a finding *means* stays with the caller — a cheap model's confident misclassification costs more than the sweep saved.
+- **Spend that crosses a process or CLI boundary is invisible to the caller's own accounting.** If the total matters, read each call's own usage figures and add them by hand.
 
 ## B. Kỷ luật phạm vi & quyết định
 

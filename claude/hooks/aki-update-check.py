@@ -26,7 +26,7 @@ THROTTLE_FAIL_HOURS = 1   # after offline/timeout, retry sooner so a notice is n
 NETWORK_TIMEOUT = 3       # seconds
 
 HOME = os.path.expanduser("~")
-INSTALL_ROOT = os.path.join(HOME, ".aki", "claudedoc")
+INSTALL_ROOT = os.path.join(HOME, ".aki", "akidevrule")
 LOCAL_CHANGELOG = os.path.join(INSTALL_ROOT, "CHANGELOG.md")
 SOURCE_REPO_FILE = os.path.join(INSTALL_ROOT, ".source-repo")
 THROTTLE_FILE = os.path.join(HOME, ".claude", "hooks", ".aki-update-check")

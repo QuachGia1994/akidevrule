@@ -1,26 +1,34 @@
 ---
 name: akirule
-description: Aki's unified rule router. Loads core rules on every task; signal-triggered loading with high sensitivity for contextual rules; full load on explicit command.
+description: Aki's contextual rule router. Signal-triggered loading with high sensitivity for contextual and analytical rules; full load on explicit command. Core rules are not routed here — the harness embeds them via CLAUDE.md.
 user-invocable: false
 ---
+
+## What this skill does and does not guarantee
+
+**Nothing in this file is guaranteed to run.** A skill loads only when the model chooses to invoke it, so every rule routed below is best-effort.
+
+The rules that must apply unconditionally are not here. `index.md` and `RULE-agent-behavior.md` are embedded by the harness through `@` imports in `~/.claude/CLAUDE.md`, which is read mechanically at session start. Do not move them back into this file: an `@` path inside a skill body is not expanded by the harness the way it is inside `CLAUDE.md`, so declaring them here would look like an import while loading nothing.
 
 ## Addressing scheme (recall only — does not affect routing)
 
 Every rule file is internally organized into groups `A`/`B`/`C` and numbered items `1`/`2`/`3…` (e.g. `coding.B2`, `stack.C1`). `topic` = filename minus its `RULE-`/`METHOD-` prefix. This is a naming convention for referring to a specific rule precisely — it has no effect on which files load or when; that is still governed entirely by the tiers below. Full map: `~/.aki/akidevrule/index.md`.
 
-## Tier 1 — Core (harness-guaranteed)
-
-@~/.aki/akidevrule/index.md
-@~/.aki/akidevrule/RULE-agent-behavior.md
-@~/.aki/akidevrule/RULE-coding.md
-
 ---
 
-## Tier 2 — Contextual loading
+## Tier 1 — Contextual loading
 
 **Sensitivity bias: when in doubt, load. A false positive (loading an unused file) costs a few tokens. A false negative (missing a rule) causes wrong behavior.**
 
 Before responding, scan the user message and any file paths mentioned. For each rule below: if ANY single signal matches → Read that file immediately, before generating a response.
+
+**A file extension alone is a sufficient signal.** Touching a `.md` loads `RULE-docs.md`; a `.vue`/`.css` loads `RULE-ui-pattern.md`; `.rs`/`Cargo.toml` loads `RULE-stack-tauri.md`; `.sql`/`migrations/` loads `RULE-db-design.md`. The project does **not** need a matching folder structure, a `docs/` tree, or an existing design system first — match on what is being touched, not on how mature the project is. The keyword and action lists below are additional entry points, never a required second condition.
+
+### RULE-coding.md
+**Default ON whenever the task touches code at all.** This file was previously force-loaded; treat a miss as a real failure, not a wasted read. Skip only when the task provably touches no source file (pure prose, pure discussion, pure config-free doc edit). Load if message or file path contains any of:
+- **Keywords:** `code`, `function`, `class`, `bug`, `fix`, `error`, `exception`, `crash`, `refactor`, `implement`, `write`, `edit`, `test`, `verify`, `type`, `null`, `undefined`, `race`, `async`, `await`, `try/catch`, `validate`, `sanitize`, `secret`, `token`, `password`, `injection`, `encoding`, `UTF-8`, `unicode`, `performance`, `slow`, `leak`, `sửa`, `lỗi`, `viết hàm`, `kiểm thử`, `bảo mật`, `hiệu năng`
+- **Paths:** any source file — `**/*.{ts,js,vue,rs,py,go,sh,sql,json,toml,yaml}`
+- **Actions:** writing, editing, reviewing, debugging, or verifying any code; deciding whether something is safe to call done
 
 ### RULE-design-core.md
 Load if message or file path contains any of:
@@ -31,13 +39,13 @@ Load if message or file path contains any of:
 Load if message or file path contains any of:
 - **Keywords:** `docs`, `CLAUDE.md`, `README`, `PLAN`, `plan/`, `diagram`, `mermaid`, `architecture`, `arch/`, `doc sync`, `documentation`, `index.md`, `feat/`, `plan lifecycle`, `tài liệu`, `sơ đồ`, `kiến trúc`
 - **Keywords (drift audit):** `drift`, `audit docs`, `stale docs`, `outdated docs`, `out of date`, `docs khớp code`, `còn khớp`, `lệch`, `lỗi thời`, `rà soát tài liệu`, `docs cũ`, `kiểm tra tài liệu`
-- **Paths:** `docs/**`, `PLAN.md`, `CLAUDE.md`, `README.md`, `docs/feat/*`, `docs/arch/*`, `docs/plan/*`
+- **Paths:** **any `.md` file, anywhere** — writing or editing Markdown *is* a docs task; do not wait for a `docs/` folder to exist. Also `docs/**`, `PLAN.md`, `CLAUDE.md`, `README.md`, `CHANGELOG.md`, `*.mdx`, `SKILL.md`
 - **Actions:** creating, editing, moving, or completing any plan or doc file; checking whether docs still match the code after the fact (`docs.C`)
 
 ### RULE-content-write.md
 Load if message or file path contains any of:
 - **Keywords:** `button`, `label`, `heading`, `error message`, `tooltip`, `empty state`, `i18n`, `locale`, `translation`, `t(`, `$t(`, `meta title`, `meta description`, `og:`, `JSON-LD`, `FAQ`, `landing page`, `copy`, `UI text`, `nội dung`, `văn bản`, `nhãn`, `thông báo lỗi`, `semantic`
-- **Paths:** `locales/**`, `i18n/**`, `*.i18n.*`, `public/content/**`
+- **Paths:** `locales/**`, `i18n/**`, `*.i18n.*`, `public/content/**`; any file where a string a user will read is being added or renamed
 - **Actions:** renaming a concept or term used across the product
 
 ### RULE-stack-akiNuxtCf.md
@@ -49,7 +57,7 @@ Load if message or file path contains any of:
 Load if message or file path contains any of:
 - **Keywords (enforcement):** `component`, `vue`, `nuxt`, `tailwind`, `css`, `class`, `style`, `design token`, `token`, `variant`, `design system`, `atomic design`, `pattern class`, `@apply`, `@layer`, `BaseButton`, `c-btn`, `c-card`
 - **Keywords (audit):** `dọn dẹp`, `class trùng`, `duplicate class`, `duplicate CSS`, `trùng lặp`, `audit CSS`, `refactor CSS`, `refactor UI`, `arbitrary value`, `quét class`, `w-[`, `text-[`
-- **Paths:** `components/**`, `assets/css/**`, `tailwind.config.*`, `**/*.vue`
+- **Paths:** any `.vue`, `.css`, `.scss`, or `.tsx`; `components/**`, `assets/css/**`, `tailwind.config.*`
 - **Actions:** writing/refactoring any component or style; auditing a frontend codebase for DRY/SOLID violations
 
 ### RULE-seo.md
@@ -69,13 +77,13 @@ Load if message or file path contains any of:
 ### RULE-stack-tauri.md
 **Default ON for any Tauri project context.** Skip only when the task is provably unrelated to the Tauri/Rust backend (pure frontend copy change with no `src-tauri` involvement, isolated doc edit). Load if message or file path contains any of:
 - **Keywords:** `tauri`, `#[tauri::command]`, `invoke(`, `spawn_blocking`, `async_runtime`, `Cargo.toml`, `tauri.conf.json`, `capabilities`, `IPC`, `blocking UI`, `freeze`, `treo app`, `đứng app`, `block UI`
-- **Paths:** `src-tauri/**`, `tauri.conf.json`, `Cargo.toml`, `capabilities/*.json`
+- **Paths:** any `.rs`; `src-tauri/**`, `tauri.conf.json`, `Cargo.toml`, `capabilities/*.json`
 - **Actions:** adding/editing any `#[tauri::command]`, touching window/IPC code, bumping app version, diagnosing an app freeze/hang
 
 ### RULE-db-design.md
 Load if message or file path contains any of:
 - **Keywords:** `schema`, `migration`, `D1`, `SQL`, `database design`, `ERD`, `refactor DB`, `event sourcing`, `bounded context`, `normalization`, `1NF`, `table design`, `thiết kế db`, `thiết kế database`, `migration DB`
-- **Paths:** `migrations/**`, `schema.sql`, `**/d1/**`
+- **Paths:** any `.sql`; `migrations/**`, `schema.sql`, `**/d1/**`
 - **Actions:** designing a new table/schema, writing a DB migration, refactoring how data is stored
 
 ### METHOD-flow-audit.md
@@ -101,7 +109,7 @@ Load if message contains any of:
 
 ---
 
-## Tier 3 — Full load
+## Tier 2 — Full load
 
 **Trigger** — match any of the following (case-insensitive): `nạp full`, `load full`, `full load`, `nạp tất cả rule`, `load all rules`, `full akirule`, `nạp hết rule`
 
@@ -114,7 +122,7 @@ Load if message contains any of:
 
 ## Load confirmation
 
-After any Tier 2 or Tier 3 loading, output one line at the start of the response:
-- Tier 2: `[akirule] +RULE-docs.md +METHOD-flow-audit.md` (list files actually loaded this turn)
-- Tier 3: `[akirule:full] Loaded: <all filenames>`
-- Tier 1 only: no output needed
+After any loading, output one line at the start of the response:
+- Tier 1: `[akirule] +RULE-coding.md +RULE-docs.md` (list files actually loaded this turn)
+- Tier 2: `[akirule:full] Loaded: <all filenames>`
+- Nothing loaded: no output needed

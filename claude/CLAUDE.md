@@ -2,11 +2,20 @@
 
 Keep global context small. Prefer current project files and runtime output over stale docs or memory.
 
+## Core rules — mechanically loaded, every session
+
+@~/.aki/akidevrule/index.md
+@~/.aki/akidevrule/RULE-agent-behavior.md
+
+These two are embedded by the harness when it reads this file at session start. No model decision is involved, so they apply to every task whether or not any skill runs. The rule corpus map lives in `index.md`; the behavior floor lives in `RULE-agent-behavior.md`.
+
+Nothing else in the corpus is guaranteed. Every other rule file — including `RULE-coding.md` — loads only when the `akirule` skill runs and matches a signal, and invoking a skill is the model's decision, not a harness mechanism.
+
 ## Shared Aki rule source
 
 Aki's shared rule corpus lives at `~/.aki/akidevrule`.
 
-The `akirule` skill is always active in Aki projects. It handles all routing: core rules load automatically on every task; contextual and analytical rules load on signal match with high sensitivity; full load is available on explicit command. See `~/.claude/skills/akirule/SKILL.md` for the complete routing spec and signal list.
+The `akirule` skill routes everything beyond the core above: contextual and analytical rules on signal match with high sensitivity, and full load on explicit command. See `~/.claude/skills/akirule/SKILL.md` for the complete routing spec and signal list.
 
 **IMPORTANT — editing shared rules:** The installed `~/.aki/akidevrule` directory is a **deployed copy**, not the source of truth. To change a shared rule:
 1. Find the source repo: its absolute path on this machine is recorded in `~/.aki/akidevrule/.source-repo`, written by `install.sh` on every install. Read that file — do not guess a location, and do not ask the user for something already recorded. Ask only if the recorded path no longer exists.

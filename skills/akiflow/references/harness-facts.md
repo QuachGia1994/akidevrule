@@ -3,9 +3,13 @@
 The skill's rules are consequences of these facts. If a fact changes, the rule it
 supports must be revisited rather than patched. Each entry is marked:
 
-- **[doc]** — stated in Anthropic's documentation (linked at the bottom).
-- **[obs]** — observed runtime behaviour of Claude Code, not found in the docs.
+- **[doc]** — stated in Anthropic's (or Antigravity's) published documentation, linked at the bottom.
+- **[obs]** — observed runtime behaviour of the tooling (Claude Code or Antigravity/agy), not found in published docs.
   Treat as true-until-contradicted, and re-verify before relying on a detail.
+- **[owner]** — supplied by the owner from a machine this repo has never run on. Not verified here and not
+  verifiable here. Weakest tier: never let a rule depend on one without a verification step attached.
+
+Every entry carries the date it was checked, because all of it is version-bound and expected to rot.
 
 ## Subagents
 
@@ -13,13 +17,42 @@ supports must be revisited rather than patched. Each entry is marked:
 |---|---|
 | **[doc]** A subagent runs in its own context window with its own tool set and model; it does not see the parent's conversation. | Independence is available by construction. It also means a plain subagent inherits **no** akirule routing — every plain-subagent prompt must name the exact `~/.aki/akidevrule/*.md` files to Read. |
 | **[obs]** A subagent that has a **name** and the `SendMessage` tool receives a *sibling roster* listing the other named agents, captured **at its own startup**. | Agents named later are invisible to agents named earlier — a silent one-way channel with no error. The roster is therefore convened in **one batch**, and mid-run escalation reconvenes rather than appends. |
-| **[doc]** `/fork` and `/subtask` are **interactive slash commands**, not an Agent-tool `subagent_type`. `/subtask` (or `/fork` when agent view is off) spawns a subagent that inherits the session's conversation; both require `CLAUDE_CODE_FORK_SUBAGENT=1`. Neither is reachable from a programmatic subagent spawn — there is no `subagent_type: fork` value. (Confirmed 2026-07-30 against `code.claude.com/docs/en/agents` and `code.claude.com/docs/en/sub-agents`, after akiflow's own spawn calls failed with `Agent type 'fork' not found`; superseded a prior version of this row that assumed such a value existed.) | akiflow has no context-inheriting subagent mechanism to invoke. Continuity work (implementing from a plan, verifying a diff) is a **plain subagent handed the plan doc / diff explicitly in its prompt** — the plan doc is the continuity mechanism, not a fallback for a missing one. |
+| **[doc]** `/fork` and `/subtask` are **interactive slash commands**, not an Agent-tool `subagent_type`; both require `CLAUDE_CODE_FORK_SUBAGENT=1`. A real run on 2026-07-30 failed every `subagent_type: fork` spawn with `Agent type 'fork' not found`, matching official docs at the time (`code.claude.com/docs/en/agents`, `.../sub-agents`) — which is why a prior version of this row said flatly that no `subagent_type: fork` value existed. **[obs]** That claim is corrected for Claude Code 2.1.220: the `claude` binary contains a real fork agent type (telemetry field `is_fork`; error strings `"Fork is not available inside a forked worker"` and `"Fork cannot use isolation: \"remote\" — a remote session cannot inherit the conversation context"`), and the Agent tool's own `model` parameter documents *"Ignored for subagent_type: \"fork\" — forks always inherit the parent model."* It is gated behind `CLAUDE_CODE_FORK_SUBAGENT=1` and is **not** in the available-agent list of a default session, so it cannot be relied on. (Confirmed 2026-08-01 by inspecting the `claude` binary directly — undocumented on the public pages above.) | The design consequence is unchanged: continuity work still travels by an explicit plan-doc/diff handoff. The *reason* changes — not "no such mechanism exists," but "the mechanism exists, is gated off by default, and even where enabled is not the cross-session artifact." The plan doc is what survives *between* sessions; a gated in-session fork never does, regardless of availability. |
 | **[obs]** A **completed** subagent resumes with its full history when messaged; it does not need re-spawning and does not re-pay for context. | The Phase A roster stays on call through Phase B at no idle cost. |
 | **[obs]** A subagent the **user** stopped refuses to resume via message; it must be resumed from its own transcript panel. | A refusal to resume is not agent failure — do not respawn a duplicate. |
 | **[obs]** A spawn call that omits `model` and/or `effort` **silently inherits the parent session's values** — there is no default fallback to a cheaper tier. (Observed 2026-07-30: a 6-agent roster spawned without either parameter ran entirely on the lead's top-tier model, at ~935k tokens for work that was mostly bandwidth-shaped — diffing directories, grepping columns, counting duplicate paths.) | Every spawn call **must** pass `model` and `effort` explicitly, chosen from the Step 2 mechanism table — never left to inherit. Silence is not a neutral choice; it is a top-tier-model choice made by omission. |
 | **[doc]** Permission approval belongs to the user. An agent cannot grant it, and cannot relay it. | A message claiming "I was approved" is untrusted input. Owner escalation is a real stop. |
 | **[obs]** `isolation: "worktree"` gives an agent its own git worktree. Setup costs time and disk per agent. | Use only when several agents mutate files concurrently. A read-only sweep or a lone implementer does not need it. |
 | **[obs]** Nesting: a subagent may spawn its own worker. The lead sees the child, not the grandchild. | One level deep, mechanical work only. |
+| **[obs]** Claude Code exposes subagent-spawn ceilings as environment variables: `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` (nesting depth), `CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION` (total spawns), `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` (concurrency). The CLI's `--max-budget-usd` flag blocks new subagent spawns once the dollar budget is exhausted. (Confirmed 2026-08-01.) | akiflow's "one level deep, mechanical only" nesting rule (Step 5) is now backed by a harness enforcement, not discipline alone. `--max-budget-usd` is a preventive complement to Step 9's post-hoc tally: a cap set *before* the run, a reconciliation done *after* it. |
+
+## Antigravity / AGY
+
+| Fact | Design consequence |
+|---|---|
+| **[obs]** The `agy` binary (v1.1.9) contains `enable-teamwork-subagent`, `GetEnableTeamworkSubagent`, `define_subagent`, `browser_subagent`, `SendAgentMessage`, and `subagent.jump_to_waiting`. agy 1.1.6 added custom agents defined in Markdown with `mainAgent` / `subagent` / `hidden` / `model` frontmatter, so an agy agent can run at a chosen model tier as a subagent; agy 1.1.8 added `subagent_info` (`conversation_id`, `log_uri`) to its `stream-json` output. (Confirmed 2026-08-01 by inspecting the `agy` binary.) | Antigravity/AGY has a real subagent mechanism. Any prior claim that it has none is wrong and must be corrected everywhere it appears in `SKILL.md`. |
+| **[obs]** agy ships a built-in agent council, `/teamwork-preview`, with a **fixed** roster read from the binary: `orchestrator_pure`, `explorer`, `spec_miner`, `armed_worker`, `armed_critic`, `empirical_challenger`, `forensic_auditor`, `reviewer_critic`, `sentinel`, `test_writer`, `victory_auditor`, `challenger`. (Confirmed 2026-08-01.) | Two consequences. **Convergent validation**: an independently designed council landed on nearly the same role split, including a *pure* orchestrator that only orchestrates — akiflow's "the lead does no menial work" was arrived at independently, not merely fashionable. **A gap**: akiflow has no **victory audit** role — *"did this achieve the goal that was asked for?"*, distinct from verification's *"did I do what I said?"* and adversarial review's *"should this have been done?"* **What not to copy**: the roster is fixed; akiflow derives its roster from the items it cut, and a fixed roster is exactly what gate law #4 ("only convene specialists that own an item") forbids. |
+
+## Cross-CLI worker (Claude Code lead → agy headless)
+
+Verified by real runs, 2026-08-01. Invocation, flag order load-bearing:
+
+```
+agy --model gemini-3.6-flash-low --mode plan --output-format json -p "<prompt>"
+```
+
+| Fact | Design consequence |
+|---|---|
+| **[obs]** `-p`/`--print` takes the prompt as **its value**, so it must come last. `agy -p --model X "prompt"` silently sends the wrong thing and returns a confident, unrelated answer with no error. (Hit in testing.) | The flag-order trap is the single most likely way this mechanism fails silently — state it explicitly in every prompt/script that invokes agy headless. |
+| **[obs]** `--mode plan` enforces read-only **by mechanism**, not by prompt wording. | Strictly stronger than Claude Code's own subagent read-only story: the Agent tool's `mode` parameter is deprecated and ignored, and a Claude subagent inherits the parent session's permission mode. For read-only sweeps and audit mode, agy is the better substrate. akiflow's "restate read-only in every audit prompt" rule stays necessary on the Claude side and becomes belt-and-braces on the agy side. |
+| **[obs]** `~/.gemini/GEMINI.md` auto-loads into every agy call, including headless `-p` — 13 sections of the akirule behavior baseline (scope discipline, no unrequested artifacts, no model-credit trailers, absolute factuality, communication-is-read-only). | An agy worker gets the behavior floor for free, where a Claude subagent must be handed the file list explicitly. This does not exempt the prompt from naming the item's domain rule files on top — GEMINI.md carries the baseline, not the domain-specific layer. |
+| **[obs]** agy headless cannot prompt for permission; a denied action auto-fails and the call still returns `status: "SUCCESS"` with `response: ""`. `~/.gemini/antigravity-cli/settings.json` already allows the common read tools (grep, rg, find, cat, head, ls, sed, awk, wc), so read-only sweeps work today without `--dangerously-skip-permissions`. | A caller that does not test for an empty `response` reads a failed call as a clean sweep. Every cross-CLI call must check for this before trusting its result — see the new anti-pattern in `SKILL.md`. |
+| **[obs]** agy has `allowNonWorkspaceAccess: true` and a global workspace index; in testing it resolved file paths back to the real repository even when run inside a copied directory. | `cwd` is not a reliable scope boundary for an agy worker — the prompt must name the paths explicitly. |
+| **[obs]** Measured on a real read-only repo sweep: 8.2s wall / 3.4s model time, correct answer; ~20–26k tokens of fixed input overhead per call (agy's system prompt plus `~/.gemini/GEMINI.md`). *A prior version of this row cited one observed `cache_read_tokens: 32621` as evidence that repeat calls hit a warm cache. That reading was too generous — see § Stateful workers, where a controlled three-turn test shows the cache is unreliable and the latency curve is the real constraint.* | The fixed overhead means this mechanism pays for itself on a non-trivial sweep, not on a one-line lookup — the same shape as the "self-contained question" cutoff already in the Step 2 mechanism table. |
+| **[obs]** The `json`/`stream-json` output carries `usage`: `input_tokens`, `output_tokens`, `thinking_tokens`, `cache_read_tokens`, plus `conversation_id`. | Cost is measurable per call — but it is invisible to `council-cost.sh`, which only parses the Claude Code session transcript. The lead must add it to the close-out tally by hand (`SKILL.md` Step 9). |
+| **[obs]** agy 1.1.9 expands skills in print mode, so `agy -p "/akiflow …"` resolves the skill; `akiflow` is already deployed to agy at `~/.gemini/config/skills/akiflow`. | A cross-CLI call can invoke the skill itself, not just an ad hoc prompt — relevant if a future revision routes part of a run through agy directly. |
+| **[owner]** + **[obs]** Model choice inside agy is not free-form. **`gemini-3.6-flash-medium` is the default discovery tier**: ~1M context and the fastest thing available anywhere in this stack, at generous quota. Its weakness is carelessness, not capacity — it skims. The counter is prompt precision, not a bigger model: name the exact paths, the exact question, and the exact output shape, leaving it nothing to improvise. **`claude-sonnet-4-6` / `claude-opus-4-6-thinking` inside agy are quota-scarce even on a Pro plan** (owner-reported) and additionally sit on the no-cache resume curve above. | Route discovery to flash-medium by default and hand it a fully-specified task. Reach for agy's Claude tiers only for a single-shot, self-contained, high-value call where context and cache are demonstrably under control — never for a conversation, never as a habit. When strong-model judgment is needed *and* stateful, that is a Claude session id, not agy. |
+| **[obs]** A flash-tier worker (`gemini-3.6-flash-*`) is for **retrieval, never for judgment**. | akiflow's thinking floor turns on the FACT/CONSTRAINT/ASSUMPTION distinction, which the skill already names as the one unrecoverable error to mislabel — exactly what a cheap model does worst. Hard rule wherever this mechanism is used, in the same voice as the existing "never downgrade implementation to save cost": retrieval only. |
 
 ## Cost model
 
@@ -41,12 +74,68 @@ Family names, not version ids — the mapping outlives any single release.
 | Implementation | mid tier or above, never downgraded to save cost | code quality is created at the keyboard, not recovered in review |
 | Verification against a written promise | mid tier, plain subagent handed the diff + the promise | mechanical comparison, but must know what was promised |
 | Mechanical sweeps: inventory, grep, call-site lists, stats | cheapest capable tier, low effort | the task describes itself; instruct it to aggregate in-shell rather than pulling raw data into context |
+| Read-only retrieval via the cross-CLI worker (agy headless, flash tier, `--mode plan`) | cheapest available tier, mechanical retrieval only, never judgment | `--mode plan` enforces read-only by mechanism rather than by prompt; the FACT/CONSTRAINT/ASSUMPTION judgment stays with the lead — see § Cross-CLI worker |
 
-## Headless
+## Headless — the cost levers, per CLI
 
-**[doc]** `claude -p "<prompt>"` runs non-interactively.
+Full narrative and the measurements behind these rows: `docs/research/headless-cli-workers-aug1.md`.
 
-Two things break in headless mode, and both are structural:
+### Claude Code (`claude -p`), verified 2026-08-01 against 2.1.220
+
+| Flag | Fact | Design consequence |
+|---|---|---|
+| `--bare` | **[obs]** Skips hooks, LSP, plugin sync, attribution, auto-memory, background prefetches, keychain reads, and CLAUDE.md auto-discovery. **It also refuses OAuth — auth is strictly `ANTHROPIC_API_KEY` or an `apiKeyHelper`.** A live call on an OAuth-only machine returned `is_error: true`, `terminal_reason: "api_error"`, zero tokens. | The largest available input-token cut on the Claude side, and unusable without a separate API key. Do not write it into a mechanism that must work on the owner's normal login. |
+| `--tools "Read,Grep"` | **[obs]** Restricts the session to a named subset of built-in tools; `""` disables all. | Read-only **by mechanism** on the Claude side — the missing counterpart to agy's `--mode plan`. Prefer it over telling a subagent to behave. |
+| `--json-schema` | **[obs]** Enforces structured output. `agy --json-schema` is the same capability. | The one Workflow feature worth having is available headless on both CLIs, so it is not a reason to adopt Workflow. |
+| `--max-budget-usd` | **[obs]** Hard dollar cap; `-p` only. | Preventive counterpart to Step 9's post-hoc tally, and the second Workflow-only feature that turns out not to be Workflow-only. |
+| `--effort low` | **[obs]** `low\|medium\|high\|xhigh\|max`. Present on `claude`, `agy`, and (per owner) `kiro-cli`. | Cheapness has two axes, not one: model tier **and** thinking budget. A mechanical sweep should cut both. |
+| `--exclude-dynamic-system-prompt-sections` | **[doc, in `--help`]** Moves cwd/env/memory/git-status out of the system prompt into the first user message, improving cross-call prompt-cache reuse. | Matters when the same worker shape is called many times in a run — cache hits, not flag count, are what make fan-out cheap. |
+| `--agents <json>` | **[obs]** Defines custom agents inline, as JSON, per call. | A worker roster can be declared at the call site without installing anything. |
+| `--permission-mode plan`, `--add-dir`, `--no-session-persistence`, `--fallback-model`, `--disable-slash-commands`, `--setting-sources` | **[obs]** Present. | Scope, durability, and resilience are all per-call settable; a headless worker need not inherit the caller's environment. |
+
+### agy headless — see § Cross-CLI worker above
+
+**[obs]** 2026-08-01, `agy models`: `gemini-3.6-flash-{low,medium,high}`, `gemini-3.5-flash-{low,medium,high}`, `gemini-3.1-pro-{low,high}`, **`claude-sonnet-4-6`**, **`claude-opus-4-6-thinking`**, `gpt-oss-120b-medium`. Also present: `--json-schema`, `--effort`, `--agent`, `--add-dir`, `--print-timeout`, `--disable-slash-commands`, and an `agents` subcommand (empty on this machine — no custom agy agents defined).
+
+*Consequence:* a Claude-family model can be reached **on the Antigravity quota**. The vendor paying and the model reasoning are independent choices, which is a second axis the Step 2 mechanism table did not previously have.
+
+### Kiro CLI (`kiro-cli`) — **[owner]**, 2026-08-01, unverified
+
+Not installed on this machine (`~/.kiro/skills` exists only because `install.sh` creates it). Recorded from the owner's report; **verify before any rule depends on it.**
+
+- `kiro-cli chat --no-interactive "<prompt>"` — batch mode; also accepts a piped prompt on stdin.
+- `-a`/`--trust-all-tools` auto-approves every tool; `--trust-tools=fs_read,fs_write` restricts the set; `--trust-tools=` blocks all. The restricted form is the read-only-by-mechanism equivalent of `--mode plan` / `--tools`.
+- `--require-mcp-startup` — exit code 3 if any MCP server fails to start, so a broken worker fails loudly instead of silently degrading.
+- `--wrap always|never|auto` — output wrapping, for piping.
+- Models with cost multipliers: `auto` (1M context), `claude-sonnet-4.5` (200k), `claude-sonnet-4`, `claude-haiku-4.5` (×0.4), `deepseek-3.2` (×0.25), `qwen3-coder-next` (256k, ×0.05), `minimax-m2.5`, `minimax-m2.1`, `glm-5`. `--effort low…max`.
+- Built-in agents `kiro_default` / `kiro_planner` / `kiro_help`; custom profiles in `.kiro/agents` or `~/.kiro/agents`; `--agent-engine v1|v2|v3` (v2 default, v3 has a `spec` mode).
+- `kiro-cli acp` runs Kiro as an Agent Client Protocol server — an external orchestrator can drive it directly.
+- Sessions per workspace in `~/.kiro/sessions/`: `-r`, `--resume-id`, `--resume-picker`, `-d`.
+
+*If verified,* Kiro is the cheapest bandwidth tier available anywhere in this stack (`qwen3-coder-next` at ×0.05 with 256k context) and the only one exposing a machine protocol (ACP) rather than a text CLI.
+
+### Stateful workers — both CLIs offer one, and they behave oppositely
+
+**[obs]** Controlled test, 2026-08-01. Store a token in turn 1, ask for it back in turn 2, send a trivial turn 3. Both CLIs recalled it correctly, so *functionally* both resume. Economically they are not comparable:
+
+| | `agy --conversation <id>` | `claude -p --session-id <uuid>` / `--resume <uuid>` |
+|---|---|---|
+| Turn 1 | 26.5k input, 2.6s | $0.0358 — 16.9k cache-creation, 17.5k cache-read |
+| Turn 2 | 53.6k input, **`cache_read_tokens: 0`**, 8.8s | **$0.0043** — 34.4k cache-read, 219 new. ~8× cheaper than turn 1 |
+| Turn 3 (trivial prompt) | 56.4k input, 24.5k cache-read, **57.6s** | $0.0038 — 34.6k cache-read, 90 new |
+| Shape of the curve | input grows every turn, cache intermittent, **latency 2.6s → 8.8s → 57.6s** | flat: cost and latency stable from turn 2 onward |
+| Lookup scope | conversation id resolves globally | **cwd-scoped** — resuming the same id from another directory fails with `No conversation found` (exit 5) |
+
+Design consequences, and they are the sharpest in this file:
+
+1. **`claude -p --session-id` is the persistent-worker mechanism this skill was missing.** A named uuid, called repeatedly, keeps its full history and gets *cheaper* after the first turn because the prefix is cached. It is not a fork — it is better for this purpose, because it survives between top-level sessions. Continuity no longer has to travel exclusively by plan-doc handoff; a long-lived worker can simply be re-addressed.
+2. **Its cwd-scoping is a feature, not a limitation.** A worker id is bound to the project directory it was created in, so a worker cannot be accidentally re-addressed from the wrong repo.
+3. **agy conversations are a trap. Use agy one-shot only.** It resumes correctly and looks fine at turn 2, then the latency curve makes it unusable — 57.6 seconds to answer "reply ok" on turn 3. Anything needing more than one exchange belongs on a Claude session id; agy's value is a fast, wide, self-contained single call.
+4. **The cheap axis and the stateful axis are different mechanisms.** agy flash is cheap *per call* and stateless in practice; a Claude session id is cheap *per turn after the first* and stateful. Choosing "cheap" without saying which of the two is meant is how a run ends up paying full price for both.
+
+### What breaks in headless mode, on every CLI
+
+Two things, and both are structural:
 
 1. **Nobody can answer an owner escalation.** The lead must not guess what the
    owner would have wanted. Record the escalation in the checklist as `BLOCKED:
@@ -62,7 +151,7 @@ need to ask a follow-up question.
 
 ## Sources
 
-Claude Code documentation moves; verify a detail before relying on it.
+Claude Code and Antigravity documentation both move; verify a detail before relying on it.
 
 - Subagents (fork/subtask, `CLAUDE_CODE_FORK_SUBAGENT`) — <https://code.claude.com/docs/en/sub-agents>
 - Run agents in parallel (subagents vs agent view vs agent teams vs workflows) — <https://code.claude.com/docs/en/agents>
@@ -72,6 +161,4 @@ Claude Code documentation moves; verify a detail before relying on it.
 - Settings and permissions — <https://code.claude.com/docs/en/settings>
 - Prompt caching and TTL — <https://docs.claude.com/en/docs/build-with-claude/prompt-caching>
 
-Entries marked **[obs]** are not in these pages. They were observed in this
-repo's runtime and are recorded here so a future reader can tell the difference
-between what is documented and what is merely believed.
+Entries marked **[obs]** are not in these pages, including all of the Antigravity/AGY and cross-CLI rows above — no equivalent published reference for `agy`'s internal mechanisms was found; they were observed directly against the `claude` and `agy` binaries and a live transcript, and are recorded here so a future reader can tell the difference between what is documented and what is merely believed.
