@@ -12,7 +12,7 @@ akiflow buys extra reasoning bandwidth by spawning Claude Code subagents. Everyt
 
 **Question:** should akiflow's Phase B (execution/verification) move onto the native `Workflow` tool, onto headless cross-CLI workers, both, or neither?
 
-**Context at the time — the constraints that make this answer expire:** Claude Code 2.1.220; `agy` 1.1.9; `kiro-cli` not installed on this machine; akiflow at 18 anti-patterns with Phase A (analysis, `SendMessage` roster) and Phase B (execution) separated by a decision gate, and a Step 8 loop-back that lets a failed verification reopen a work item back into Phase A. This repo distributes skills to five CLIs, not only Claude Code.
+**Context at the time — the constraints that make this answer expire:** Claude Code 2.1.220; `agy` 1.1.9; `kiro-cli` not installed on this machine at the time of the original research (installed and verified 2026-08-02 as 2.16.0 — see R9 below); akiflow at 18 anti-patterns with Phase A (analysis, `SendMessage` roster) and Phase B (execution) separated by a decision gate, and a Step 8 loop-back that lets a failed verification reopen a work item back into Phase A. This repo distributes skills to five CLIs, not only Claude Code.
 
 ## Strategy
 
@@ -83,13 +83,15 @@ Measured live, 2026-08-01:
 
 ### R8 — Only two of the five target CLIs are installed here
 
-`agy` and `claude` are present. `kiro`, `codex`, `grok`, `gemini` are not; their `~/.kiro/skills`-style directories exist only because `install.sh` creates them. The multi-CLI worker idea is currently realizable with two CLIs, not five.
+`agy` and `claude` were present at original research time. `kiro-cli` has since been installed and verified (2026-08-02, v2.16.0 — see R9). `codex`, `grok`, `gemini` are not installed; their `~/.kiro/skills`-style directories exist only because `install.sh` creates them. The multi-CLI worker idea is currently realizable with three CLIs.
 
-### R9 — Kiro CLI capabilities, owner-supplied and unverified
+### R9 — Kiro CLI capabilities, verified 2026-08-02
 
-Recorded in `skills/akiflow/references/harness-facts.md` under an explicit `[owner]` marker: `chat --no-interactive`, `--trust-tools=` for mechanism-enforced scope, `--require-mcp-startup` with exit code 3, a model table with cost multipliers down to ×0.05 (`qwen3-coder-next`, 256k context), built-in `kiro_planner`/`kiro_help` subagents, `--agent-engine v1|v2|v3`, and `kiro-cli acp` exposing Kiro as an Agent Client Protocol server.
+Previously recorded as `[owner]`/unverified. Verified on 2026-08-02 via `kiro-cli --help-all` and `kiro-cli chat --help` and `kiro-cli chat --list-models`. Full verified fact set now in `skills/akiflow/references/harness-facts.md` under `[obs]`.
 
-**Verification: none.** Not installed here, not checkable here. If accurate, Kiro is both the cheapest bandwidth tier in the stack and the only one exposing a machine protocol rather than a text CLI — which is exactly why it must be verified before a rule leans on it.
+Key findings: `--no-interactive` confirmed; `--trust-tools=` confirmed; `--require-mcp-startup` (exit 3) confirmed; `--effort` confirmed operative; `--agent-engine v1|v2|v3` confirmed; `kiro-cli acp` confirmed. Model list verified: `auto` (1×), `claude-sonnet-4.5` (1.3×), `claude-haiku-4.5` (0.4×), `minimax-m2.5` (0.25×), `glm-5` (0.5×), `qwen3-coder-next` (0.05×, 256k).
+
+**Kiro is confirmed** as the cheapest bandwidth tier in this stack and the only one with a machine protocol (ACP).
 
 ### R10 — Both CLIs offer a stateful worker; only one is usable
 
@@ -116,6 +118,18 @@ Why it loses anyway: that shape is not a council. It needs no roster, no arbitra
 
 **This is recorded because the research tried to justify adoption and failed to.** The steelman is preserved so a future reader does not mistake the rejection for a lack of investigation, and can re-open it if the constraints change — specifically if crash-resume (R2) ever becomes load-bearing, or if Workflow gains agent-to-agent messaging (R1).
 
+### R12 — `--disallowedTools` beats `--bare` for tool/context surface; 9router is a parallel lane, not only a fallback
+
+Owner discovered a working alias, `cl-9rt-min='CLAUDE_CONFIG_DIR="$HOME/.claude-9rt" claude --disallowedTools "Workflow DesignSync"'`, and asked whether cutting those two tools actually costs akiflow anything.
+
+**Verified against official docs (2026-08-03):** `Workflow` is Claude Code's native autonomous multi-step orchestrator (code.claude.com/docs/en/common-workflows); `DesignSync` is the `/design-sync` bridge to claude.ai/design — design-token/component import-export (support.claude.com), a different product surface entirely. Cross-checked against this repo: `skills/akiflow/SKILL.md` Step 6 already states akiflow only *tells the owner* to invoke Workflow, never calls it itself ("the owner must invoke that tool; this skill cannot"), and no file in `skills/akiflow/` references DesignSync at all. **Zero functional loss for akiflow from disallowing either.**
+
+This makes `--disallowedTools "Workflow DesignSync"` the better default than `--bare` (R6) for cutting session tool/context surface: same intent, no auth cost, since it stays on OAuth where `--bare` requires a separate API key.
+
+Separately, `CLAUDE_CONFIG_DIR=~/.claude-9rt` was previously filed (R5-adjacent, `harness-facts.md`) only as a quota-exhaustion fallback. Re-examined: a second account is a **separate quota on the same Claude-family model**, so it supports genuine **parallel** running — a 9router worker alongside the lead's own session, not merely a spillover once the primary account runs out. The lane is conditional: `~/.claude-9rt` is owner-provisioned and not present on every machine, so a rule may recommend it only after checking `test -d ~/.claude-9rt`; where absent, the correct move is naming setup as a one-time step, not silently substituting agy or kiro-cli instead.
+
+**Verification:** official docs for both tool descriptions (search, 2026-08-03); repo grep for `Workflow`/`DesignSync` inside `skills/akiflow/` confirming no dependency.
+
 ## Decision
 
 **Rejected/closed — the native `Workflow` tool is not adopted by akiflow.** No replacement branch; the council keeps its existing mechanisms.
@@ -127,13 +141,15 @@ Why it loses anyway: that shape is not a council. It needs no roster, no arbitra
 
 **Action — four Workflow design lessons adopted as doctrine without the tool**, because they cost nothing and are portable to every CLI: do not make the whole roster wait on the slowest member when the next step does not need everyone's result; a truncated scope must be stated, never silently applied; unknown-size discovery loops until two consecutive rounds find nothing new rather than stopping at a fixed count; and adversarial verification assigns each verifier a distinct lens instead of asking several agents the same question.
 
-**No action — `claude --bare`** (R6): unusable on the owner's OAuth-only setup, so no rule may depend on it. Recorded rather than adopted.
+**No action — `claude --bare`** (R6): unusable on the owner's OAuth-only setup, so no rule may depend on it. Recorded rather than adopted. **Action — `--disallowedTools "Workflow DesignSync"` adopted as the working alternative** (R12): OAuth-compatible tool/context cut, verified zero functional loss for akiflow; recorded in `harness-facts.md` Claude Code flag table and `SKILL.md` worker-shapes table.
 
-**No action — Kiro integration** (R9): unverified. The facts are filed under `[owner]`; adoption waits on a machine that has it installed.
+**Action — 9router reframed as a parallel lane, not only a fallback** (R12): `harness-facts.md` § claude via 9router expanded; `SKILL.md` gains a fifth worker shape (Claude via 9router) and a `test -d ~/.claude-9rt` gate in the CLI-availability probe — the lane is proposed only after that check passes, with setup named as the alternative when it does not.
+
+**Action — Kiro integration** (R9): verified 2026-08-02 (`kiro-cli` 2.16.0 now installed). Facts promoted from `[owner]` to `[obs]` in `harness-facts.md`. `qwen3-coder-next` (×0.05, 256k) confirmed as cheapest bandwidth tier; ACP server confirmed. Probe check added to SKILL.md CLI availability section.
 
 **Action — stateful-worker findings applied** (R10): `SKILL.md` Step 2 persistent-worker and one-shot-discovery rows; `RULE-agent-behavior.md` A5; `harness-facts.md` § Stateful workers.
 
-**Follow-up needed — verify Kiro CLI** on a machine where it exists, then decide whether the ×0.05 tier and the ACP server change the Step 2 mechanism table.
+**Closed — Kiro CLI verified** (2026-08-02). The ×0.05 tier and ACP server are confirmed. Step 2 mechanism table in `SKILL.md` is unchanged — Kiro's bandwidth role is covered under the existing cross-CLI worker row; ACP is recorded as a property of Kiro in `harness-facts.md` but no akiflow rule depends on it yet.
 
 ### Cross-references
 

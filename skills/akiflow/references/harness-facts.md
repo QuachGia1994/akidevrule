@@ -85,34 +85,44 @@ Full narrative and the measurements behind these rows: `docs/research/headless-c
 | Flag | Fact | Design consequence |
 |---|---|---|
 | `--bare` | **[obs]** Skips hooks, LSP, plugin sync, attribution, auto-memory, background prefetches, keychain reads, and CLAUDE.md auto-discovery. **It also refuses OAuth — auth is strictly `ANTHROPIC_API_KEY` or an `apiKeyHelper`.** A live call on an OAuth-only machine returned `is_error: true`, `terminal_reason: "api_error"`, zero tokens. | The largest available input-token cut on the Claude side, and unusable without a separate API key. Do not write it into a mechanism that must work on the owner's normal login. |
+| `--disallowedTools "Workflow DesignSync"` | **[obs]+[doc]** Session-level tool block, no auth change (unlike `--bare`, still OAuth). Verified 2026-08-03: `Workflow` is Claude Code's native autonomous multi-step orchestrator (code.claude.com/docs/en/common-workflows) — akiflow's own `SKILL.md` (Step 6) already states it only *tells the owner* to invoke Workflow, never calls it itself, so blocking it removes nothing akiflow uses. `DesignSync` is the `/design-sync` bridge to claude.ai/design (design-token/component import-export, support.claude.com) — a different product surface with zero overlap with akiflow. | The OAuth-compatible alternative to `--bare` for cutting tool/context surface: same intent (fewer tools loaded at session start), none of `--bare`'s auth cost, and zero functional loss for akiflow specifically. Owner alias: `cl-9rt-min='CLAUDE_CONFIG_DIR="$HOME/.claude-9rt" claude --disallowedTools "Workflow DesignSync"'`. |
 | `--tools "Read,Grep"` | **[obs]** Restricts the session to a named subset of built-in tools; `""` disables all. | Read-only **by mechanism** on the Claude side — the missing counterpart to agy's `--mode plan`. Prefer it over telling a subagent to behave. |
 | `--json-schema` | **[obs]** Enforces structured output. `agy --json-schema` is the same capability. | The one Workflow feature worth having is available headless on both CLIs, so it is not a reason to adopt Workflow. |
 | `--max-budget-usd` | **[obs]** Hard dollar cap; `-p` only. | Preventive counterpart to Step 9's post-hoc tally, and the second Workflow-only feature that turns out not to be Workflow-only. |
-| `--effort low` | **[obs]** `low\|medium\|high\|xhigh\|max`. Present on `claude`, `agy`, and (per owner) `kiro-cli`. | Cheapness has two axes, not one: model tier **and** thinking budget. A mechanical sweep should cut both. |
+| `--effort low` | **[obs]** `low\|medium\|high\|xhigh\|max`. Present on `claude`, `agy`, and `kiro-cli`. **`claude` + haiku**: no `--effort` option — haiku has no extended thinking at API level; flag silently ignored. | Two cheapness axes: model tier **and** thinking budget. Cut both on sweeps. On `claude` CLI with haiku, only the model axis is available. |
 | `--exclude-dynamic-system-prompt-sections` | **[doc, in `--help`]** Moves cwd/env/memory/git-status out of the system prompt into the first user message, improving cross-call prompt-cache reuse. | Matters when the same worker shape is called many times in a run — cache hits, not flag count, are what make fan-out cheap. |
 | `--agents <json>` | **[obs]** Defines custom agents inline, as JSON, per call. | A worker roster can be declared at the call site without installing anything. |
 | `--permission-mode plan`, `--add-dir`, `--no-session-persistence`, `--fallback-model`, `--disable-slash-commands`, `--setting-sources` | **[obs]** Present. | Scope, durability, and resilience are all per-call settable; a headless worker need not inherit the caller's environment. |
 
+### claude via 9router — a second Claude lane, not only a fallback
+
+**[obs]** 9router provisions a separate Claude config dir per account; `CLAUDE_CONFIG_DIR=~/.claude-9rt claude -p …` switches account without changing the binary or model. Owner's `cl-9rt-min` alias pairs it with `--disallowedTools "Workflow DesignSync"` (row above) for a minimal-surface session.
+
+| Fact | Design consequence |
+|---|---|
+| Separate account = separate quota, same Claude-family model | Not only a spillover for "primary quota exhausted" — a genuine **parallel** lane: a second real Claude worker can run concurrently with the lead's own session without competing for the same tokens, closer to a second seat than a fallback. |
+| Depends on a config dir the owner provisions (`~/.claude-9rt`); not present by default on every machine | **Lead must check `test -d ~/.claude-9rt` before proposing this lane.** Recommending it where the dir is absent is a dead instruction — name it as a one-time setup step for the owner (provision via 9router) instead of silently substituting a different mechanism. |
+
+*Consequence:* the quota-payer axis now doubles as a parallelism axis — two Claude-family lanes (lead + 9router worker) can run at once, each metered on its own account.
+
 ### agy headless — see § Cross-CLI worker above
 
-**[obs]** 2026-08-01, `agy models`: `gemini-3.6-flash-{low,medium,high}`, `gemini-3.5-flash-{low,medium,high}`, `gemini-3.1-pro-{low,high}`, **`claude-sonnet-4-6`**, **`claude-opus-4-6-thinking`**, `gpt-oss-120b-medium`. Also present: `--json-schema`, `--effort`, `--agent`, `--add-dir`, `--print-timeout`, `--disable-slash-commands`, and an `agents` subcommand (empty on this machine — no custom agy agents defined).
+**[obs]** 2026-08-02, `agy models`: `gemini-3.6-flash-{low,medium,high}`, `gemini-3.1-pro-{low,high}`, **`claude-sonnet-4-6`**, **`claude-opus-4-6-thinking`**. Also present: `--json-schema`, `--effort`, `--agent`, `--add-dir`, `--print-timeout`, `--disable-slash-commands`, and an `agents` subcommand (empty on this machine — no custom agy agents defined).
 
 *Consequence:* a Claude-family model can be reached **on the Antigravity quota**. The vendor paying and the model reasoning are independent choices, which is a second axis the Step 2 mechanism table did not previously have.
 
-### Kiro CLI (`kiro-cli`) — **[owner]**, 2026-08-01, unverified
+### Kiro CLI (`kiro-cli` 2.16.0) — **[obs]**, verified 2026-08-02
 
-Not installed on this machine (`~/.kiro/skills` exists only because `install.sh` creates it). Recorded from the owner's report; **verify before any rule depends on it.**
-
-- `kiro-cli chat --no-interactive "<prompt>"` — batch mode; also accepts a piped prompt on stdin.
-- `-a`/`--trust-all-tools` auto-approves every tool; `--trust-tools=fs_read,fs_write` restricts the set; `--trust-tools=` blocks all. The restricted form is the read-only-by-mechanism equivalent of `--mode plan` / `--tools`.
-- `--require-mcp-startup` — exit code 3 if any MCP server fails to start, so a broken worker fails loudly instead of silently degrading.
-- `--wrap always|never|auto` — output wrapping, for piping.
-- Models with cost multipliers: `auto` (1M context), `claude-sonnet-4.5` (200k), `claude-sonnet-4`, `claude-haiku-4.5` (×0.4), `deepseek-3.2` (×0.25), `qwen3-coder-next` (256k, ×0.05), `minimax-m2.5`, `minimax-m2.1`, `glm-5`. `--effort low…max`.
-- Built-in agents `kiro_default` / `kiro_planner` / `kiro_help`; custom profiles in `.kiro/agents` or `~/.kiro/agents`; `--agent-engine v1|v2|v3` (v2 default, v3 has a `spec` mode).
-- `kiro-cli acp` runs Kiro as an Agent Client Protocol server — an external orchestrator can drive it directly.
-- Sessions per workspace in `~/.kiro/sessions/`: `-r`, `--resume-id`, `--resume-picker`, `-d`.
-
-*If verified,* Kiro is the cheapest bandwidth tier available anywhere in this stack (`qwen3-coder-next` at ×0.05 with 256k context) and the only one exposing a machine protocol (ACP) rather than a text CLI.
+| Flag / Feature | Fact | Design consequence |
+|---|---|---|
+| Batch | `kiro-cli chat --no-interactive "<prompt>"` — positional arg also accepted | Drop-in headless substrate, same invocation shape as `claude -p` |
+| Read-only | `--trust-tools=` blocks all; `--trust-tools=fs_read,fs_write` restricts to named set; `-a`/`--trust-all-tools` approves all | Read-only **by mechanism** — equivalent of `--mode plan` / `--tools ""`. Prefer over prompt wording. |
+| Fail-loud | `--require-mcp-startup` — exit code 3 if any MCP server fails to start | A broken worker fails loudly instead of silently degrading |
+| Effort | `--effort low\|medium\|high\|xhigh\|max` — present and operative on all model tiers | Unlike `claude` CLI + haiku, `--effort` is not a no-op on any Kiro model |
+| Session | `--resume-id <ID>`, `-r` (most recent), `--resume-picker`; `--list-sessions`, `--delete-session` | Same persistent-worker pattern as `claude -p --session-id`; cwd-scoped |
+| Engine | `--agent-engine v1\|v2\|v3` (v2 default); `--mode default\|spec` with v3; `--agent <name>`; built-ins: `kiro_default`, `kiro_planner`, `kiro_help`; custom in `.kiro/agents` or `~/.kiro/agents` | v3 spec mode available when needed |
+| ACP | `kiro-cli acp` — exposes Kiro as an Agent Client Protocol server | Only machine protocol in this stack; an external orchestrator can drive Kiro directly |
+| Models | **[obs]** (`--list-models`, 2026-08-02): `auto`(1×), `claude-sonnet-4.5`(1.3×), `claude-haiku-4.5`(0.4×), `minimax-m2.5`(0.25×), `glm-5`(0.5×), `qwen3-coder-next`(0.05×, 256k) | Cheapest bandwidth tier in this stack; only one exposing a machine protocol (ACP) |
 
 ### Stateful workers — both CLIs offer one, and they behave oppositely
 
