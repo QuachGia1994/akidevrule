@@ -62,6 +62,7 @@ Required fields, in order:
    - **Cross-references** — list any other existing docs affected by this decision, beyond the artifact(s) it materialized into
 
 ### B3. Documentation behavior
+- Docs are dense by default (domain application of `agent.A4`): conclusion first, then structure (tables/bullets), prose last, deletion test per sentence — narrative filler and restatement make a doc worse for both humans and LLMs. Length follows content: never pad to look thorough, never cut load-bearing detail to look short.
 - Keep docs synchronized with code. Code does not auto-generate docs unless complex/requested; when editing code derived from `feat|arch` docs, proactively sync the doc or comment the reference path.
 - Comments should not restate what a doc already explains in detail — when the rationale/behavior is complex, or a doc already covers it precisely, comment a reference to that doc (its specific section/heading, not just the whole file, when only part of it applies) instead of duplicating the explanation inline. Keeps the doc as the single source of truth and stops the comment from silently drifting out of sync with it.
 - Prefer one clear canonical doc over multiple overlapping docs

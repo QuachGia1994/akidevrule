@@ -31,7 +31,7 @@ Before responding, scan the user message and any file paths mentioned. For each 
 - **Actions:** writing, editing, reviewing, debugging, or verifying any code; deciding whether something is safe to call done
 
 ### RULE-design-core.md
-Load if message or file path contains any of:
+**Default ON together with RULE-coding whenever the task creates or changes any function, module, flow, or structure** — skip only for trivial value-level edits (a constant, a string, a config value). This file previously loaded only when a design keyword was named explicitly, which is exactly when structural work ran without the forest view and patched instead of reshaping (`design.A8`, `design.B2`). Additional signals — load if message or file path contains any of:
 - **Keywords:** `design pattern`, `pattern design`, `nguyên tắc thiết kế`, `DRY`, `SOLID`, `SRP`, `OCP`, `single responsibility`, `single source of truth`, `SSoT`, `module`, `tách module`, `decomposition`, `phân rã`, `tái sử dụng`, `reuse`, `abstraction`, `trừu tượng hoá`, `pattern lặp`, `duplicate logic`, `rule of three`, `bounded context`, `clean code`
 - **Context:** designing/splitting a module, extracting shared code, refactoring for reuse, hunting duplication, or any "how should this be structured" decision — any stack (backend, Tauri, CLI, library, DB, UI)
 

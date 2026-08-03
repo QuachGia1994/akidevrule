@@ -25,9 +25,10 @@ These rules apply to all product content: interface text, meta titles/descriptio
 - Error messages should state the problem first, then the next action if needed
 - Empty states should explain what is missing and what the user can do next
 
-### B2. Writing style
+### B2. Writing style — density is enforced, not preferred
 - Prefer clear, concrete wording
-- Keep content concise
+- Deletion test per sentence (domain application of `agent.A4`): a sentence ships only if cutting it loses information the reader needs. Cut preamble, filler connectives, restatement, and reassurance — length follows content, never the reverse.
+- First sentence carries the point (the benefit, the instruction, or the answer); detail follows. This generalizes B3's FAQ rule to all content.
 - Avoid filler and vague marketing language unless the project explicitly wants it
 - Keep headings short and literal
 - Punctuation: Strictly limit the use of em dash (—) and en dash (–)

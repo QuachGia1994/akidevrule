@@ -1,6 +1,6 @@
 # Core Coding Rules
 
-<!-- Address map: coding.A1-3 · coding.B1-3 · coding.C1-5 -->
+<!-- Address map: coding.A1-3 · coding.B1-4 · coding.C1-5 -->
 
 ## A. Triết lý & nguồn sự thật
 
@@ -41,6 +41,13 @@ A principle with the procedure that guarantees it — apply to any edit of code 
 - Verify by the **narrowest tool that actually settles the doubt**: static reading and type/lint/unit checks first. Never spin up a full build or dev server just to catch a typo a typecheck would catch.
 - **Running the app is not a default verification step — but not running it does not let you claim "Done".** Starting a dev server, making live network calls, or driving a full build/headless screenshot is **user-triggered**, not self-authorized (cost and side effects are the user's call). When a change's real risk lives **only at runtime** — hydration, layout/z-index, route/auth flow, a dynamically-built class a build step may purge — and you cannot settle it statically, you may **not** report "Done": halt and report the state as **"unverified — needs a runtime check"**, propose the exact command, and hand it to the user (see [[RULE-agent-behavior]] A3). "Done" for logic you only compiled is not done.
 - **A change that requires a separate action against an external system to take effect is not done when the file describing that action is written.** Migrations, remote config, env vars, cache purges, cron/schedule registration — writing the script/config is not the same event as the target system actually reflecting it. Git diff and a green build both stay silent about this gap: neither touches the external system, so both can look complete while the real target (a remote database, a dashboard toggle, a deployed cron) is still on the old state. Verify the action was actually executed **against the real target**, not just that the instructions to perform it exist locally, before reporting "Done" on that change. Domain instantiation: [[RULE-release]] (a release/CHANGELOG entry is not truthful until this holds) and stack-specific execution commands (e.g. `RULE-stack-akiNuxtCf.md` §C8 for D1 migrations).
+
+### B4. Self-documenting code — comments are a last resort
+Domain application of the density root (`agent.A4` — every line must carry information the reader does not already have); the naming root is `design.A7`.
+- Naming and shape come first: a comment that explains *what* a block does is a failed name or a failed extraction — fix the name/structure (`design.A7`, `design.A3`), then delete the comment. Clean flow plus role-named functions and variables need no narration.
+- A comment may state only what the code cannot say: a non-obvious constraint, an external contract, a genuine why. Never narrate the next line, restate the signature, or record change history.
+- Deletion test, per comment: if removing it loses nothing a reader needs beyond what the code already says, remove it. Default is silence — comment density is a smell, not a virtue.
+- One line when a comment is genuinely needed; a rationale bigger than that lives in docs, with the comment holding only the reference (see [[RULE-docs]] B3).
 
 ## C. An toàn runtime
 
