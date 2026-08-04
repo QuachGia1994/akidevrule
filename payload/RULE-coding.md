@@ -43,10 +43,11 @@ A principle with the procedure that guarantees it — apply to any edit of code 
 - **A change that requires a separate action against an external system to take effect is not done when the file describing that action is written.** Migrations, remote config, env vars, cache purges, cron/schedule registration — writing the script/config is not the same event as the target system actually reflecting it. Git diff and a green build both stay silent about this gap: neither touches the external system, so both can look complete while the real target (a remote database, a dashboard toggle, a deployed cron) is still on the old state. Verify the action was actually executed **against the real target**, not just that the instructions to perform it exist locally, before reporting "Done" on that change. Domain instantiation: [[RULE-release]] (a release/CHANGELOG entry is not truthful until this holds) and stack-specific execution commands (e.g. `RULE-stack-akiNuxtCf.md` §C8 for D1 migrations).
 
 ### B4. Self-documenting code — comments are a last resort
-Domain application of the density root (`agent.A4` — every line must carry information the reader does not already have); the naming root is `design.A7`.
+Domain application of the density root (`agent.A4` — every line must carry information the reader does not already have); the naming root is `design.A7`. Penalty card: `[YAP]` (`agent` §0).
 - Naming and shape come first: a comment that explains *what* a block does is a failed name or a failed extraction — fix the name/structure (`design.A7`, `design.A3`), then delete the comment. Clean flow plus role-named functions and variables need no narration.
 - A comment may state only what the code cannot say: a non-obvious constraint, an external contract, a genuine why. Never narrate the next line, restate the signature, or record change history.
 - Deletion test, per comment: if removing it loses nothing a reader needs beyond what the code already says, remove it. Default is silence — comment density is a smell, not a virtue.
+- Comments rot: no compiler checks a comment, so it drifts silently as the code under it changes, and a stale comment misleads worse than none — one more reason deletion is the default, and why a rationale that must stay current lives in a doc the code references ([[RULE-docs]] B3), never duplicated inline.
 - One line when a comment is genuinely needed; a rationale bigger than that lives in docs, with the comment holding only the reference (see [[RULE-docs]] B3).
 
 ## C. An toàn runtime

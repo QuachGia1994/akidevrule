@@ -37,9 +37,7 @@ session="$stamp-$slug"
 dir="$ROOT/$project/$session"
 
 # --- prune first ---------------------------------------------------------
-# Only session directories (depth 2: <project>/<session>) are eligible, so a
-# stray file at the root is never removed. Durable output lives in the repo's
-# docs/ and is never touched by this script.
+# Only session directories (depth 2: <project>/<session>) are eligible, so a stray file at the root is never removed. Durable output lives in the repo's docs/ and is never touched by this script.
 pruned=0
 if [ -d "$ROOT" ]; then
   while IFS= read -r old; do

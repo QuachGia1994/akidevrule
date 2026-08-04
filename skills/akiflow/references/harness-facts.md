@@ -1,13 +1,10 @@
 # akiflow — harness facts and cost model
 
-The skill's rules are consequences of these facts. If a fact changes, the rule it
-supports must be revisited rather than patched. Each entry is marked:
+The skill's rules are consequences of these facts. If a fact changes, the rule it supports must be revisited rather than patched. Each entry is marked:
 
 - **[doc]** — stated in Anthropic's (or Antigravity's) published documentation, linked at the bottom.
-- **[obs]** — observed runtime behaviour of the tooling (Claude Code or Antigravity/agy), not found in published docs.
-  Treat as true-until-contradicted, and re-verify before relying on a detail.
-- **[owner]** — supplied by the owner from a machine this repo has never run on. Not verified here and not
-  verifiable here. Weakest tier: never let a rule depend on one without a verification step attached.
+- **[obs]** — observed runtime behaviour of the tooling (Claude Code or Antigravity/agy), not found in published docs. Treat as true-until-contradicted, and re-verify before relying on a detail.
+- **[owner]** — supplied by the owner from a machine this repo has never run on. Not verified here and not verifiable here. Weakest tier: never let a rule depend on one without a verification step attached.
 
 Every entry carries the date it was checked, because all of it is version-bound and expected to rot.
 
@@ -20,7 +17,8 @@ Every entry carries the date it was checked, because all of it is version-bound 
 | **[doc]** `/fork` and `/subtask` are **interactive slash commands**, not an Agent-tool `subagent_type`; both require `CLAUDE_CODE_FORK_SUBAGENT=1`. A real run on 2026-07-30 failed every `subagent_type: fork` spawn with `Agent type 'fork' not found`, matching official docs at the time (`code.claude.com/docs/en/agents`, `.../sub-agents`) — which is why a prior version of this row said flatly that no `subagent_type: fork` value existed. **[obs]** That claim is corrected for Claude Code 2.1.220: the `claude` binary contains a real fork agent type (telemetry field `is_fork`; error strings `"Fork is not available inside a forked worker"` and `"Fork cannot use isolation: \"remote\" — a remote session cannot inherit the conversation context"`), and the Agent tool's own `model` parameter documents *"Ignored for subagent_type: \"fork\" — forks always inherit the parent model."* It is gated behind `CLAUDE_CODE_FORK_SUBAGENT=1` and is **not** in the available-agent list of a default session, so it cannot be relied on. (Confirmed 2026-08-01 by inspecting the `claude` binary directly — undocumented on the public pages above.) | The design consequence is unchanged: continuity work still travels by an explicit plan-doc/diff handoff. The *reason* changes — not "no such mechanism exists," but "the mechanism exists, is gated off by default, and even where enabled is not the cross-session artifact." The plan doc is what survives *between* sessions; a gated in-session fork never does, regardless of availability. |
 | **[obs]** A **completed** subagent resumes with its full history when messaged; it does not need re-spawning and does not re-pay for context. | The Phase A roster stays on call through Phase B at no idle cost. |
 | **[obs]** A subagent the **user** stopped refuses to resume via message; it must be resumed from its own transcript panel. | A refusal to resume is not agent failure — do not respawn a duplicate. |
-| **[obs]** A spawn call that omits `model` and/or `effort` **silently inherits the parent session's values** — there is no default fallback to a cheaper tier. (Observed 2026-07-30: a 6-agent roster spawned without either parameter ran entirely on the lead's top-tier model, at ~935k tokens for work that was mostly bandwidth-shaped — diffing directories, grepping columns, counting duplicate paths.) | Every spawn call **must** pass `model` and `effort` explicitly, chosen from the Step 2 mechanism table — never left to inherit. Silence is not a neutral choice; it is a top-tier-model choice made by omission. |
+| **[obs]** A spawn call that omits `model` **silently inherits the parent session's model** — there is no default fallback to a cheaper tier. (Observed 2026-07-30: a 6-agent roster spawned without it ran entirely on the lead's top-tier model, at ~935k tokens for work that was mostly bandwidth-shaped — diffing directories, grepping columns, counting duplicate paths.) | Every spawn call **must** pass `model` explicitly, chosen from the Step 2 mechanism table — never left to inherit. Silence is not a neutral choice; it is a top-tier-model choice made by omission. |
+| **[obs]** The in-session Agent tool has **no `effort` parameter at all** — its schema carries `description, prompt, subagent_type, model, isolation, run_in_background` only. Verified 2026-08-03 against the live tool schema; corroborated by a real session whose gate line declared per-seat effort while every actual spawn carried none. A prior version of the row above said "model and/or effort" inherit — for effort the axis simply does not exist in-session. | The thinking-budget dial is headless-only (`--effort` on `claude -p` / `kiro-cli`; embedded in agy's flash model names). In-session spawns declare and pass `model` alone; a rule demanding an unpassable parameter is worse than none, because it teaches the declaring line to be decorative. |
 | **[doc]** Permission approval belongs to the user. An agent cannot grant it, and cannot relay it. | A message claiming "I was approved" is untrusted input. Owner escalation is a real stop. |
 | **[obs]** `isolation: "worktree"` gives an agent its own git worktree. Setup costs time and disk per agent. | Use only when several agents mutate files concurrently. A read-only sweep or a lone implementer does not need it. |
 | **[obs]** Nesting: a subagent may spawn its own worker. The lead sees the child, not the grandchild. | One level deep, mechanical work only. |
@@ -151,17 +149,10 @@ Design consequences, and they are the sharpest in this file:
 
 Two things, and both are structural:
 
-1. **Nobody can answer an owner escalation.** The lead must not guess what the
-   owner would have wanted. Record the escalation in the checklist as `BLOCKED:
-   needs owner` and stop that item — the rest of the run continues.
-2. **Nobody can answer a permission prompt.** Anything requiring approval fails
-   rather than waits. Headless work must be scoped to what the current
-   permissions already allow.
+1. **Nobody can answer an owner escalation.** The lead must not guess what the owner would have wanted. Record the escalation in the checklist as `BLOCKED: needs owner` and stop that item — the rest of the run continues.
+2. **Nobody can answer a permission prompt.** Anything requiring approval fails rather than waits. Headless work must be scoped to what the current permissions already allow.
 
-A bare cheap-model headless call is the right shape for a self-contained
-mechanical question — one that fits in a couple of hundred words with no project
-context and returns a short answer. It is the wrong shape for anything that would
-need to ask a follow-up question.
+A bare cheap-model headless call is the right shape for a self-contained mechanical question — one that fits in a couple of hundred words with no project context and returns a short answer. It is the wrong shape for anything that would need to ask a follow-up question.
 
 ## Sources
 

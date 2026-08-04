@@ -25,14 +25,14 @@
     },
     {
       "created_at": 1784707369088,
-      "detail": "CRITICAL: ALWAYS MAKE SURE\u0000",
+      "detail": "CRITICAL: ALWAYS MAKE SURE\u0000 target group near trigger button",
       "done": false,
       "id": "task-1784707369088",
       "pin": false,
       "title": "RULE CSS popup hover",
-      "updated_at": 1784707369088,
+      "updated_at": 1785760146278,
       "wish": false
     }
   ],
-  "updated_at": 1785147271287
+  "updated_at": 1785760146281
 }

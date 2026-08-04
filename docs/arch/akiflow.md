@@ -263,6 +263,21 @@ Structural answer: **Red Team's first assignment is always the decomposition its
 
 A specialist may spawn its own worker, one level deep, mechanical work only. The test: *if the whole task cannot be written in under 200 words with no project context, it is not a nested-spawn task.* The child never reports to the lead; the parent owns its output entirely. Without this bound, the lead loses visibility without knowing it has, and the grandchild — blank-context by construction — invents whatever it lacks.
 
+## Compliance: evidence and gates, not citation
+
+Two debug sessions from 2026-08-03 (full record: `docs/research/akiflow-compliance-enforcement-aug3.md`) showed that the corpus's chronic failure is enforcement, not content — and that each of the three observed mechanisms defeats a different layer of the design as it stood:
+
+1. **Citation-as-ritual.** Agents quoted rule addresses in the same file that violated the quoted rule. A compliance *claim* was never checked by anything, so citing became a substitute for complying.
+2. **Declared-but-never-ran.** A council run declared Red Team on the roster, named it `challenger:` on items — and it posted zero turns; the items closed anyway. Same class: the thinking floor's FACT/CONSTRAINT/ASSUMPTION clause silently failed to propagate to any agent, and its absence is exactly what let two contradictory inventories both close.
+3. **Prose-worded mechanism.** A subagent told in prose not to mutate git talked itself into `git stash` and swallowed three sibling agents' in-flight work — the failure `agent.A5` predicts verbatim.
+
+The answer is two mechanisms, both shaped by a negative result: the owner had already hand-staffed a free-form rule-police seat (top tier, "fiercely enforce") in one of those runs, and it was the *worst* compliance performer in the room — out of scope, uncheckable evidence, doctrine-answered questions escalated. A police agent with a prose mandate is just another LLM with prose duties.
+
+- **The `akirule-enforcer` seat** (standing, Tier 1/2) is therefore scoped to what a grep can check: its entire output is `REMIND-<n>` turns carrying quoted file:line evidence gathered by its own flash-tier hands, over the mechanically checkable rule classes (hard-wrap, comment budget, credit trailers, scratchpad hygiene, missing tags, oversize turns, undeclared cost dials, missing attestations). No evidence, no reminder; conduct, never content; its teeth live in the gate below, not in its voice.
+- **`council-verify.sh`** is the mechanical closure gate: ghost seats (declared owner/challenger with zero turns), enforcer presence, per-agent tag counts, unanswered REMINDs. It proves *presence*, never quality — judgment stays with the lead — and a FAIL blocks closure. This is the check that would have caught every structural failure in the audited run, and it costs no model tokens at all.
+
+Two knock-on corrections ride with this. The floor gains clause 6, **no self-attestation** — compliance is stated as checkable fact, never as rule-address allegiance. And a factual correction: the in-session Agent tool has **no `effort` parameter** (verified 2026-08-03), so the Step 1 declaration now carries `model` alone for in-session seats — the previous "both dials on every spawn" rule was unfollowable for them, and a rule that cannot be followed teaches the room to treat the whole declaration as decoration.
+
 ## Failure modes, and why each is structural
 
 Each of these is the **default** behaviour of a capable model unless forbidden by name, which is why the skill lists them explicitly rather than trusting judgment.
@@ -285,6 +300,8 @@ Each of these is the **default** behaviour of a capable model unless forbidden b
 16. Reading an empty agy response as a clean sweep → a denied or failed cross-CLI call still returns `status: "SUCCESS"` with `response: ""`; treating that as "nothing found" silently drops the sweep it was supposed to run.
 17. Using a flash-tier cross-CLI worker for judgment → retrieval is what it is for; FACT/CONSTRAINT/ASSUMPTION mislabelling is the one unrecoverable error on this council, and a cheap model does it worst.
 18. A close-out tally that omits cross-CLI spend → `council-cost.sh` only sees the Claude Code transcript; a run that routed real work through agy headless looks cheaper than it was unless that `usage` is added by hand.
+19. A ghost roster seat → declared at the gate, cited as challenger, never posts; items close against a challenge that never happened — the run's only audit removed with no error. Caught mechanically by `council-verify.sh`.
+20. Self-attestation as compliance → a rule address quoted in a report reads as conformance and checks nothing; a real run cited `B5`/`A5` in the file that violated both. Compliance claims are checkable facts, never allegiance.
 
 ## Relationship to the rest of the baseline
 
