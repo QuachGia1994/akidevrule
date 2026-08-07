@@ -139,6 +139,8 @@ These may be correct, but they are not proof. Each one requires evidence, not ta
 
 An evaluation discipline, not a survival rule, and it is **not gated by business context** (unlike Module 4). It guards against two opposite failure modes at once: rat-holing on trivial edges while the main solution goes unbuilt, and hiding a serious risk behind "MVP first".
 
+This module decides **when** something is promoted; it does not decide how much defense it then earns. Once an SFX/EC is promoted and the answer is a guard, a limit, or an accepted risk, hand the sizing to `METHOD-proportionality.md` — reach, capability, motive, blast radius — rather than settling severity by impression here.
+
 **When this applies** — whenever you are *discussing or evaluating* something, not merely executing it:
 - a refactor,
 - a code review / code assessment,

@@ -54,7 +54,7 @@ Domain application of the density root (`agent.A4` — every line must carry inf
 
 ### C1. Error handling
 - Validate at system boundaries: user input, external APIs, filesystem, network, persistence
-- Do not add defensive guards for impossible internal states
+- Do not add defensive guards for impossible internal states — and size the ones that do guard a reachable state against who can actually reach it (`METHOD-proportionality.md`), instead of adding protection by reflex
 - Fail loudly in development when it helps reveal broken assumptions
 - Keep production failures safe and user-appropriate
 - **Never fabricate mock/fixture data as a runtime fallback for a missing dependency** (DB, API, service binding). Throw/return a real error instead. If a local dev environment genuinely lacks that dependency, fix the environment itself (real local instance, proper binding/proxy) — don't paper over it with fake data. Verify the dependency is actually unavailable by reading how the runtime/framework wires it in dev before assuming a fallback is needed at all.

@@ -11,7 +11,8 @@
 - **Composition over duplication (Law 5)** → slots / dynamic components / `v-for`, never hand-copied markup.
 - **OCP (Law 4)** → extend a component via props / variant / slot, never fork a copy.
 - **Name by role (Law 7)** → semantic tokens and variants, never value-names.
-- **Documentation** → every global pattern is recorded (below), so the next agent reuses instead of rewriting.
+- **Reshape, don't stack (Law 8)** → before packaging a repeated style, try to remove it. The tier ladder only *packages* repetition; Law 8 is the only thing that *eliminates* it, and without it a codebase obeys every rule here while growing without bound.
+- **Documentation** → every global pattern is looked up before writing and recorded after, so the next agent reuses instead of rewriting.
 
 ---
 
@@ -23,23 +24,33 @@ Every style belongs to exactly one tier — there is no fifth tier.
 
 | Tier | Name | Definition | Lives in | Example |
 |---|---|---|---|---|
-| 0 | Design Token | Atomic value of the visual system | `tailwind.config` + CSS vars at `:root` | `--color-primary`, `theme.spacing` |
+| 0 | Design Token | Atomic value of the visual system | one source per project — `@theme` (Tailwind v4) or `tailwind.config` (v3), see A2 | `--color-primary`, `theme.spacing` |
 | 1 | Utility | Single-property atomic class, used inline | Tailwind core | `flex`, `gap-4`, `text-sm` |
-| 2 | Pattern class | Utilities repeated ≥3× merged via `@apply`, semantic name | `@layer components` in `assets/css/*` | `.c-card`, `.c-btn` |
+| 2 | Pattern class | Repeated utilities behind one semantic name, defined **once** — `@apply` or plain CSS, both valid | the shared stylesheet in `assets/css/*`, never an SFC `<style>` | `.c-card`, `.c-btn` |
 | 3 | Variant (modifier) | Variation of a pattern — prefer a Vue prop + computed class-map; BEM modifier only where Vue can't control markup | SFC `computed()` or `.c-btn--sm` | `variant="primary"` |
 | 4 | Component | Markup + variant logic packaged as a reusable SFC | `components/base/*.vue` | `<BaseButton variant="danger" />` |
 
+**Before any tier — the subtraction pass (Law 8).** Every rung above adds something; none removes anything. Run these three first, and only what survives gets a tier:
+1. **Delete** — does the element need this style at all, or is it restating a browser or framework default?
+2. **Inherit** — is the property inheritable (color, font, size, leading, tracking, alignment)? Set it once on the nearest container and delete it from every child. A typography class repeated across siblings is almost always this case.
+3. **Hoist** — if siblings share a non-inheritable style, does it belong on the parent as a layout rule (`space-y-*`, `divide-*`, a grid/flex gap) rather than on each child?
+
 Rules between tiers:
-- Tier 1 is the default first reach for any styling need.
-- Climb to tier 2 only when Rule of Three (Law 2) fires — never pre-extract a pattern class.
+- Tier 1 is the default first reach for any styling need that survives the subtraction pass.
+- **The second copy is the STOP; the third is only the extraction threshold.** Rule of Three (Law 2) counts ≥3 occurrences *repo-wide* — a count no editing session can observe, since one open file cannot see the other ninety. Waiting for a trigger nothing can fire is why a codebase reaches thousands of duplicates with an empty pattern layer. The observable trigger is the one in front of you (`design.A5`): the moment you are about to write a class string you already wrote once, stop and decide the shared shape. "Leave both inline" is a legitimate outcome — but it must be a decision, not a default. When the decision needs the real count, scan for it (`C1`); never estimate it.
 - Tier 3 in Vue is **always prop-driven** (a computed class-map). Loose CSS modifiers are only for markup Vue does not render — Markdown/CMS output, static email templates.
 - Tier 4 is the destination: once a pattern has variants, package it as a base component so callers never hand-assemble class strings.
 
-**Mandatory order:** Utility → Pattern class → Component variant → hand-written CSS. Hand-written CSS is the last resort, never the first reflex.
+**Mandatory order:** subtraction → Utility → Pattern class → Component variant → hand-written CSS.
+
+**Inline `style=` is not a fifth tier — it is a single escape hatch for a value computed at runtime** (`:style="{ width: pct + '%' }"`). A static inline style is always a violation: no scan in `C1` sees it, it cannot carry a token, and it cannot be overridden without `!important`. Convert it; never add one.
+
+**A `<style>` block must earn its place, and "last resort" is a quantity claim.** No single file reveals whether the mandatory order holds — inversion is only visible in aggregate, so it must be measured in aggregate (`C1`): when the CSS inside SFC `<style>` blocks outweighs the project's shared stylesheet, the order above has been inverted in practice no matter how reasonable each file looks alone. Legitimate residents of a `<style>` block: keyframes, selectors the framework cannot express (`:has()`, `::-webkit-scrollbar`, print rules, complex sibling logic), third-party overrides, and styling for markup the project does not author (CMS/Markdown output). Everything else belongs to a token, a utility, or a component.
 
 ### A2. Design tokens = the single visual source (Law 1)
 
-- Every visual value — color, spacing, radius, shadow, font, breakpoint, z-index, easing, duration — exists **once**: a token in `tailwind.config` + a CSS variable. Never rewrite a hex / px / ms value anywhere else.
+- Every visual value — color, spacing, radius, shadow, font, breakpoint, z-index, easing, duration — exists **once**, in whichever mechanism the installed framework version actually uses: a `@theme` block for Tailwind v4 (CSS-first), `tailwind.config` for v3, plain CSS custom properties otherwise. Read the project's own setup before writing a token — a rule that names the wrong file teaches the reader that the rule is decorative. Never rewrite a hex / px / ms value anywhere else.
+- **The token layer is itself subject to SSoT: one theme source per project.** Several `@theme` blocks, or custom properties declared ad hoc across dozens of files, reintroduce exactly the drift tokens exist to prevent — a second definition wins by load order, which nothing in the source makes visible.
 - Name tokens by **role**, not by hue/value: `primary`, `surface`, `danger`, `on-surface` — never `bg-blue-500` sprinkled across code. Rebrand = edit one place, not hundreds.
 - Reuse the scientific scales required by `RULE-stack-akiNuxtCf.md`: z-index via `--z-index` variables, radius via `radius-sm | md | lg | xl | pill`.
 
@@ -83,7 +94,9 @@ Never duplicate a markup + logic block across components "for speed." Use slots,
 
 ### B4. Documentation duty (Law 1 for knowledge)
 
-A new **global** pattern class or variant must be recorded in the project's pattern library the moment it is created. An undocumented pattern does not exist — the next person or agent will rewrite it and the duplication returns.
+The duty runs **both ways, and the lookup half comes first**: grep the project's shared stylesheet and token source for the concept before defining any named style, and record a new **global** pattern class or variant in the project's pattern library the moment it is created. An undocumented pattern does not exist — the next agent rewrites it and the duplication returns.
+
+Recording alone does not prevent this. A write-only duty produces a documented pattern that the next session never reads, then redefines locally in an SFC `<style>` block; the shared name now has two live definitions, and the one that wins depends on load order rather than on anything visible at either site. That is strictly worse than raw duplication, because the shared name promises a consistency it no longer delivers. One name, one definition, one file — checked by lookup, not by memory.
 
 ### B5. Hover bridge (Law of Usability)
 
@@ -97,19 +110,30 @@ Any `:hover`-triggered menu or tooltip separated from its trigger by a positioni
 
 ### C1. Inventory by scan (quantify before refactoring by feel)
 
+**Run the inversion check first — it decides whether anything else here is worth doing** (§A1, mandatory order). Compare the shared stylesheet against the CSS scattered through SFC `<style>` blocks; scattered outweighing shared means the tier order is inverted project-wide, which is a token/component-layer problem no amount of per-file tidying reaches:
+```bash
+find . -path ./node_modules -prune -o -name '*.css' -print | xargs cat | wc -l        # shared layer
+find . -path ./node_modules -prune -o -name '*.vue' -print | xargs awk '/<style/{f=1} f{n++} /<\/style>/{f=0} END{print n+0}' | awk '{s+=$1} END{print s+0}'   # scattered layer
+```
+One name, several definitions (§B4 — the failure that is worse than duplication):
+```bash
+grep -rhoE '^\.[a-zA-Z][a-zA-Z0-9_-]*[ ]*\{' --include="*.css" --include="*.vue" . | tr -d ' {' | sort | uniq -c | awk '$1>=2' | sort -rn
+```
 Duplicate long class strings (pattern-class candidates — Law 2):
 ```bash
 grep -rhoE 'class="[^"]{20,}"' --include="*.vue" . | sort | uniq -c | sort -rn | awk '$1>=3'
 ```
-Un-tokenized arbitrary values (Law 8 / §A3):
+Un-tokenized arbitrary values (Law 1 + Law 7 / §A3):
 ```bash
 grep -rnoE 'class="[^"]*\[[^]]+\][^"]*"' --include="*.vue" .
 ```
-Hardcoded hex/rgb outside tokens (Law 1 / §A2):
+Hardcoded hex/rgb outside the token source (Law 1 / §A2):
 ```bash
-grep -rnoE '#[0-9a-fA-F]{3,6}\b|rgb\([^)]+\)' --include="*.vue" --include="*.css" --include="*.ts" . | grep -v tokens.css
+grep -rnoE '#[0-9a-fA-F]{3,6}\b|rgb\([^)]+\)' --include="*.vue" --include="*.css" --include="*.ts" . | grep -viE 'tokens|theme|tailwind\.config'
 ```
-Hand-written `px`/`ms` in `<style>` or inline `style=` — same treatment.
+Hand-written `px`/`ms` in `<style>`, and static inline `style=` — same treatment.
+
+**Two blind spots these commands have; state them in the report rather than letting a clean number imply a clean codebase.** Only literal `class="…"` is matched, so every `:class`/`v-bind:class` binding is invisible and the duplicate counts are floors, not totals. And the presence of a pattern layer must never be inferred from an `@apply` grep — a project may express Tier 2 as ordinary CSS rules (entirely valid, and the norm under Tailwind v4), so absence of `@apply` says nothing about whether Tier 2 exists.
 
 ### C2. Classify severity
 

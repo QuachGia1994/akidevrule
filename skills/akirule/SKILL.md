@@ -8,7 +8,9 @@ user-invocable: false
 
 **Nothing in this file is guaranteed to run.** A skill loads only when the model chooses to invoke it, so every rule routed below is best-effort.
 
-The rules that must apply unconditionally are not here. `index.md` and `RULE-agent-behavior.md` are embedded by the harness through `@` imports in `~/.claude/CLAUDE.md`, which is read mechanically at session start. Do not move them back into this file: an `@` path inside a skill body is not expanded by the harness the way it is inside `CLAUDE.md`, so declaring them here would look like an import while loading nothing.
+The rules that must apply unconditionally are not here. `index.md`, `RULE-agent-behavior.md`, `RULE-coding.md` and `RULE-design-core.md` are embedded by the harness through `@` imports in `~/.claude/CLAUDE.md`, which is read mechanically at session start. Do not move them back into this file: an `@` path inside a skill body is not expanded by the harness the way it is inside `CLAUDE.md`, so declaring them here would look like an import while loading nothing.
+
+The last two used to be routed here as "default ON" Tier 1 entries. That phrasing promised a guarantee the mechanism could not deliver — a file routed by a skill loads only if the model first decides to invoke the skill — and the observed failure was not the rules being read and ignored but never being read at all. Do not re-add them below: they are already in context on every turn, so a signal block for them would only produce a redundant `Read`.
 
 ## Addressing scheme (recall only — does not affect routing)
 
@@ -24,16 +26,8 @@ Before responding, scan the user message and any file paths mentioned. For each 
 
 **A file extension alone is a sufficient signal.** Touching a `.md` loads `RULE-docs.md`; a `.vue`/`.css` loads `RULE-ui-pattern.md`; `.rs`/`Cargo.toml` loads `RULE-stack-tauri.md`; `.sql`/`migrations/` loads `RULE-db-design.md`. The project does **not** need a matching folder structure, a `docs/` tree, or an existing design system first — match on what is being touched, not on how mature the project is. The keyword and action lists below are additional entry points, never a required second condition.
 
-### RULE-coding.md
-**Default ON whenever the task touches code at all.** This file was previously force-loaded; treat a miss as a real failure, not a wasted read. Skip only when the task provably touches no source file (pure prose, pure discussion, pure config-free doc edit). Load if message or file path contains any of:
-- **Keywords:** `code`, `function`, `class`, `bug`, `fix`, `error`, `exception`, `crash`, `refactor`, `implement`, `write`, `edit`, `test`, `verify`, `type`, `null`, `undefined`, `race`, `async`, `await`, `try/catch`, `validate`, `sanitize`, `secret`, `token`, `password`, `injection`, `encoding`, `UTF-8`, `unicode`, `performance`, `slow`, `leak`, `sửa`, `lỗi`, `viết hàm`, `kiểm thử`, `bảo mật`, `hiệu năng`
-- **Paths:** any source file — `**/*.{ts,js,vue,rs,py,go,sh,sql,json,toml,yaml}`
-- **Actions:** writing, editing, reviewing, debugging, or verifying any code; deciding whether something is safe to call done
-
-### RULE-design-core.md
-**Default ON together with RULE-coding whenever the task creates or changes any function, module, flow, or structure** — skip only for trivial value-level edits (a constant, a string, a config value). This file previously loaded only when a design keyword was named explicitly, which is exactly when structural work ran without the forest view and patched instead of reshaping (`design.A8`, `design.B2`). Additional signals — load if message or file path contains any of:
-- **Keywords:** `design pattern`, `pattern design`, `nguyên tắc thiết kế`, `DRY`, `SOLID`, `SRP`, `OCP`, `single responsibility`, `single source of truth`, `SSoT`, `module`, `tách module`, `decomposition`, `phân rã`, `tái sử dụng`, `reuse`, `abstraction`, `trừu tượng hoá`, `pattern lặp`, `duplicate logic`, `rule of three`, `bounded context`, `clean code`
-- **Context:** designing/splitting a module, extracting shared code, refactoring for reuse, hunting duplication, or any "how should this be structured" decision — any stack (backend, Tauri, CLI, library, DB, UI)
+### RULE-coding.md · RULE-design-core.md — not routed, already loaded
+Both are core `@` imports (see the section above) and are in context on every turn without this skill running. Nothing to match, nothing to `Read`, and they never appear in a load-confirmation line.
 
 ### RULE-docs.md
 Load if message or file path contains any of:
@@ -57,6 +51,7 @@ Load if message or file path contains any of:
 Load if message or file path contains any of:
 - **Keywords (enforcement):** `component`, `vue`, `nuxt`, `tailwind`, `css`, `class`, `style`, `design token`, `token`, `variant`, `design system`, `atomic design`, `pattern class`, `@apply`, `@layer`, `BaseButton`, `c-btn`, `c-card`
 - **Keywords (audit):** `dọn dẹp`, `class trùng`, `duplicate class`, `duplicate CSS`, `trùng lặp`, `audit CSS`, `refactor CSS`, `refactor UI`, `arbitrary value`, `quét class`, `w-[`, `text-[`
+- **Keywords (minimization):** `tối giản`, `giảm CSS`, `bớt CSS`, `minimize CSS`, `reduce CSS`, `gọn lại`, `CSS rác`, `style block`, `inline style`, `scoped style`, `@theme`, `theme block`, `token drift`, `nhiều CSS quá`, `code CSS nhiều`
 - **Paths:** any `.vue`, `.css`, `.scss`, or `.tsx`; `components/**`, `assets/css/**`, `tailwind.config.*`
 - **Actions:** writing/refactoring any component or style; auditing a frontend codebase for DRY/SOLID violations
 
@@ -102,10 +97,25 @@ Load if message contains any of:
 - **Keywords:** `UX`, `user experience`, `usability`, `user behavior`, `user psychology`, `onboarding`, `user flow`, `friction`, `cognitive load`, `empty state`, `first run`, `dead end`, `dark pattern`, `trải nghiệm người dùng`, `tâm lý người dùng`, `hành vi người dùng`, `khó dùng`, `rối`, `luồng người dùng`, `đánh giá giao diện`, `review UI`, `review UX`
 - **Context:** evaluating an interface or flow through user behavior (not just visual styling — that is `RULE-ui-pattern.md`), designing an onboarding/conversion flow, diagnosing "why don't users do X"
 
+### METHOD-zero-trust-audit.md
+Load if message contains any of:
+- **Keywords:** `audit khắt khe`, `ép rule`, `force audit`, `quét tuyệt đối`, `zero-trust audit`, `rà soát toàn bộ`, `quét toàn dự án`, `chứng minh sạch`, `audit tuyệt đối`
+- **Context:** when the user asks for an uncompromising sweep — of the whole project or of a change plus everything that reads it — that must be driven by detectors rather than by impression. Read-only: it produces a short findings report, not fixes.
+
 ### METHOD-deep-think.md
 Load if message contains any of:
 - **Keywords:** `new feature`, `tính năng mới`, `should we`, `có nên`, `simplest way`, `đơn giản nhất`, `is this worth`, `có đáng`, `tradeoff`, `scope`, `effort`, `value`, `premature`, `complexity`, `abstraction`, `tooling`, `first principles`, `tư duy nguyên bản`, `phản biện`, `mục tiêu tối thượng`, `one-way door`, `quyết định lớn`, `decision record`, `pre-mortem`, `evaluate`, `assess`, `review the approach`, `worth refactoring`, `good idea`, `side effect`, `edge case`, `đánh giá`, `bàn luận`, `nên refactor`, `đánh giá ý tưởng`, `đánh giá chiến lược`, `tác dụng phụ`, `trường hợp biên`
 - **Context:** architectural or tooling decision, scope or effort/value discussion, a big or hard-to-reverse decision, a request for first-principles/critique-style thinking, or *discussing/evaluating* (rather than just executing) a refactor, a code review, a strategy/plan, or an idea — the four cases that trigger Module 5 (MVP focus, side-effects/edge-cases weighed by severity)
+
+### METHOD-proportionality.md
+Load if message contains any of:
+- **Keywords:** `rate limit`, `quota`, `throttle`, `abuse`, `spam`, `bot`, `exploit`, `bypass`, `tamper`, `client-side check`, `guard`, `defensive`, `hardening`, `threat model`, `attack surface`, `over-engineering`, `overthinking`, `paranoid`, `is it worth defending`, `lạm dụng`, `giới hạn`, `chặn`, `hạn mức`, `phòng thủ`, `bảo mật quá mức`, `nghĩ quá nhiều`, `vẽ vời`, `có cần chặn không`, `bao nhiêu user`, `mấy ai làm được`, `rủi ro`, `mức độ nghiêm trọng`
+- **Context:** any proposal to add, keep, size, or remove a guard / limit / validation / permission check; deciding whether a client-side restriction is enough; accepting a risk deliberately; weighing MVP speed against security or abuse resistance. Also load when a discussion is stacking protection with no evidence of who could actually reach the state being protected.
+
+### METHOD-subtraction-audit.md
+Load if message contains any of:
+- **Keywords:** `subtraction audit`, `dead code`, `unused`, `unreferenced`, `bloat`, `strip down`, `minimize the repo`, `tối giản tuyệt đối`, `tối giản tối đa`, `tinh gọn toàn bộ`, `cắt giảm tối đa`, `dọn sạch repo`, `xoá code thừa`, `code chết`, `refactor hạng nặng`, `không còn gì để bớt`, `gọn nhất có thể`
+- **Context:** a request to minimize or strip an existing repository rather than to check its correctness. Pairs with `METHOD-zero-trust-audit.md`, whose scope-lock, detector-first order and evidence classes it inherits. Read-only: it reports and plans removals, it never deletes.
 
 ---
 
@@ -120,9 +130,22 @@ Load if message contains any of:
 
 ---
 
-## Load confirmation
+## Load confirmation — the `[RULES]` receipt
 
-After any loading, output one line at the start of the response:
-- Tier 1: `[akirule] +RULE-coding.md +RULE-docs.md` (list files actually loaded this turn)
-- Tier 2: `[akirule:full] Loaded: <all filenames>`
-- Nothing loaded: no output needed
+One line at the start of the response, reporting the **whole rule context**, not this skill's delta:
+
+```
+[RULES] agent,coding,design (core) + docs,ui (router) | missing: none
+```
+
+| Element | Rule |
+|---|---|
+| Names | topic addresses — filename minus the `RULE-`/`METHOD-` prefix and `.md` (`~/.aki/akidevrule/index.md` § addressing scheme). No new vocabulary. |
+| `(core)` | the four `@`-imported files. Always listed, even though this skill did not load them: their presence is otherwise unobservable, and they are the most-violated group. Listing them reports context state; it does not claim credit for the load. |
+| `(router)` | files this skill loaded this turn. Tier 2 writes `(router:full)`. |
+| `(brief)` | for a worker/subagent — the files its spawning prompt named and it actually read. A worker inherits no router, so it uses this instead of `(router)` and emits the line as the first line of its single round (`agent.A5`). |
+| `missing:` | every file that was required and could not be read, else `none`. `[RULES] none \| missing: agent` is the loudest case and the reason this field exists. |
+
+**The line is mandatory.** The session agent emits it on its first response of the session, and again on any turn where the set changes; a worker emits it always. Silence is never "nothing loaded" — a missing line is indistinguishable from a router that never ran, and those are different bugs with opposite fixes. With the line mandatory, a later turn without one carries exactly one meaning: the set is unchanged since the last line printed.
+
+The receipt is **self-reported: a diagnostic signal, never evidence** (`agent.B2`). Do not gate closure on it. The cross-check that does carry weight is the agent definition's declared rule manifest against the line it emitted — a mismatch is a finding.

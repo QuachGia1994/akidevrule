@@ -54,6 +54,7 @@ A worker is a subagent, or the same or another CLI called headlessly (`claude -p
 
 **Know which kind of cheap you are buying.** A stateless cheap call is cheap *per call* and must re-receive its context every time. A persistent worker (`claude -p --session-id <uuid>`, later `--resume <uuid>`) is cheap *per turn after the first*, because its prefix is cached — roughly an eighth of the opening turn, then flat — and it keeps everything **it** was told, though nothing the caller knows. Use the first for one wide question, the second for a worker you will come back to. The session id is scoped to the directory it was created in.
 - **A worker inherits nothing** — not your context, not your rules, not your router. Name the exact rule files it must read and the exact paths or targets it must look at. "Follow the project rules" loads nothing and reads as compliance.
+- **Require the return leg — the worker reports what it actually received.** Naming the files is only half the loop: a brief that was ignored, a path that no longer resolves, and a rule read in full all produce output that looks the same. The worker's first line is a receipt — `[RULES] agent,coding (brief) | missing: none` — naming the topic address of every rule file it read and listing anything it was told to read and could not. A worker gets one round, so this is not conditional: with no receipt, a later violation cannot be traced to either the brief or the behavior, and those two have opposite fixes. Format and the session-side duty: `skills/akirule/SKILL.md` § Load confirmation.
 - **Set both dials, every time: model tier and thinking effort.** An omitted parameter does not fall back to something cheap; it silently inherits the caller's own expensive settings. Silence is an expensive choice made by accident.
 - **Enforce read-only by mechanism, not by wording**, wherever "fixing while I'm here" would be unrecoverable — restrict the worker's tool set, or use the CLI's read-only/plan mode. A prompt-worded ban is one the model can talk itself out of.
 - **If a program will parse the output, use the structured-output flag** rather than asking for JSON in prose.
@@ -74,6 +75,7 @@ A worker is a subagent, or the same or another CLI called headlessly (`claude -p
 - Separate verified facts from assumptions
 - If unverifiable right now, say so directly
 - Cite the source of truth when making important claims
+- **Naming a rule is not complying with it.** A rule address in your output carries zero evidentiary weight — it proves the address was available to you, nothing about what you did. State compliance only as a checkable fact (`read-only: --tools Read,Grep`, `git mutations: none`, `files edited: 0`), never as allegiance to a citation. The same asymmetry applies to the `[RULES]` receipt in `A5`: it is self-reported, so it is a diagnostic signal about delivery, never evidence of conduct.
 
 ### B3. Decision boundaries
 Ask before:

@@ -59,6 +59,7 @@ Before adding a feature or fixing a bug in unfamiliar code, do a quick whole-flo
 
 ### B3. Before introducing any new abstraction — critique gate
 No new shared layer, base module, or generalization ships without a quick `METHOD-deep-think.md` critique mini-pass:
+- **Subtract before you share** — must the duplicated thing exist at all? Packaging repetition is the second-best outcome; deleting it, or moving it somewhere it happens once by construction, is the first. Every bullet below silently assumes the code has to exist, so ask this one before them or the cheapest answer is never reached (`think.B4`).
 - **Steelman NOT abstracting** — is keeping the duplication actually cheaper here?
 - **Attack the abstraction** — one concrete way it could be the wrong shape, and how you'd know.
 - **Smaller first** — is the first version smaller than the imagined final one?

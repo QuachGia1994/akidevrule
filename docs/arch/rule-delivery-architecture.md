@@ -57,13 +57,13 @@ flowchart TD
     INSTALL -->|"create only if missing"| GGEML["~/.gemini/GEMINI.local.md<br/>machine-local, never overwritten"]
 
     subgraph CCC["Claude Code — deterministic load"]
-        SKILLS -->|"@import Tier 1"| RULES
-        GCLAUDE --> RULES
+        SKILLS -->|"Read on signal match (Tier 1, best-effort)"| RULES
+        GCLAUDE -->|"@import ×4 (core, guaranteed)"| RULES
     end
 
     subgraph AGC["Gemini / Antigravity — concatenated context"]
         GGEML -->|"cat, appended verbatim at install time"| GGEM
-        GRULES["~/.gemini/config/rules/akirule-*.md<br/>15 rules with YAML trigger frontmatter"]
+        GRULES["~/.gemini/config/rules/akirule-*.md<br/>18 rules with YAML trigger frontmatter"]
         GSKILLS["~/.gemini/config/skills/<br/>8 skills (native auto-discovery)"]
     end
 
