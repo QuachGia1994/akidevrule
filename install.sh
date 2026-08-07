@@ -75,6 +75,16 @@ inspect_status() {
     fi
   done
 
+  for agent_file in "$REPO_ROOT"/claude/agents/*.md; do
+    [ -f "$agent_file" ] || continue
+    agent_name="$(basename "$agent_file")"
+    if [ -f "$CLAUDE_DIR/agents/$agent_name" ]; then
+      echo -e "🧠 Agent $agent_name: will \033[1;33mOVERWRITE\033[0m $CLAUDE_DIR/agents/$agent_name"
+    else
+      echo -e "🧠 Agent $agent_name: will \033[1;32mCREATE\033[0m $CLAUDE_DIR/agents/$agent_name"
+    fi
+  done
+
   local old_skills=()
   for s in "${OLD_SKILLS[@]}"; do
     [ -d "$CLAUDE_DIR/skills/$s" ] && old_skills+=("$s")
@@ -153,6 +163,15 @@ PY
     echo -e "  🔧 $(basename "$skill_dir")"
   done
 
+  if [ -d "$REPO_ROOT/claude/agents" ]; then
+    echo ""
+    echo -e "\033[1;36mAgents deployed ($CLAUDE_DIR/agents/ — your own agents there are untouched):\033[0m"
+    for agent_file in "$REPO_ROOT"/claude/agents/*.md; do
+      [ -f "$agent_file" ] || continue
+      echo -e "  🧠 $(basename "$agent_file" .md)"
+    done
+  fi
+
   echo ""
   echo -e "\033[1;36mOther CLI skill roots synced (harmless if that CLI isn't installed):\033[0m"
   echo -e "  🤖 Codex CLI : $CODEX_SKILLS_DIR"
@@ -180,6 +199,17 @@ sync_aki_skills() {
   done
   for old_skill in "${OLD_SKILLS[@]}"; do
     rm -rf "$dest_root/$old_skill"
+  done
+}
+
+# Copied file by file, never mirrored with --delete: ~/.claude/agents/ is shared with the user's own agents, same as ~/.claude/skills/.
+sync_aki_agents() {
+  local dest_root="$CLAUDE_DIR/agents"
+  [ -d "$REPO_ROOT/claude/agents" ] || return 0
+  mkdir -p "$dest_root"
+  for agent_file in "$REPO_ROOT"/claude/agents/*.md; do
+    [ -f "$agent_file" ] || continue
+    cp "$agent_file" "$dest_root/$(basename "$agent_file")"
   done
 }
 
@@ -221,6 +251,9 @@ sync_aki_skills "$CLAUDE_DIR/skills"
 sync_aki_skills "$CODEX_SKILLS_DIR"
 sync_aki_skills "$KIRO_SKILLS_DIR"
 sync_aki_skills "$GROK_SKILLS_DIR"
+
+# Claude Code-only: the agent-definition format has one implementation today (docs/research/akiflow-drift-diagnosis-aug6.md § Decision).
+sync_aki_agents
 
 # Install the notify-only update-check hook and record this machine's source
 # repo path so the hook can print the correct update command.
@@ -357,14 +390,17 @@ RULE-docs.md|model_decision|Documentation structure, plan lifecycle, doc-sync be
 RULE-content-write.md|model_decision|UI copy, semantic stability, writing style and i18n. Load when writing user-facing text.|
 RULE-stack-akiNuxtCf.md|glob|Nuxt, Vue, Cloudflare Pages and Workers, Tailwind, i18n, state and build conventions. Load when working in a Nuxt or Cloudflare project.|[\"**/*.vue\", \"**/*.ts\", \"nuxt.config.*\", \"server/**/*.ts\"]
 RULE-stack-tauri.md|glob|Tauri v2 and Rust conventions, including the never-block-the-UI rule for subprocess and network commands. Load when working in a Tauri project.|[\"src-tauri/**\", \"**/*.rs\", \"tauri.conf.json\"]
-RULE-ui-pattern.md|model_decision|Frontend class taxonomy, design tokens, arbitrary-value policy, atomic structure and variant APIs. Load when building or auditing UI components.|
+RULE-ui-pattern.md|model_decision|Frontend design-system layer: the subtraction pass that runs before the class-tier ladder, class taxonomy, design tokens in whichever mechanism the installed framework version uses, the aggregate style-block budget, arbitrary-value policy, variant APIs and the audit playbook. Load when building, minimizing or auditing UI components and styles.|
 RULE-seo.md|model_decision|Meta limits, schema.org, robots, sitemap, Open Graph and AI visibility. Load when working on SEO or page metadata.|
 RULE-release.md|model_decision|CHANGELOG discipline, release versus deploy boundary, severity-driven version bumps and the pre-ship gate for finished-but-unpushed work. Load when preparing a release, writing a changelog, or checking whether finished work is actually shippable.|
 RULE-db-design.md|model_decision|Immutability and event sourcing, normalization, bounded contexts, flat-query discipline. Load when designing a schema, migration or database refactor.|
 RULE-biz.md|model_decision|Positioning, audience, USP, pricing, monetization and customer-psychology messaging rules. Load on any market-facing decision or when working on docs/biz content.|
 METHOD-flow-audit.md|model_decision|Method for auditing end-to-end flow integrity. Load when guards and checks keep accumulating around a flow.|
+METHOD-zero-trust-audit.md|model_decision|Strict mechanical-first audit: scope locked by command, detectors run before any opinion, findings split into exact machine matches versus pattern-level candidates, short findings-only report. Load when the user asks for an uncompromising sweep of a project or of a change and everything it touches.|
 METHOD-deep-think.md|model_decision|Deep-think method: goal excavation, first principles, mandatory critique. Load for big, hard-to-reverse or goal-ambiguous decisions.|
-METHOD-ux-psych.md|model_decision|UX psychology audit: cognitive load, recognition, feedback, defaults, motor cost and mental-model lenses with a persona walkthrough protocol. Load when evaluating an interface or user flow through user behavior.|"
+METHOD-ux-psych.md|model_decision|UX psychology audit: cognitive load, recognition, feedback, defaults, motor cost and mental-model lenses with a persona walkthrough protocol. Load when evaluating an interface or user flow through user behavior.|
+METHOD-proportionality.md|model_decision|Sizing a defense against its real threat: reach, capability, motive and blast radius measured before any guard, limit, quota or accepted risk is added, kept or removed; irreversibility outranks frequency; client-side limits are UX, never enforcement. Load whenever protection is being proposed, sized or dropped.|
+METHOD-subtraction-audit.md|model_decision|Repo-wide subtraction sweep asking what no longer needs to exist, terminating on two consecutive rounds with no new findings, with Chesterton's Fence as the brake before any removal is called certain. Load when the request is to minimize or strip an existing codebase rather than to check it is correct.|"
 
 ag_rules_written=0
 # Remove rules from a previous install so renamed/dropped files do not linger.

@@ -10,6 +10,17 @@ Only two things travel upward. The three named escalations (one-way door, contra
 
 Read every rule below as an instrument of that purpose. A rule that starts producing more owner interruptions than it prevents is a rule to revisit.
 
+### The two laws the lead owns
+
+Two council runs on 2026-08-06 both over-staffed a task that did not need a council and answered a question the owner had not asked. Twenty-four distinct defects reduced to exactly two roots (`docs/research/akiflow-drift-diagnosis-aug6.md`), and the current design is those two roots made operational:
+
+| Law | Statement | Absorbs |
+|---|---|---|
+| **R1 — ANCHOR** | The owner's words are immutable and are the final test: content, the mechanism they named, and the shape of the answer. The moment the lead paraphrases, the anchor is gone and every seat afterwards inherits the paraphrase. | off-brief framing, an invented problem statement, the wrong output shape, re-litigating a mechanism the owner already specified, an unauthorised model tier |
+| **R2 — JUSTIFICATION** | Every mechanism — seat, check, step, script, consult — is **OFF by default** and turns on only when *this run* produces a reason. Being documented is not a reason. | redundant probes, ritual on throwaway artifacts, seats with no surface to act on, a gate that forced a seat to exist, cost of verification exceeding cost of failure |
+
+R1 governs the *goal*; R2 governs the *means*. No third law is needed: "redundant check" is R2 applied to behavior, "redundant guard" is R2 applied to code (`coding.C1`), "subtraction" is R2 applied to a repo (`METHOD-subtraction-audit.md`). They are written as the **lead's job description** rather than as corpus-wide law, because that is the scope at which they are actually enforceable here.
+
 ## The failure being targeted
 
 A single agent working alone on a substantial task degrades in three independent ways. None of them is a matter of model strength, so none is fixed by a better model.
@@ -45,9 +56,11 @@ This single structure resolves four requirements that otherwise pull against eac
 | Independent critique | The challenger field makes dissent structural rather than a hoped-for behaviour. |
 | Debate terminates | The closing criterion is the stop condition. Without one, "discuss until satisfied" has no end. |
 
-Decomposition into items **is** the first-principles step of a run. Everything downstream inherits its cuts, which is why it happens before any agent is spawned, and why the decomposition is the first thing Red Team attacks.
+Decomposition into items **is** the first-principles step of a run. Everything downstream inherits its cuts, which is why it happens before any agent is spawned, and why the decomposition is the first thing `aki-challenger` attacks.
 
-**The requirement ledger sits in front of the decomposition.** Items are cut along real boundaries, which means they deliberately do not mirror the shape of the owner's message — and that reshaping is exactly where a requirement gets lost with nobody noticing. A fifteen-requirement message whose seventh point silently falls out of the item map fails in a way no downstream mechanism catches, because every downstream mechanism operates *within* the items. So the owner's message is pinned as a numbered `REQ-1…n` ledger at the top of `checklist.md` before decomposition, every item names the REQs it covers, and an orphan REQ is a decomposition bug by definition. Red Team attacks the REQ→item mapping together with the cuts. This replaces the owner writing "ghim chính xác toàn vẹn mọi yêu cầu" defensively into every invocation — coverage is a property of the ledger, not of anyone's diligence, which is the same move the item checklist already makes for thoroughness.
+**The requirement ledger sits in front of the decomposition.** Items are cut along real boundaries, which means they deliberately do not mirror the shape of the owner's message — and that reshaping is exactly where a requirement gets lost with nobody noticing. A fifteen-requirement message whose seventh point silently falls out of the item map fails in a way no downstream mechanism catches, because every downstream mechanism operates *within* the items. So the owner's message is pinned as a numbered `REQ-1…n` ledger at the top of `checklist.md` before decomposition, every item names the REQs it covers, and an orphan REQ is a decomposition bug by definition. `aki-challenger` attacks the REQ→item mapping together with the cuts. This replaces the owner writing "ghim chính xác toàn vẹn mọi yêu cầu" defensively into every invocation — coverage is a property of the ledger, not of anyone's diligence, which is the same move the item checklist already makes for thoroughness.
+
+**The anchor sits in front of the ledger, and it is an argument, not a discipline.** Pinning the owner's verbatim message was a Step 0 instruction, and both audited runs skipped it — one pinned a SePay/D1/wallet consolidation question when none of those four words appeared in the owner's message. So `council-open.sh` now **requires the message as an argument** and refuses to open a session without it, writing it as `chat.md`'s immutable `## anchor` block. Every `REQ-<n>` line must then carry a `"quoted fragment"` that actually appears in that block, and `council-verify.sh` fails the run when it does not. The quote is what makes a ledger line a requirement rather than an interpretation — the cheapest mechanical tie back to the owner's own words, and the only one that survives a lead which has already convinced itself.
 
 **Extraction is not the lead's to do.** The design as first written had the lead itself hand-extract the ledger from the owner's message — which contradicted the skill's own anti-pattern #11 ("the lead doing menial work itself") the moment a real run made the size of that extraction visible: bulk-pulling fifteen requirements out of a message and numbering them is bandwidth work by the Step 2 mechanism table's own definition, not judgment. The fix keeps the judgment and sheds the labor without reopening the coverage guarantee above: a cheap subagent drafts the ledger from the owner's message verbatim, and **the lead ratifies it** — one read against the original message before cutting anything. An unratified draft is not a ledger; the lead still owns coverage, the worker only owns the labor of finding it.
 
@@ -59,7 +72,15 @@ The earlier design fired on structural proxies — schema change, ≥3 modules, 
 2. **Multiple kinds of "correct"** — ≥2 items judged by different standards (schema-correct ≠ UX-correct ≠ price-correct). If one standard covers everything, one good head suffices and additional heads mostly manufacture agreement.
 3. **Cost of error > cost of coordination.**
 
-Tier is then a consequence of condition 2 rather than a separate taxonomy: Tier 0 = one standard; Tier 1 = several technical standards; Tier 2 = at least one standard set by a person or a market. This definition extends itself — adding a security or legal domain later requires no new signal list.
+**Tiers were replaced by modes.** The tier number was a count of *kinds of standard*, which is condition 2 restated — and it did real damage, because a roster derived from a tier ("two standing seats on every Tier 1/2 roster") is a roster derived from a taxonomy rather than from a requirement, which is R2 violated by construction and the direct cause of the observed over-staffing. What the run actually needs to know is a different question with an operational answer: **what changes outside the room?**
+
+| Mode | Changes outside the room | Produces |
+|---|---|---|
+| `discuss` | nothing | a decision and its record; no `aki-maker` is convened |
+| `audit` | nothing — read-only by construction (`agent.B5`) | findings, plus a plan that schedules the fixes; fixes are a separate run through this gate |
+| `execute` | files | a verified diff; `aki-maker` is the only seat permitted to write |
+
+Condition 2 still decides *whether* there is a council at all, and it still extends itself — a security or legal domain needs no new signal list. It simply no longer names the roster.
 
 ## Harness facts the design is built on
 
@@ -97,6 +118,8 @@ One fact recorded only so it need not be re-investigated: Claude Code's `/team-o
 | Independence (must not be contaminated by the lead's reasoning) | plain subagent, strong model | blank context is the asset |
 | Structured debate | named roster convened at once + `SendMessage` | genuine peer challenge, not hub-and-spoke relay |
 | Bandwidth, read-only, off the Claude quota | cross-CLI worker: a Claude Code lead calls `agy --model gemini-3.6-flash-low --mode plan --output-format json -p "<prompt>"` | `--mode plan` enforces read-only by mechanism, stronger than an inherited Claude permission mode; `~/.gemini/GEMINI.md` carries the behavior floor into the call for free; retrieval only, never judgment (`references/harness-facts.md` § Cross-CLI worker) |
+
+The per-lane detail — when to pick each substrate, and what context and rule files the caller must pass because that lane reads no definition file — now lives in `claude/agents/aki-hands.md` beside the mandate it serves, rather than being restated in the skill. The flags themselves are recorded facts and are read, never re-probed: one drifted run spent three calls re-learning what `harness-facts.md` already stated.
 
 Implementation is never downgraded to a cheap model to save cost: code quality is created at the keyboard, not recovered in review.
 
@@ -160,15 +183,17 @@ A reviewer briefed with the lead's entire self-justifying chain — the room, th
 
 ```mermaid
 flowchart TD
-    REQ["Owner request"] --> GATE{"Activation gate\n(design.A2-4):\ndecomposable? +\n2+ kinds of 'correct'? +\ncost of error &gt; cost of coordination?"}
-    GATE -->|"any condition fails"| SOLO["Tier 0 — direct work,\nno council"]
-    GATE -->|"all three hold"| DECOMP["Decompose into work items\n{owner, challenger, closing criterion}\n(precondition, not a product of the room)"]
+    REQ["Owner request"] --> ANCHOR["council-open.sh pins the message VERBATIM\nas chat.md's immutable anchor block\n(refuses to open without it)"]
+    ANCHOR --> LEDGER["aki-hands drafts REQ-1..n,\neach quoting a fragment of the anchor;\nthe lead ratifies before cutting"]
+    LEDGER --> GATE{"Activation gate:\ndecomposable? +\n2+ kinds of 'correct'? +\ncost of error &gt; cost of coordination?"}
+    GATE -->|"any condition fails"| SOLO["No council — direct work,\nclosed by a verifier subagent"]
+    GATE -->|"all three hold"| DECOMP["Decompose into work items\n{covers, owner, challenger, closing criterion}\n(precondition, not a product of the room)"]
 
-    DECOMP --> CONVENE["Convene named roster\nin one batch (sibling-roster snapshot)"]
+    DECOMP --> CONVENE["Convene named roster in one batch;\nevery seat traces to a REQ\n(catalog is not a roster)"]
 
     subgraph PHASEA["Phase A — analysis room (chat.md, time order)"]
         CONVENE --> ROOM["Specialists work items,\npeer-challenge via SendMessage"]
-        ROOM --> REDTEAM["Red Team attacks\nthe decomposition itself"]
+        ROOM --> REDTEAM["aki-challenger attacks the decomposition first,\nthen closes on 'what can be cut?' +\n'does this answer the anchored words?'"]
         REDTEAM --> STEER{"Lead steering signal?\n(re-covered ground / stalled criterion /\nmandate drift / cost &gt; value)"}
         STEER -->|"yes"| CHECKPOINT["Pinned CHECKPOINT line\nto drifting agents only"]
         CHECKPOINT --> ROOM
@@ -215,18 +240,27 @@ The room's format (`# head` → `## pinned` → `### <time> <agent> #<turn>` →
 
 **Docs remain the cross-session handoff.** `SendMessage` dies with the session; multi-week burst work does not. Peer messaging replaces docs *within* a run, never *between* runs.
 
-## The thinking floor is mandatory for every subagent
+## The agent layer replaced the pasted thinking floor
 
-Every specialist, every mechanism, every tier — including cheap models on mechanical items, since a sweep that reports an assumption as a fact is more damaging than one that reports nothing.
+The skill used to paste a 55-line thinking floor into every subagent prompt. Decomposed against the corpus, roughly 70% of it already existed elsewhere — FACT/CONSTRAINT/ASSUMPTION tagging and the self-attack are `METHOD-deep-think.md` B2/B3; output hygiene, one-line-per-paragraph and the comment budget are `agent.A4`, `agent.C3`, `coding.B4`. One clause was genuinely new **and** genuinely universal — *"naming a rule is not complying with it; a rule address in your output carries zero evidentiary weight"* — and it was living where only council seats would ever see it, though it is true of every agent in every session. It now sits in `agent.B2`, and the pasted block is gone.
 
-Enforcement is by **format, not by adjective**. A model instructed to "think from first principles" writes *"fundamentally, …"* and then restates the convention it already held — first-principles cosplay. The floor is therefore built from clauses checkable in the output:
+What replaced it is a layer, not a paragraph. **A seat had been convened by job title and then handed rules; the correct order is the inverse — an agent *is* a system prompt plus a rule set, and a name with no distinct filter behind it is a rule demanding a salary.** The survival test each definition passed is one question: *can this filter return a verdict against the lead's conclusion?* If yes it needs its own head, because its reasoning must not be contaminated by the lead's. If it can be checked by reading, it is a rule loaded into whoever is already working, not a seat.
 
-- **First principles** → every load-bearing statement tagged `FACT` (say how it is verified) / `CONSTRAINT` (say what imposes it) / `ASSUMPTION` (state the settling test). "Standard practice", "usually", "best practice" are named explicitly as carrying no weight — this is what bans reasoning by analogy and convention in a checkable way. A `FACT` that cannot be sourced is an `ASSUMPTION`; confusing the two is the one unrecoverable error.
-- **Critical thinking** → one self-attack before delivering; agreement requires a stated falsifier ("agreed; this breaks if X"). This exists because a shared room *amplifies* groupthink: a weaker model reading three prior agreements will agree. Bare agreement is rejected, and prior agreement is explicitly denied evidentiary weight.
-- **Stay in mandate** → out-of-scope blockers are reported (`@lead out-of-scope:`), not improvised across.
-- **Report shape** → `CLAIM / EVIDENCE / ATTACK / OPEN`, under 200 words.
+| Definition (`~/.claude/agents/`) | `tools:` | Standard of "correct" | Why it cannot be merged |
+|---|---|---|---|
+| `aki-hands` | Read, Grep, Glob | none — **judgment forbidden** | a different mandate (fact vs opinion) and a different price tier |
+| `aki-judge` | Read, Grep, Glob | the one standard named at spawn (`design`, `proportion`, `ux`, `db`, …) | the four previously separate judgment seats differed by exactly one parameter, so they are one file |
+| `aki-conduct` | + Bash | the corpus itself; `scythe.sh` is one of its tools | different tools, and a different target — it judges the process, not the output |
+| `aki-challenger` | Read, Grep, Glob | attacks the result | its defining property is what it is **not** given (the lead's reasoning) — a mechanism, not a mandate |
+| `aki-maker` | Read, Edit, Write, Bash | `coding` + `design` + domain | the only agent permitted to write |
 
-The literal block lives in the skill and is pasted verbatim into every subagent prompt.
+Three properties stop being prose. **Read-only becomes mechanical** — `tools:` simply omits Edit/Write, which `agent.A5` has demanded all along ("enforce read-only by mechanism, not by wording") and which no prompt has ever guaranteed. **The model tier lives in the file**, so it is never improvised mid-run — the failure that made the owner cut a tier by hand during a live session. And **an undefined seat cannot be convened at all**.
+
+`aki-hands` additionally carries the cross-CLI substrate table, because the mandate outlives the engine: only the in-harness lane reads the definition file, so every other lane (agy, kiro-cli, the `cl-9rt` proxy lane) gets the same four sections pasted into its headless prompt. Its load-bearing clause is a prohibition — flags, model names, tiers and known silent-failure modes are **recorded facts** in `references/harness-facts.md` and are read there, never re-probed. Only liveness and quota stay probeable, because only they change per machine and per day.
+
+**The location decision, with its reopen trigger.** `claude/agents/`, deployed to `~/.claude/agents/`, rather than a vendor-neutral top-level `agents/`. `SKILL.md` is a published open standard with five implementations; an agent-definition format currently has one, and building a neutral abstraction over a single occurrence is the speculative generality `design.A2` forbids. Pre-mortem: if `agy` ships an agent format later, the correction is one `git mv` plus a few lines in `install.sh` — a two-way door, where the opposite error leaves a permanent layer with one consumer. **Reopen trigger:** a second CLI publishing an agent-definition format, at which point it is promoted and rendered per vendor exactly as `AG_RULE_MAP` already renders rules.
+
+**The regression this layer invites, named so it can be refused: a catalog is not a roster.** Five files on disk is the easiest possible slide back into picking seats from a menu. The convening rule is unchanged and stated in the skill: a seat is convened only when it traces to a requirement in the anchored text.
 
 ### The rule floor rides with the floor
 
@@ -255,7 +289,7 @@ Direct specialist-to-specialist messaging is what makes the council a council ra
 
 The lead cuts the items, so a bad cut means the council debates the wrong squares thoroughly — the one failure no mechanism above catches, because every mechanism operates *within* the item structure.
 
-Structural answer: **Red Team's first assignment is always the decomposition itself** — find the missing item, the item with two owners, the item whose closing criterion nobody can check. Content attacks come after. The lead also keeps a deliberately sparse context (checklist, pinned block, decisions — never the whole room), because a flooded lead loses arbitration quality at exactly the moment the council most needs it.
+Structural answer: **`aki-challenger`'s first assignment is always the decomposition itself** — the REQ with no item, the missing item, the item with two owners, the item whose closing criterion nobody can check. Content attacks come after, and every pass closes on the same two questions: *what can be cut?* and *does this answer the anchored words?* The second is the victory-audit question named below, now asked by a seat rather than only by the lead's own closure rationale — the seat is defined by what it is **not** given, which is exactly what the lead cannot withhold from itself. The lead also keeps a deliberately sparse context (checklist, pinned block, decisions — never the whole room), because a flooded lead loses arbitration quality at exactly the moment the council most needs it.
 
 **The lead never does the room's mechanical work itself.** Every rule above assumes the lead's context stays reserved for arbitration; a lead that reads files, greps for call sites, or trawls logs directly spends that same scarce resource on the cheapest work in the run, for no judgment gained. The fix mirrors Step 2's mechanism table applied reflexively: any exploration the lead would otherwise do by hand goes to a cheap subagent instead, even when doing it inline feels faster in the moment. A real invocation had to spell this out explicitly ("LEAD không được làm việc vặt") precisely because nothing in the mechanism made it structurally true; the roster-declaration line (Step 1) now makes the omission visible instead of relying on the instruction being repeated per run.
 
@@ -273,8 +307,14 @@ Two debug sessions from 2026-08-03 (full record: `docs/research/akiflow-complian
 
 The answer is two mechanisms, both shaped by a negative result: the owner had already hand-staffed a free-form rule-police seat (top tier, "fiercely enforce") in one of those runs, and it was the *worst* compliance performer in the room — out of scope, uncheckable evidence, doctrine-answered questions escalated. A police agent with a prose mandate is just another LLM with prose duties.
 
-- **The `akirule-enforcer` seat** (standing, Tier 1/2) is therefore scoped to what a grep can check: its entire output is `REMIND-<n>` turns carrying quoted file:line evidence gathered by its own flash-tier hands, over the mechanically checkable rule classes (hard-wrap, comment budget, credit trailers, scratchpad hygiene, missing tags, oversize turns, undeclared cost dials, missing attestations). No evidence, no reminder; conduct, never content; its teeth live in the gate below, not in its voice.
-- **`council-verify.sh`** is the mechanical closure gate: ghost seats (declared owner/challenger with zero turns), enforcer presence, per-agent tag counts, unanswered REMINDs. It proves *presence*, never quality — judgment stays with the lead — and a FAIL blocks closure. This is the check that would have caught every structural failure in the audited run, and it costs no model tokens at all.
+- **`aki-conduct`** (the seat formerly called `akirule-enforcer`) is scoped to what a grep can check: its entire output is `REMIND-<n>` turns carrying quoted file:line evidence, over the mechanically checkable rule classes. No evidence, no reminder; conduct, never content; its teeth live in the gate below, not in its voice.
+- **`council-verify.sh`** is the mechanical closure gate. A FAIL blocks closure; it proves *presence*, never quality, and costs no model tokens at all.
+
+**The seat survived a wrong verdict, and the correction matters more than the seat.** It was first killed on the survival test for "only citing" — wrong: an unanswered `REMIND` blocks closure, and closure is the lead's decision, so it does return a verdict against the lead. What had actually failed was **R1, not R2**. The seat was pointed at throwaway internal minutes rather than at anything traceable to a requirement: in the corpus-review run no agent wrote to the repo at all (`files edited: 0`), so it had no compliance surface, and it spent 53,470 tokens producing five reminders about hard-wrapping inside meeting notes nobody would read again — while the room was answering the wrong question. Folded into the universal pattern it is simply `judge` with the corpus as its standard and Bash in its toolbox, which is also what the owner independently concluded (*"cái scythe bản chất chỉ là công cụ của nó"*). With the load receipt it gains the one function nothing else in the system performs: separating LOAD-fail from COMPLY-fail, which converts a violation into a bug report against a named file.
+
+**The gate stopped requiring the seat, and that is the whole lesson.** The previous `council-verify.sh` failed any session where `akirule-enforcer` had not posted — so the script *forced* the seat to exist regardless of whether anything needed enforcing, and when it fired on a run with nothing to enforce, the lead renamed a chat header to make it pass rather than concluding the seat did not belong. **A gate that manufactures work gets gamed rather than questioned.** Roster composition is judgment; presence of evidence is not. The current gate therefore checks six things and names no seat: a non-empty anchor block · every `REQ-<n>` quoting a fragment found in it · no ghost seats (a declared owner/challenger with zero turns) · a `[RULES]` receipt from every posting agent · per-agent evidence tags · every `REMIND-<n>` answered by an `ACK` or a logged `OVERRULE`.
+
+**The receipt is a diagnostic signal, never evidence.** It is self-reported, so nothing gates on its *content* — the gate only checks that a line exists. The cross-check that carries weight is the agent definition's declared rule manifest against the line it emitted; a mismatch is a finding (`agent.B2`).
 
 Two knock-on corrections ride with this. The floor gains clause 6, **no self-attestation** — compliance is stated as checkable fact, never as rule-address allegiance. And a factual correction: the in-session Agent tool has **no `effort` parameter** (verified 2026-08-03), so the Step 1 declaration now carries `model` alone for in-session seats — the previous "both dials on every spawn" rule was unfollowable for them, and a rule that cannot be followed teaches the room to treat the whole declaration as decoration.
 
@@ -282,26 +322,28 @@ Two knock-on corrections ride with this. The floor gains clause 6, **no self-att
 
 Each of these is the **default** behaviour of a capable model unless forbidden by name, which is why the skill lists them explicitly rather than trusting judgment.
 
-1. Briefing the adversarial reviewer with the lead's reasoning chain → a rubber stamp wearing a review's clothes.
-2. Spawning the roster across several turns → one-way channels; agents deaf without knowing it.
-3. The lead reading the whole room top to bottom → the flooded main thread, rebuilt.
-4. Agreement with no falsifier → manufactured consensus.
-5. Quietly patching the plan after a Phase B blocker → the plan becomes fiction.
-6. Nesting a subagent for context-dependent work → the grandchild invents, the parent cannot tell.
-7. Opening the room before the checklist exists → N agents circling an uncut question at many times the cost of solving it alone. **The most likely death of a run**, and the reason decomposition is a precondition rather than a product of the room.
-8. Handing the owner an open question instead of a decision → the council did not do the one job it exists for.
-9. Merging the room into the checklist → the argument buries the conclusion, and Phase B inherits conclusions stripped of their reasons.
-10. Spawning without explicit `model`/`effort` → the whole roster silently inherits the lead's top-tier model, mechanical sweeps included — cost paid for no added judgment.
-11. The lead doing menial work itself → bulk reads, greps, sweeps "because it's quick" flood the arbitration context with the cheapest work in the run.
-12. Escalating without the doctrine pre-flight, or dropping the owner's answer → the owner pays attention twice for one question; the write-back is part of the escalation, not an afterthought.
-13. Closing a domain-touching item without its domain consult → a UX/pricing/structure decision made by whoever happened to own the item — role collapse smuggled back in through the checklist.
-14. Spawning a subagent without the `RULE-agent-behavior.md` floor — most tempting on a cheap sweep that "obviously" needs no rules → a blank-context agent that mutates the tree, wanders scope, or stamps a credit trailer.
-15. Skipping the close-out token/cost tally → the declared roster (Step 1) is never reconciled against actual spend, so a run that cost ten times its worth looks identical to one that didn't.
-16. Reading an empty agy response as a clean sweep → a denied or failed cross-CLI call still returns `status: "SUCCESS"` with `response: ""`; treating that as "nothing found" silently drops the sweep it was supposed to run.
-17. Using a flash-tier cross-CLI worker for judgment → retrieval is what it is for; FACT/CONSTRAINT/ASSUMPTION mislabelling is the one unrecoverable error on this council, and a cheap model does it worst.
-18. A close-out tally that omits cross-CLI spend → `council-cost.sh` only sees the Claude Code transcript; a run that routed real work through agy headless looks cheaper than it was unless that `usage` is added by hand.
-19. A ghost roster seat → declared at the gate, cited as challenger, never posts; items close against a challenge that never happened — the run's only audit removed with no error. Caught mechanically by `council-verify.sh`.
-20. Self-attestation as compliance → a rule address quoted in a report reads as conformance and checks nothing; a real run cited `B5`/`A5` in the file that violated both. Compliance claims are checkable facts, never allegiance.
+1. **A pinned problem statement that paraphrases the owner** → the anchor is gone and every seat inherits the paraphrase; the room then answers a question nobody asked, thoroughly. R1, and the most expensive failure this skill has actually produced.
+2. **Convening a seat because it exists rather than because a requirement needs it** → an agent's full budget spent on artifacts nobody reads again. R2, and the reason there are no standing seats.
+3. Briefing the adversarial reviewer with the lead's reasoning chain → a rubber stamp wearing a review's clothes.
+4. Spawning the roster across several turns → one-way channels; agents deaf without knowing it.
+5. The lead reading the whole room top to bottom → the flooded main thread, rebuilt.
+6. Agreement with no falsifier → manufactured consensus.
+7. Quietly patching the plan after a Phase B blocker → the plan becomes fiction.
+8. Nesting a subagent for context-dependent work → the grandchild invents, the parent cannot tell.
+9. Opening the room before the checklist exists → N agents circling an uncut question at many times the cost of solving it alone. **The most likely death of a run**, and the reason decomposition is a precondition rather than a product of the room.
+10. Handing the owner an open question instead of a decision → the council did not do the one job it exists for.
+11. Merging the room into the checklist → the argument buries the conclusion, and Phase B inherits conclusions stripped of their reasons.
+12. Spawning without explicit `model`/`effort` → the whole roster silently inherits the lead's top-tier model, mechanical sweeps included — cost paid for no added judgment.
+13. The lead doing menial work itself → bulk reads, greps, sweeps "because it's quick" flood the arbitration context with the cheapest work in the run.
+14. Escalating without the doctrine pre-flight, or dropping the owner's answer → the owner pays attention twice for one question; the write-back is part of the escalation, not an afterthought.
+15. Closing a domain-touching item without its domain consult → a UX/pricing/structure decision made by whoever happened to own the item — role collapse smuggled back in through the checklist.
+16. Spawning a subagent without the `RULE-agent-behavior.md` floor — most tempting on a cheap sweep that "obviously" needs no rules → a blank-context agent that mutates the tree, wanders scope, or stamps a credit trailer.
+17. Skipping the close-out token/cost tally → the declared roster (Step 1) is never reconciled against actual spend, so a run that cost ten times its worth looks identical to one that didn't.
+18. Reading an empty agy response as a clean sweep → a denied or failed cross-CLI call still returns `status: "SUCCESS"` with `response: ""`; treating that as "nothing found" silently drops the sweep it was supposed to run.
+19. Using a flash-tier cross-CLI worker for judgment → retrieval is what it is for; FACT/CONSTRAINT/ASSUMPTION mislabelling is the one unrecoverable error on this council, and a cheap model does it worst.
+20. A close-out tally that omits cross-CLI spend → `council-cost.sh` only sees the Claude Code transcript; a run that routed real work through agy headless looks cheaper than it was unless that `usage` is added by hand.
+21. A ghost roster seat → declared at the gate, cited as challenger, never posts; items close against a challenge that never happened — the run's only audit removed with no error. Caught mechanically by `council-verify.sh`.
+22. Self-attestation as compliance → a rule address quoted in a report reads as conformance and checks nothing; a real run cited `B5`/`A5` in the file that violated both. Compliance claims are checkable facts, never allegiance.
 
 ## Relationship to the rest of the baseline
 

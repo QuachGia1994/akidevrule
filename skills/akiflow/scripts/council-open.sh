@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # akiflow — open a council session directory, and prune stale ones on the way in.
 #
-# Usage:  council-open.sh <slug>
-#   <slug>  short, human-readable, covers the whole session's problem.
-#           The lead picks it. It is slugified here, not validated.
+# Usage:  council-open.sh <slug> <owner-message>        ('-' reads the message from stdin)
+#   <slug>           short, human-readable, covers the whole session. Slugified here, not validated.
+#   <owner-message>  the owner's request VERBATIM — pinned as chat.md's first block; every REQ must quote a fragment of it. Why it is an argument and not a discipline: docs/research/akiflow-drift-diagnosis-aug6.md (root R1).
 #
 # Prints the session directory path on stdout (last line is always the path,
 # so `dir=$(council-open.sh foo | tail -1)` is safe).
@@ -18,8 +18,17 @@ ROOT="${AKI_COUNCIL_ROOT:-$HOME/.aki/agent-council}"
 RETENTION_DAYS="${AKI_COUNCIL_RETENTION_DAYS:-30}"
 
 slug_in="${1:-}"
-if [ -z "$slug_in" ]; then
-  echo "usage: council-open.sh <slug>" >&2
+anchor_in="${2:-}"
+if [ -z "$slug_in" ] || [ -z "$anchor_in" ]; then
+  echo "usage: council-open.sh <slug> <owner-message>   (use '-' to read the message from stdin)" >&2
+  echo "       the owner's message is verbatim and mandatory — a room with no anchor cannot be opened" >&2
+  exit 2
+fi
+if [ "$anchor_in" = "-" ]; then
+  anchor_in="$(cat)"
+fi
+if [ -z "$(printf '%s' "$anchor_in" | tr -d '[:space:]')" ]; then
+  echo "council-open.sh: the owner message is empty — nothing to anchor to" >&2
   exit 2
 fi
 
@@ -55,9 +64,14 @@ if [ ! -f "$dir/chat.md" ]; then
   cat > "$dir/chat.md" <<EOF
 # council · $session
 
+## anchor
+<!-- The owner's message, verbatim. IMMUTABLE: never edited, never paraphrased, never replaced by the lead's restatement. Every REQ in checklist.md quotes a fragment of the text below. -->
+
+$anchor_in
+
 ## pinned
 
-PROBLEM   — (lead: one paragraph, what was actually asked)
+PROBLEM   — (lead: one paragraph, what was actually asked. This is a working restatement and it is NOT the anchor; where the two disagree, the anchor above wins and the restatement is the thing that is wrong)
 CONTEXT   — (lead: what a specialist must know that it cannot read from the repo)
 GOAL      — (lead: what "done" looks like for the whole session)
 ROSTER    — (lead: every agent name, what it owns, and its turn-number block)
@@ -72,10 +86,9 @@ if [ ! -f "$dir/checklist.md" ]; then
 # checklist · $session
 
 ## requirement ledger
-<!-- Lead-owned, filled before decomposition (Step 0). One line per distinct
-     owner requirement, numbered REQ-1.. — compressed, never weakened. Every
-     item below must name the REQs it covers; an uncovered REQ is a
-     decomposition bug, not a footnote. -->
+<!-- Lead-owned, filled before decomposition. One line per distinct owner requirement, numbered REQ-1.. — compressed, never weakened.
+     Each REQ carries a "quoted fragment" copied from chat.md's anchor block; that is what makes it a requirement rather than an interpretation.
+     Every item below names the REQs it covers. An uncovered REQ is a decomposition bug, not a footnote. -->
 
 ## items
 <!-- Lead-owned. Every item carries owner, challenger, closing criterion, the

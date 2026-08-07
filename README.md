@@ -16,15 +16,31 @@ This Git repository is the source of truth; `dev.akitao.com` is the presentation
 
 | Skill | Invoke | Purpose |
 |---|---|---|
-| `akirule` | automatic, every conversation | Smart rule router — loads core rules always, contextual rules on signal match, everything on `nạp full` / `load all rules`. Hidden from the `/` menu by design. |
-| `akiflow` | `/akiflow` | Lead-coordinated **agent council** for work needing more than one kind of judgment. It exists to settle hard questions itself so the owner does not have to: a cheap worker drafts every owner requirement into a numbered `REQ` ledger from the owner's verbatim message and the lead ratifies it before cutting anything, decomposes into owned work items (every REQ must map to one), checks a three-condition activation gate, and declares the full roster with `model`/`effort` up front so compliance is visible before any token is spent. Domain specialists (UX-Psych, Market, Architect) are standing consultants for their whole domain, not just the items they own — a domain-touching item cannot close without their recorded turn. The lead never does mechanical work itself; that always goes to a cheap subagent. An escalation must cite the doctrine (`docs/biz/`, project docs) it searched and where it falls silent, and the owner's answer is written back into that doctrine the same turn — so a question is never asked twice. Recurring conflict across items escalates to a root pattern-design fix (`RULE-design-core.md` A8), not repeated refereeing. Every specialist carries a mandatory first-principles + critical-thinking floor, plus an output-hygiene clause (no hard-wrap, file:line citations, deletion test on every line) and a no-self-attestation clause (citing a rule address is never compliance — only checkable facts are). A standing `akirule-enforcer` seat polices corpus conduct with evidence-backed reminders only (the deterministic `scythe.sh` lint plus cheap flash sweeps supply quoted file:line proof; an unanswered `REMIND` blocks closure), and a mechanical gate (`council-verify.sh`) refuses closure on ghost roster seats (declared but never posted), missing FACT/CONSTRAINT/ASSUMPTION tags, or unanswered reminders. Red Team attacks both the decomposition and the build-up (a subtraction pass against over-engineering before any solution closes); every worker names its context mode (blank / inherit-by-artifact / own-accumulating); verification includes a drift sweep over docs/comments/content that reference the changed behavior; user-facing prose routes to a separate writer worker under an anti-fabrication brief. Mechanism follows the shortfall: clean subagent for independence, cheap model or a cross-CLI `agy` headless worker (`--mode plan` enforcing read-only by mechanism, retrieval only, never judgment) for bandwidth, explicit context handoff (plan doc / diff in the prompt) for continuity. Because no subagent inherits akirule either, the lead is the router: every spawn Reads `RULE-agent-behavior.md` as a non-negotiable floor (scope discipline, audit read-only, no credit trailers) plus the item's domain rules — and the cheaper the model, the more essential that floor. At close-out a `haiku` subagent tallies per-agent token usage from the session transcript (`council-cost.sh`) so the lead can reconcile actual spend against the `model`/`effort` it declared up front, plus any cross-CLI spend added by hand since it never appears in that transcript. The run lives in a self-pruning workspace under `~/.aki/agent-council/` (agent files + `chat.md` room + lead-owned checklist). Analysis and execution are separate phases with an explicit decision gate; verification is mechanical and context-carrying, adversarial review is judgment and never over-briefed. An orthogonal `mode=audit` track fans out one read-only agent per rule domain. Design record: [`docs/arch/akiflow.md`](docs/arch/akiflow.md). |
+| `akirule` | automatic, every conversation | Smart rule router — contextual rules on signal match, everything on `nạp full` / `load all rules`. Core rules do not pass through it: the harness `@`-imports them, so they hold even when this skill never runs. Also owns the **`[RULES]` receipt** — one mandatory line reporting the whole rule context (`core` + `router` + a `missing:` field), so that "the rule never arrived" stops sharing a signature with "the rule arrived and was ignored". Hidden from the `/` menu by design. |
+| `akiflow` | `/akiflow` | Lead-coordinated **agent council** for work needing more than one kind of judgment. The lead's job is two laws: **ANCHOR** — the owner's verbatim message is pinned as the run's immutable first block (`council-open.sh` refuses to open a room without it) and every numbered requirement must quote a fragment of it; and **JUSTIFICATION** — every seat, check and script is OFF by default and turns on only when this run produces a reason, so there are no standing seats and no roster derived from a tier. It decomposes the request into owned work items, checks a three-condition activation gate, and convenes seats from the five definitions in `~/.claude/agents/` — one batch, each seat traced to a requirement, never picked from a menu. Three modes discriminated by one question, *what changes outside the room*: `discuss`, `audit` (read-only by construction), `execute` (only `aki-maker` may write). The lead does no menial work and settles what doctrine answers, escalating only a one-way door, a contradiction with documented design, or scope expansion — then writes the owner's answer back into doctrine the same turn, so a question never escalates twice. `council-verify.sh` refuses closure on a missing anchor, a requirement quoting nothing the owner wrote, a declared seat that never posted, a posting agent with no `[RULES]` receipt, or an unanswered reminder — and deliberately requires no named seat, since an earlier version that did forced a seat to exist in a run with nothing to enforce and was gamed rather than questioned. Close-out reconciles declared model tiers against actual spend, cross-CLI calls added by hand since they never appear in the transcript. Design record: [`docs/arch/akiflow.md`](docs/arch/akiflow.md). |
 | `akithink` | `/akithink` | Structured deep-thinking session for big, hard-to-reverse, or goal-ambiguous decisions: restate → goal excavation → first principles → mandatory critique → convergence into a `docs/` decision record. Recommends a top-tier model (Opus/Fable). |
 | `akihtmlreport` | `/akihtmlreport` | Distills a dense analysis already in the conversation into one self-contained, ultra-wide `REPORT.html` at the project root — no new analysis, no dropped detail — then opens it locally. Exactly one per project; asks before overwriting. |
-| `akihelp` | `/akihelp` | Live introduction to the whole installed Aki system, rendered by reading `index.md` and skill frontmatters at runtime — it can never go stale. |
+| `akihelp` | `/akihelp` | Live introduction to the whole installed Aki system, rendered by reading `index.md` and skill frontmatters at runtime — it can never go stale. Includes a **painpoint → what to say** table (sprawling CSS, docs that no longer match code, a half-finished tree, a pre-ship check, a hard-to-reverse decision, padded or hard-wrapped output, over-guarded flows, UX friction, pricing calls) built from that live state, with any row whose target is not installed dropped rather than shown. Closes on the caveat that governs everything else: `akirule` is a skill and therefore best-effort, so name the rule file in the prompt whenever the load must be deterministic. |
 | `akigitcommit` | `/akigitcommit` | Turns a messy working tree into a few clean, logically grouped Conventional Commits. Triages a half-finished tree first — finished vs mid-edit vs abandoned vs accidental, asking rather than guessing — then stages by explicit path, never `git add -A`, never pushes unasked. |
 | `aki-article-writer` | `/aki-article-writer` or natural language | Per-project article writing pipeline: research & fact-verification, SEO metadata, JSON-LD schema, UX-psychology-aware content, and a dedicated Image Scout subagent (Gemini Flash / Haiku) for search → download → visual inspection → ffmpeg processing → slug-named WebP output. One subagent per article; image work is always isolated to a separate lightweight subagent. |
 | `akidevsync-notes` | natural language | Reads/edits a project's `.akidevsync/notes.json` — the per-project task list the Aki-Dev-Sync app itself writes (list/add/pin/mark-done/edit/delete tasks) via a bundled script that preserves the app's own JSON formatting, plus a workflow for cross-checking pinned notes against a shipped release (CHANGELOG + code) before marking them done. |
 | `akilint` | `/akilint` or a penalty card | Mechanical format lint for the penalty-card classes of `RULE-agent-behavior.md` §0: hard-wrapped code comments and markdown prose (`[WRAP]`) and oversize comments (`[YAP]`, always labeled *review* — a flag for judgment against `coding.B4`, never an auto-delete verdict). Thin wrapper over the shared `scythe.sh` detector (deterministic grep/awk, exit-code aware, cannot fabricate evidence) — the same script akiflow's `akirule-enforcer` uses, so a card name means the same thing everywhere. `[FLUFF]` (density) is content judgment and explicitly out of a script's reach. |
+
+### Five agent definitions
+
+A seat used to be convened by job title and then handed rules. The order is inverted here: an agent **is** a system prompt plus a rule set, and a name with no distinct filter behind it is a rule demanding a salary. Writing them in Claude Code's own `~/.claude/agents/` format makes three properties mechanical that had only ever been prose — read-only enforcement (`tools:` simply omits Edit/Write), the model tier (`model:`, so it is never improvised mid-run), and the fact that an undefined seat cannot be convened at all.
+
+| Agent | Tools | Standard of "correct" |
+|---|---|---|
+| `aki-hands` | Read, Grep, Glob | none — **judgment forbidden**; facts with `file:line` only. Carries the cross-CLI substrate table (Claude subagent · agy flash · kiro-cli · `cl-9rt` proxy lane), with flags and failure modes read from recorded harness facts rather than re-probed |
+| `aki-judge` | Read, Grep, Glob | **exactly one** standard, named at spawn (`design`, `proportion`, `ux`, `db`, …). Several standards in one head average into one mild opinion and the disagreement — the useful part — disappears |
+| `aki-conduct` | + Bash | the corpus itself. Its unique job is separating **LOAD-fail** (the rule never arrived) from **COMPLY-fail** (it arrived and was violated); `scythe.sh` is one of its tools, never a seat and never a gate |
+| `aki-challenger` | Read, Grep, Glob | attacks the result from a clean context — defined by what it is *not* given (the reasoning). Always closes with *"what can be cut?"* and *"does this answer the anchored words?"* |
+| `aki-maker` | Read, Edit, Write, Bash | `coding` + `design` + the domain rules in its brief. The only agent permitted to write, and therefore the most narrowly scoped: it implements a decision, it does not make one |
+
+A catalog is not a roster. Five files on disk make it easy to pick seats from a menu, which is the failure they were built to end — a seat is convened only when it traces to a requirement in the owner's own words.
+
+**Claude Code only, deliberately.** `SKILL.md` is an open standard with five implementations; an agent-definition format currently has one, so building a vendor-neutral layer over a single consumer would be exactly the speculative generality `design.A2` forbids. Reopen trigger: a second CLI publishing an agent format promotes `claude/agents/` to a top-level `agents/` rendered per vendor, the way `AG_RULE_MAP` already renders rules for Antigravity.
 
 ### A rule corpus that routes itself
 
@@ -36,11 +52,11 @@ This Git repository is the source of truth; `dev.akitao.com` is the presentation
 
 Loading happens on two different mechanisms, and the difference matters more than the tier numbering does.
 
-**Core — harness-embedded, not routed.** `index.md` and `RULE-agent-behavior.md` are `@`-imported by `~/.claude/CLAUDE.md`, which Claude Code reads mechanically at session start. No model decision is involved, so they are the only rules that genuinely apply to every task. `@` imports have this effect **only** inside `CLAUDE.md` — the same syntax written into a skill body looks like an import but loads nothing, because a skill body is read only after the model has already chosen to invoke the skill.
+**Core — harness-embedded, not routed.** `index.md`, `RULE-agent-behavior.md`, `RULE-coding.md` and `RULE-design-core.md` are `@`-imported by `~/.claude/CLAUDE.md`, which Claude Code reads mechanically at session start. No model decision is involved, so they are the only rules that genuinely apply to every task. The two rule files were promoted out of Tier 1 after "default ON" proved to be a statement of intent rather than a mechanism: routing them through a skill meant they loaded only when the model first chose to invoke that skill, and the rules needing the most owner correction were absent from the context rather than present and disobeyed. They cost context in every session, including sessions with no code in them — that is the price of the guarantee. `@` imports have this effect **only** inside `CLAUDE.md` — the same syntax written into a skill body looks like an import but loads nothing, because a skill body is read only after the model has already chosen to invoke the skill.
 
 **Everything else — routed by the `akirule` skill**, and therefore best-effort: it applies when the model invokes the skill and a signal matches. Sensitivity is deliberately high (err toward loading — a false positive costs a few tokens, a false negative causes wrong behavior).
 
-- **Tier 1 — Contextual, read on signal match:** `RULE-coding.md` (default ON for any code work), `RULE-design-core.md` (default ON with coding for any structural work), `RULE-docs.md` (structure and lifecycle, plus the docs-vs-code drift audit), `RULE-content-write.md`, `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context), `RULE-ui-pattern.md`, `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md`, `RULE-biz.md` (market-facing decisions: positioning, pricing, audience) — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 1): `METHOD-flow-audit.md` (refactors, multi-file bugs, fragile flows), `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking), and `METHOD-ux-psych.md` (UX/user-behavior evaluation, onboarding and conversion flows).
+- **Tier 1 — Contextual, read on signal match:** `RULE-docs.md` (structure and lifecycle, plus the docs-vs-code drift audit), `RULE-content-write.md`, `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context), `RULE-ui-pattern.md` (design-system layer: the subtraction pass that runs before the tier ladder, class taxonomy, tokens, variant API, and the audit playbook), `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md`, `RULE-biz.md` (market-facing decisions: positioning, pricing, audience) — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 1): `METHOD-flow-audit.md` (refactors, multi-file bugs, fragile flows), `METHOD-zero-trust-audit.md` (strict mechanical-first audit: detectors before opinion, exact matches separated from pattern-level candidates), `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking), `METHOD-ux-psych.md` (UX/user-behavior evaluation, onboarding and conversion flows), `METHOD-proportionality.md` (sizing a guard, limit or accepted risk against reach, capability, motive and blast radius — the lens that stops both over-engineering and client-side-limits-as-enforcement), and `METHOD-subtraction-audit.md` (repo-wide "does this need to exist" sweep, terminating on two dry rounds).
 - **Tier 2 — Full load on explicit command:** `nạp full` / `load all rules` reads every `RULE-*`/`METHOD-*` file at once.
 
 No harness magic beyond the `CLAUDE.md` import: Tier 1 is trigger instructions telling Claude to Read the file from `~/.aki/akidevrule/` when signals match; Tier 2 is the explicit-command escape hatch.
@@ -82,8 +98,11 @@ payload/                          → installed to ~/.aki/akidevrule/
   RULE-db-design.md
   RULE-biz.md
   METHOD-flow-audit.md
+  METHOD-zero-trust-audit.md
   METHOD-deep-think.md
   METHOD-ux-psych.md
+  METHOD-proportionality.md
+  METHOD-subtraction-audit.md
   GEMINI.md                       → installed to ~/.gemini/GEMINI.md (NOT a rule file)
 
 skills/                            → shared Agent Skills corpus (SKILL.md open standard), deployed
@@ -106,6 +125,11 @@ skills/                            → shared Agent Skills corpus (SKILL.md open
 
 claude/                           → Claude Code-only runtime assets, installed to ~/.claude/
   CLAUDE.md
+  agents/aki-hands.md             → ~/.claude/agents/, copied per file (your own agents there survive)
+  agents/aki-judge.md
+  agents/aki-conduct.md
+  agents/aki-challenger.md
+  agents/aki-maker.md
   hooks/aki-update-check.py
   fragments/settings.akidoc.fragment.json   (illustrative reference only — never apply manually)
 
@@ -121,6 +145,7 @@ flowchart TD
         PGEMINI["payload/GEMINI.md (template)"]
         CSKILLS["skills/ (9 skills, shared open standard)"]
         CCLAUDE["claude/CLAUDE.md (template)"]
+        CAGENTS["claude/agents/ (5 agent definitions)"]
         CHOOKS["claude/hooks/aki-update-check.py"]
     end
 
@@ -139,6 +164,7 @@ flowchart TD
         C_MD["CLAUDE.md (Managed prompt)"]
         C_LOCAL["CLAUDE.local.md (Machine local)"]
         C_SKILLS["skills/<skill_name>/SKILL.md"]
+        C_AGENTS["agents/aki-*.md (copied per file, your own agents kept)"]
         C_HOOKS["hooks/aki-update-check.py"]
         C_SET["settings.json (Permissions + Skill Overrides)"]
     end
@@ -147,7 +173,7 @@ flowchart TD
     subgraph T3["🚀 3. Antigravity Engine (~/.gemini/)"]
         G_MD["GEMINI.md (Managed prompt global)"]
         G_LOCAL["GEMINI.local.md (Machine local)"]
-        G_RULES["config/rules/akirule-*.md (15 rules with YAML trigger)"]
+        G_RULES["config/rules/akirule-*.md (18 rules with YAML trigger)"]
         G_SKILLS["config/skills/ (9 skills, native auto-discovery)"]
         G_SJSON["config/skills.json (Inherits agskills, absolute path)"]
     end
@@ -175,12 +201,13 @@ Targets 4-6 only get the shared skill corpus (no rule corpus / no `CLAUDE.md`/`G
 
 1. Syncs `payload/*` into `~/.aki/akidevrule/` (rsync, excludes `ref-ECC/`), removing stale files left by renames, and syncs `agskills/` for Antigravity skill inheritance.
 2. Syncs every skill folder under `skills/*/` (whole directory, including any `references/` or `scripts/`) into `~/.claude/skills/`, one named folder at a time via `rsync --delete`, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched. `skills/` is a top-level, agent-neutral folder (siblings with `payload/`, not nested under `claude/`) because SKILL.md is a shared open standard both Claude Code and Antigravity/AGY consume identically — see [docs/ref/agent-skills-standard.md](docs/ref/agent-skills-standard.md).
-3. Replaces `~/.claude/CLAUDE.md` with the packaged guidance (timestamped backup first), appending this machine's source-repo path and an `@~/.claude/CLAUDE.local.md` import.
-4. Creates `~/.claude/CLAUDE.local.md` **only if missing** — never overwritten afterward. Put per-machine rules there (build constraints, IDE paths, remote flags); they survive every reinstall.
-5. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/akidevrule/**`, `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.
-6. Installs `~/.claude/hooks/aki-update-check.py` and records the source-repo path in `~/.aki/akidevrule/.source-repo`.
-7. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 15 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 9 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), and configures `~/.gemini/config/skills.json` with absolute paths as secondary.
-8. Syncs the same skill folders to `~/.agents/skills/` (Codex CLI), `~/.kiro/skills/` (Kiro CLI), and `~/.grok/skills/` (Grok CLI) — each a plain global skills root these CLIs read natively, synced per skill folder name exactly like step 2. Skills-only: no rule corpus is generated for these targets.
+3. Copies `claude/agents/*.md` into `~/.claude/agents/` **file by file, never a directory mirror with `--delete`** — that folder is a shared namespace where your own agent definitions sit beside Aki's, exactly like `~/.claude/skills/`, so nothing you did not install is ever removed.
+4. Replaces `~/.claude/CLAUDE.md` with the packaged guidance (timestamped backup first), appending this machine's source-repo path and an `@~/.claude/CLAUDE.local.md` import.
+5. Creates `~/.claude/CLAUDE.local.md` **only if missing** — never overwritten afterward. Put per-machine rules there (build constraints, IDE paths, remote flags); they survive every reinstall.
+6. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/akidevrule/**`, `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.
+7. Installs `~/.claude/hooks/aki-update-check.py` and records the source-repo path in `~/.aki/akidevrule/.source-repo`.
+8. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 18 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 9 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), and configures `~/.gemini/config/skills.json` with absolute paths as secondary.
+9. Syncs the same skill folders to `~/.agents/skills/` (Codex CLI), `~/.kiro/skills/` (Kiro CLI), and `~/.grok/skills/` (Grok CLI) — each a plain global skills root these CLIs read natively, synced per skill folder name exactly like step 2. Skills-only: no rule corpus is generated for these targets.
 
 Re-running the installer updates the same managed files cleanly.
 
@@ -208,6 +235,7 @@ rm -rf ~/.claude/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitco
 rm -rf ~/.agents/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,aki-article-writer,akidevsync-notes}   # Codex CLI
 rm -rf ~/.kiro/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,aki-article-writer,akidevsync-notes}     # Kiro CLI
 rm -rf ~/.grok/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,aki-article-writer,akidevsync-notes}     # Grok CLI (other, non-Aki skills already in this folder are untouched)
+rm -f  ~/.claude/agents/aki-{hands,judge,conduct,challenger,maker}.md   # your own agents in that folder are untouched
 rm -f  ~/.claude/hooks/aki-update-check.py
 rm -f  ~/.gemini/GEMINI.md          # restore from a *.akidevrule-backup-* if needed; GEMINI.local.md is left untouched
 ```
