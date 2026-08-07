@@ -18,6 +18,8 @@ The only real difference is **where each platform looks for skills**, not the fo
 
 This repo already deploys to the two global paths — `install.sh`'s `sync_aki_skills()` was already `rsync`-ing the same folder to `~/.gemini/config/skills/` unmodified before this finding was verified; only the *source-repo* layout (`claude/skills/` implying Claude ownership) was inaccurate to what was actually happening.
 
+Ollama CLI auto-loads every skill under `~/.claude` with no deploy step of its own — observed 2026-08-07.
+
 ## Decision — what changed in this repo
 
 `claude/skills/*` → top-level `skills/*`, as a sibling of `payload/` (the other shared, agent-neutral source). `claude/` now holds only assets genuinely specific to Claude Code (the `CLAUDE.md` template, hooks, the settings fragment). See the `### Changed` entry in `CHANGELOG.md` (Unreleased) for the full list of files touched, and `docs/arch/rule-delivery-architecture.md` for the updated source-to-consumer diagram.
