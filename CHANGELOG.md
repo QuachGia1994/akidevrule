@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-10
+
 ### Fixed
 - **`scythe.sh` caps its own output** — a repo-wide sweep printed every finding, and on a real project that is 891–2,393 lines / 93–255 KB from a single run. Execution was never the problem (0.8s); the dump was. For an agent caller the cost compounds: that blob lands in the transcript and **every later turn re-sends the whole history**, so one careless `scythe.sh .` degrades the rest of the session — the exact failure `agent.A2` describes, caused by the corpus's own tooling. Owner-reported from a live `tachnhac.com` session that slowed to a crawl. Past 40 findings (`SCYTHE_CAP`) output is now the first 40 plus per-tag totals and the five worst files; `--all` restores the full list. 93 KB → 4 KB on that repo. Exit codes unchanged (0 clean · 1 findings · 2 usage), which needed `awk` instead of `head` for the truncation — under `pipefail`, `head` closing the pipe early turned a findings run into exit 141.
   - **Nothing runs this script automatically.** The only configured hook is `aki-update-check` (SessionStart, notify-only). Its callers are `/akilint` when invoked and akiflow's `akirule-enforcer` seat while a council runs — both model decisions, which is why repeated whole-repo sweeps could pile up unnoticed.
