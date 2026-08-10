@@ -14,6 +14,13 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# Floor guard: a launcher can still hand this program an interpreter below the
+# supported floor. Fail with one clear line instead of a cryptic error deep in the
+# run (a 3.7-only feature once crashed here 500+ lines in). Kept in sync with the
+# 3.7 floor the helper scripts and install.sh already target.
+if sys.version_info < (3, 7):
+    sys.exit("akidevrule: requires Python 3.7+, running %s" % sys.version.split()[0])
+
 # Windows pipes stdout as the legacy locale codec (cp1252), which cannot encode the
 # emoji this installer prints — force UTF-8 so status output never crashes the run.
 for _stream in (sys.stdout, sys.stderr):
@@ -565,7 +572,9 @@ def run_install() -> None:
             shutil.copy2(child, dst)
 
     # Explicit removal of renamed/dropped files.
-    (INSTALL_ROOT / "METHOD-techbiz-optimizer.md").unlink(missing_ok=True)
+    stale = INSTALL_ROOT / "METHOD-techbiz-optimizer.md"
+    if stale.exists():
+        stale.unlink()
 
     # Copy CHANGELOG so any machine knows what's installed without the repo.
     shutil.copy2(REPO_ROOT / "CHANGELOG.md", INSTALL_ROOT / "CHANGELOG.md")

@@ -40,7 +40,7 @@ The installer is `install.py` — one cross-platform Python program (`pathlib` /
 
 Tooling — have these installed first:
 
-- **Python 3.8+** — the one hard requirement (installer, hooks, and all skill helper scripts are Python).
+- **Python 3.7+** — the one hard requirement (installer, hooks, and all skill helper scripts are Python). `install.sh` picks the newest interpreter on PATH that meets this floor, so a host whose `python3` points at an older build still installs cleanly as long as any ≥3.7 Python is present; below the floor it stops with one clear message instead of a cryptic error.
 - `git` — for the `git clone` remote install.
 
 Interpreter convention (documented once): **Unix** uses `python3` (via `./install.sh`); **Windows** uses `py -3` / `python` (via `install.ps1`). The bundled skill scripts follow the same rule.

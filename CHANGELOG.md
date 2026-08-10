@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-08-11
+
+Maximise interpreter compatibility with the minimum code change: the corpus already sat at a Python 3.7 floor, but delivery assumed whatever `python3` resolved to and one line reached past the floor. Fixed so the same install runs across the full spread of Pythons a real host carries.
+
+### Fixed
+- **`install.py` no longer crashes on Python 3.7.** Line 568 used `Path.unlink(missing_ok=True)`, a 3.8+ keyword, and aborted the whole install with `TypeError: unlink() got an unexpected keyword argument 'missing_ok'` on a deploy host whose `python3` was 3.7 — the exact class of drift the 2.0.0 notes already flagged for the `write_text(newline=…)` 3.10 kwarg, slipped in through the one code path that had no guard. Replaced with an `exists()`-then-`unlink()` check (3.7-safe). `vermin` confirms the whole corpus now needs only **3.7** (helpers sit at 3.6–3.7); the one accidental 3.8 reach is gone.
+- **`install.sh` stops trusting `python3`.** A host commonly carries several Pythons and `python3` may point at an old one (3.7 seen on the deploy host, while 3.8–3.14 were also installed). The launcher now probes `python3.14 → … → 3.8 → python3 → python` and execs the **newest** interpreter that meets the 3.7 floor, or exits with a clear "Python 3.7+ required" line if none does — rather than firing whatever came first on PATH.
+
+### Added
+- **Runtime floor guard in `install.py`.** A one-line `sys.version_info < (3, 7)` check at the top fails with a single readable message instead of a cryptic error 500+ lines into the run — the safety net for any launcher (including `install.ps1`) that still hands the program a sub-floor interpreter. The floor is now stated in exactly two enforced places (the guard and `install.sh`), and documented once in the README.
+
+### Changed
+- **README Requirements: Python 3.8+ → 3.7+**, with a note that `install.sh` selects the newest interpreter meeting the floor and fails clearly below it.
+
 ## [2.0.0] - 2026-08-11
 
 Windows becomes a first-class install target by moving delivery to a **Python SSOT**: one program does every mechanical step, thin launchers exec it, and the content layer is unchanged. Plan `docs/plan/unify-desktop-support.md`; execution was coordinated as a mini akiflow council with two external CLI hands (kiro-cli, agy on claude-sonnet-4-6) doing file labor under the lead's verification.
