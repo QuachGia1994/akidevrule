@@ -14,6 +14,12 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# Windows pipes stdout as the legacy locale codec (cp1252), which cannot encode the
+# emoji this installer prints — force UTF-8 so status output never crashes the run.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
