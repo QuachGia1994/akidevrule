@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-08-11
+
+Windows becomes a first-class install target by moving delivery to a **Python SSOT**: one program does every mechanical step, thin launchers exec it, and the content layer is unchanged. Plan `docs/plan/unify-desktop-support.md`; execution was coordinated as a mini akiflow council with two external CLI hands (kiro-cli, agy on claude-sonnet-4-6) doing file labor under the lead's verification.
+
+### Added
+- **`install.py` — the cross-platform SSOT installer**, reproducing every observable effect of the old `install.sh` (payload sync, global `CLAUDE.md` merge with backup, per-skill mirror-with-prune into the five CLI skills roots, agent-file copy, Antigravity rule/`skills.json` generation, `settings.json` merge, `.source-repo` stamp, legacy-root migration, status preview). Verified by **execution parity**: `install.py` and the recovered `install.sh` were each run into a sandboxed `$HOME`, and the resulting trees were identical across 203 files. Non-TTY runs (CI) auto-proceed; a TTY still prompts.
+- **`install.ps1` — thin Windows launcher** that discovers the interpreter (`py -3` → `python3` → `python`) and execs `install.py`. `install.sh` is now the same kind of thin launcher for Unix (`exec python3 install.py "$@"`), so all three entry points route to one program.
+- **Five council/lint helpers ported to Python** — `council_open.py`, `council_read.py`, `council_verify.py`, `council_cost.py`, `scythe.py` — each verified against its bash original (identical output and exit codes; `council_verify.py` additionally fixes a `set -e` abort the `.sh` hit on sessions with no turns). The `.sh` files stay as thin `exec python3 …` launchers so existing Unix references keep working.
+- **CI install-smoke gate** (`.github/workflows/install-smoke.yml`) — matrix `ubuntu` / `macos` / `windows-latest`, runs `install.py` into a sandbox HOME and asserts the manifest plus LF-cleanliness of installed files. This is the designed Windows verification: no maintainer runs a Windows box locally, so CI is the gate that lets the repo claim Windows support truthfully.
+
+### Changed
+- **README Requirements: Windows ❌ → ✅ Supported.** Python (3.8+) is now the sole hard requirement; the interpreter-discovery convention and OS-aware install/update commands are documented once. Added a PowerShell install block and a Windows uninstall note.
+- **LF discipline enforced at the byte level.** The Python writer uses `path.write_bytes(content.encode("utf-8"))` rather than `write_text(..., newline=…)` — the latter kwarg is Python 3.10+ and would crash the target machine's 3.9, and byte-writing also guarantees exact LF on Windows where text mode would translate to CRLF (which the plan forbids).
+- **Docs synced to the port** — `skills/akiflow/SKILL.md`, `skills/akilint/SKILL.md`, `claude/agents/aki-conduct.md`, `claude/CLAUDE.md` (template), and `claude/hooks/aki-update-check.py` now reference the `.py` scripts / an OS-aware installer command instead of the bash originals. `docs/index.md` and the plan doc updated.
+
+### Notes
+- **mcp-sv coupling left open by decision.** The plan's §11 item on tightening the [aki-mcp-sv](https://github.com/lacvietanh/aki-mcp-sv) dependency stays open; the mcp-sv repo was not touched in this release.
+- **Windows verified by CI, not by a local box.** The owner accepted CI-as-the-designed-gate; the ✅ claim rests on the `windows-latest` matrix leg passing, not on an in-session Windows run.
+
 ## [1.0.0] - 2026-08-10
 
 ### Fixed

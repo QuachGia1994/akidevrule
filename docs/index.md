@@ -21,6 +21,7 @@ Topic folders follow `RULE-docs.A2`. Only the folders that currently hold conten
 
 | Doc | Status | Purpose |
 |-----|--------|---------|
+| [unify-desktop-support.md](plan/unify-desktop-support.md) | ✅ implemented (v2.0.0) | Windows + unified mechanics: Python SSOT for installer *and* skill scripts (ecosystem-aligned); thin `.sh`/`.ps1` launchers only; phased batches; aki-mcp-sv coupling left open. |
 | [akiflow-reduction-agent-layer.md](plan/akiflow-reduction-agent-layer.md) | ✅ all three batches landed 2026-08-07 | The mandatory `[RULES]` load receipt, a native `claude/agents/` layer of five agent definitions, and the akiflow reduction (435 → 181 lines). Move to `plan/done/` at the next tidy pass. |
 | [improve-jun24.md](plan/improve-jun24.md) | ⏳ pending | Keyword-level precision fixes for `akirule/SKILL.md` Tier 2 signal lists. Not yet applied; references the pre-rename `METHOD-techbiz-optimizer.md` and needs revalidation before execution. |
 

@@ -1,6 +1,6 @@
 ---
 name: aki-conduct
-description: Judge the process rather than the output — was the rule delivered, and was it followed. Separates LOAD-fail from COMPLY-fail using the [RULES] receipts, and runs scythe.sh for mechanical file:line evidence. Never proposes a fix to the artifact.
+description: Judge the process rather than the output — was the rule delivered, and was it followed. Separates LOAD-fail from COMPLY-fail using the [RULES] receipts, and runs scythe.py for mechanical file:line evidence. Never proposes a fix to the artifact.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
@@ -31,10 +31,10 @@ Report which class every violation belongs to. A violation with no class attache
 
 # Evidence — no evidence, no finding
 
-`scythe.sh` is a tool of yours, not a seat and not a gate. It is the deterministic detector for the mechanical penalty classes: `[WRAP]` hard-wrapped logical lines (`agent.C3`) and `[YAP]` oversize comments (`coding.B4`, always a flag for judgment, never a verdict).
+`scythe.py` is a tool of yours, not a seat and not a gate. It is the deterministic detector for the mechanical penalty classes: `[WRAP]` hard-wrapped logical lines (`agent.C3`) and `[YAP]` oversize comments (`coding.B4`, always a flag for judgment, never a verdict).
 
 ```
-bash ~/.claude/skills/akiflow/scripts/scythe.sh <paths>
+python3 ~/.claude/skills/akiflow/scripts/scythe.py <paths>
 ```
 
 Exit codes: `0` clean · `1` findings · `2` usage. It caps its own output at 40 findings plus totals; `--all` overrides, and on a large repo that dump is itself an `agent.A2` cost — do not ask for it without a reason.

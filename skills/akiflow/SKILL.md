@@ -21,7 +21,7 @@ The council is worth its cost only against three structural failures of a single
 ## Step 0 — anchor, then cut
 
 ```bash
-~/.claude/skills/akiflow/scripts/council-open.sh <slug> "<the owner's message, verbatim>"
+python3 ~/.claude/skills/akiflow/scripts/council_open.py <slug> "<the owner's message, verbatim>"
 ```
 
 It refuses to open a room without the message, and writes it as chat.md's immutable `## anchor` block. Pinning used to be a discipline; two consecutive runs skipped it, so it is now a mechanism whose absence is impossible.
@@ -70,7 +70,7 @@ The five agents live in `~/.claude/agents/` and carry their own tools, model tie
 |---|---|
 | `aki-hands` | retrieval with `file:line`; judgment forbidden. Also the file that names every worker substrate (Claude subagent · agy · kiro-cli · `cl-9rt`) and the recorded harness facts that make re-probing them unnecessary |
 | `aki-judge` | one standard, named at spawn — `design`, `proportion`, `ux`, `db`, `docs`, `release`, `biz`, whichever the item is judged by |
-| `aki-conduct` | the process: whether rules arrived (LOAD-fail) and whether they were followed (COMPLY-fail); `scythe.sh` is its tool |
+| `aki-conduct` | the process: whether rules arrived (LOAD-fail) and whether they were followed (COMPLY-fail); `scythe.py` is its tool |
 | `aki-challenger` | attacks the result from a clean context; closes on *"what can be cut?"* and *"does this answer the anchored words?"* |
 | `aki-maker` | turns a decision into a diff; `execute` mode only |
 
@@ -84,7 +84,7 @@ The five agents live in `~/.claude/agents/` and carry their own tools, model tie
 
 ## Step 3 — the room
 
-`council-open.sh` creates `~/.aki/agent-council/<project>/<YYYY.MM.DD-HHMM>-<slug>/` and prunes sessions older than 30 days. Three files, three jobs, never merged:
+`council_open.py` creates `~/.aki/agent-council/<project>/<YYYY.MM.DD-HHMM>-<slug>/` and prunes sessions older than 30 days. Three files, three jobs, never merged:
 
 | File | Writer | Holds |
 |---|---|---|
@@ -95,7 +95,7 @@ The five agents live in `~/.claude/agents/` and carry their own tools, model tie
 Turns are `### <HH:MM> <seat-name> #<n>` followed by `#### CLAIM / EVIDENCE / ATTACK / OPEN`, under 200 words, never hard-wrapped, everyone appends and nobody edits another's turn.
 
 ```bash
-R=~/.claude/skills/akiflow/scripts/council-read.sh
+R="python3 ~/.claude/skills/akiflow/scripts/council_read.py"
 $R <chat.md> --index | --pinned | --stats | --agent challenger --tail 5 | --from 12
 ```
 
@@ -114,7 +114,7 @@ A seat rejoining reads `--pinned` plus `--from <its last turn>`. The lead watche
 Before items close, and again before the Step 6 tally, the lead runs the gate and pastes its output into the room:
 
 ```bash
-~/.claude/skills/akiflow/scripts/council-verify.sh <session-dir>
+python3 ~/.claude/skills/akiflow/scripts/council_verify.py <session-dir>
 ```
 
 It fails on a missing anchor, a REQ quoting nothing the owner wrote, a declared owner/challenger that never posted, a posting agent with no `[RULES]` receipt, a posting agent that never tagged evidence, and an unanswered `REMIND-<n>`. A FAIL is a closure blocker, not a note. It proves presence, never quality — and it deliberately does not require any named seat, because a gate that manufactures a seat gets gamed rather than questioned.
@@ -147,10 +147,10 @@ Even with no room at all, close direct work with a verifier subagent against wha
 
 ## Step 6 — close-out accounting
 
-The roster line declared `model` before a token was spent; this closes that loop with what was actually spent. Mandatory, not an extra the owner requests: a run that cost ten times its worth must not be indistinguishable from one that didn't. `council-verify.sh` must already have passed.
+The roster line declared `model` before a token was spent; this closes that loop with what was actually spent. Mandatory, not an extra the owner requests: a run that cost ten times its worth must not be indistinguishable from one that didn't. `council_verify.py` must already have passed.
 
 ```bash
-~/.claude/skills/akiflow/scripts/council-cost.sh   # newest transcript for this project, or pass a .jsonl path
+python3 ~/.claude/skills/akiflow/scripts/council_cost.py   # newest transcript for this project, or pass a .jsonl path
 ```
 
 **One `haiku` subagent runs it and reports the table — never the lead**; reading the raw transcript is the largest bulk-read in the run. The script aggregates in-shell and prints tokens only, because per-model prices drift and a hardcoded table in a distributed script would rot: look the price up, bill `input + cache_creation` as input, price `cache_read` and `output` separately. **Headless spend is invisible to it** — an `agy` call writes no Claude transcript and a `claude -p` call writes its own, so those `usage` blocks are added by hand. The close-out line goes into the run's `docs/plan/` record, beside the roster declaration it reconciles.

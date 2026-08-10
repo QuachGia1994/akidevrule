@@ -113,10 +113,11 @@ def main():
             repo = f.read().strip()
     except OSError:
         repo = ""
+    launcher = "py -3 install.py" if os.name == "nt" else "./install.sh"
     update_cmd = (
-        f"cd {repo} && git pull && bash install.sh"
+        f"cd {repo} && git pull && {launcher}"
         if repo
-        else "pull the akidevrule repo and run: bash install.sh"
+        else f"pull the akidevrule repo and run: {launcher}"
     )
 
     delta_lines = []

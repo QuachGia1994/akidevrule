@@ -6,7 +6,14 @@ One install command turns a fresh environment into Aki's full working baseline �
 curl -fsSL https://raw.githubusercontent.com/lacvietanh/akidevrule/master/install.sh | bash
 ```
 
-Also available: `bash install.sh` from a local checkout, or the docs-site wrapper `curl -fsSL https://dev.akitao.com/claudedoc/install.sh | bash`. The script is intentionally simple — inspect it before running.
+Also available: `bash install.sh` from a local checkout, or the docs-site wrapper `curl -fsSL https://dev.akitao.com/claudedoc/install.sh | bash`. The launcher is intentionally simple — inspect it before running.
+
+On **Windows**, clone the repo and run the Python installer directly (inspectable, matching this repo's philosophy):
+
+```powershell
+git clone https://github.com/lacvietanh/akidevrule.git; cd akidevrule; .\install.ps1
+# or: py -3 install.py
+```
 
 This Git repository is the source of truth; `dev.akitao.com` is the presentation layer. Edit here, run the installer, done. It is **not** an auto-updater, daemon, package manager, or control plane.
 
@@ -23,19 +30,20 @@ This Git repository is the source of truth; `dev.akitao.com` is the presentation
 
 ## Requirements
 
+The installer is `install.py` — one cross-platform Python program (`pathlib` / `shutil` / `json`, no `rsync` / `find` / `awk`). `install.sh` and `install.ps1` are thin launchers that locate a Python interpreter and hand off to it. The skill helper scripts under `skills/akiflow/scripts/` are Python too (`*.py` is the source of truth; the matching `*.sh` files are transitional Unix wrappers).
+
 | Platform | Status | Notes |
 |---|---|---|
-| macOS | ✅ Supported | Primary target. `install.sh` is written to run under macOS's system bash 3.2 as well as GNU bash. |
-| Linux | ✅ Supported | Any distribution that has the tooling below. |
-| Windows | ❌ Not supported | `install.sh` is a POSIX bash script (`set -euo pipefail`, `rsync`, `python3`, `~`-rooted paths) with no Windows-native path. Running it under WSL or Git Bash is untested against this repo. |
+| macOS | ✅ Supported | Primary target. Run `./install.sh` or `python3 install.py`. |
+| Linux | ✅ Supported | Any distribution with Python 3. Run `./install.sh` or `python3 install.py`. |
+| Windows | ✅ Supported | Run `install.ps1` in PowerShell, or `py -3 install.py`. No WSL, Git Bash, or POSIX shell required — installer, hooks, and every skill helper are Python. Verified on `windows-latest` in CI. |
 
-Tooling `install.sh` calls directly — have these installed first:
+Tooling — have these installed first:
 
-- `bash` ≥ 3.2
-- `git`
-- `rsync`
-- `python3`
-- `curl` (only needed for the one-line remote install)
+- **Python 3.8+** — the one hard requirement (installer, hooks, and all skill helper scripts are Python).
+- `git` — for the `git clone` remote install.
+
+Interpreter convention (documented once): **Unix** uses `python3` (via `./install.sh`); **Windows** uses `py -3` / `python` (via `install.ps1`). The bundled skill scripts follow the same rule.
 
 ## What you get
 
@@ -105,7 +113,7 @@ Content-wise, active is a superset of passive; mechanically, only `/akithink` ru
 
 ### Update notifications — notify-only
 
-A `SessionStart` hook compares the installed `CHANGELOG.md` against the public repo copy (at most once per 24h, fail-silent, never blocking). When the remote is newer it prints what's new and the update command (`git pull && bash install.sh`). It never downloads or installs anything on its own.
+A `SessionStart` hook compares the installed `CHANGELOG.md` against the public repo copy (at most once per 24h, fail-silent, never blocking). When the remote is newer it prints what's new and the update command (`git pull && ./install.sh` on Unix, `git pull; py -3 install.py` on Windows). It never downloads or installs anything on its own.
 
 ## Repository layout
 
@@ -160,7 +168,9 @@ claude/                           → Claude Code-only runtime assets, installed
   hooks/aki-update-check.py
   fragments/settings.akidoc.fragment.json   (illustrative reference only — never apply manually)
 
-install.sh
+install.py                                  (cross-platform SSOT installer)
+install.sh                                  (thin Unix launcher → python3 install.py)
+install.ps1                                 (thin Windows launcher → py -3 install.py)
 ```
 
 ## What the installer does
@@ -176,7 +186,7 @@ flowchart TD
         CHOOKS["claude/hooks/aki-update-check.py"]
     end
 
-    INSTALL["⚙️ install.sh"]
+    INSTALL["⚙️ install.py (via install.sh / install.ps1)"]
     SRC --> INSTALL
 
     %% TARGET 1: ~/.aki/akidevrule/
@@ -216,7 +226,7 @@ flowchart TD
         R_SKILLS["<skill_name>/SKILL.md"]
     end
 
-    INSTALL -->|"rsync --delete"| T1
+    INSTALL -->|"copy + prune stale"| T1
     INSTALL -->|"deploy & settings setup"| T2
     INSTALL -->|"deploy native rules, skills & skills.json"| T3
     INSTALL -->|"sync per skill folder"| T4
@@ -224,10 +234,10 @@ flowchart TD
     INSTALL -->|"sync per skill folder"| T6
 ```
 
-Targets 4-6 only get the shared skill corpus (no rule corpus / no `CLAUDE.md`/`GEMINI.md`-style overrides — those CLIs have no equivalent hard-load hook this baseline plugs into yet). Each sync is scoped per skill folder name via `rsync -a --delete`, same never-touch-the-rest guarantee as targets 2 and 3, and runs unconditionally — harmless if that CLI isn't installed on the machine, picked up the moment it is.
+Targets 4-6 only get the shared skill corpus (no rule corpus / no `CLAUDE.md`/`GEMINI.md`-style overrides — those CLIs have no equivalent hard-load hook this baseline plugs into yet). Each sync is scoped per skill folder name via a Python `shutil` copy plus a managed-names-only prune, same never-touch-the-rest guarantee as targets 2 and 3, and runs unconditionally — harmless if that CLI isn't installed on the machine, picked up the moment it is.
 
-1. Syncs `payload/*` into `~/.aki/akidevrule/` (rsync, excludes `ref-ECC/`), removing stale files left by renames, and syncs `agskills/` for Antigravity skill inheritance.
-2. Syncs every skill folder under `skills/*/` (whole directory, including any `references/` or `scripts/`) into `~/.claude/skills/`, one named folder at a time via `rsync --delete`, removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched. `skills/` is a top-level, agent-neutral folder (siblings with `payload/`, not nested under `claude/`) because SKILL.md is a shared open standard both Claude Code and Antigravity/AGY consume identically — see [docs/ref/agent-skills-standard.md](docs/ref/agent-skills-standard.md).
+1. Syncs `payload/*` into `~/.aki/akidevrule/` (Python `shutil` copy, excludes `ref-ECC/`), removing stale files left by renames, and syncs `agskills/` for Antigravity skill inheritance.
+2. Syncs every skill folder under `skills/*/` (whole directory, including any `references/` or `scripts/`) into `~/.claude/skills/`, one named folder at a time (copy + managed-names-only prune), removing only Aki's own old/renamed skill directories (`akidoc-*`, `akiadvise`) — any other skill you already have is never touched. `skills/` is a top-level, agent-neutral folder (siblings with `payload/`, not nested under `claude/`) because SKILL.md is a shared open standard both Claude Code and Antigravity/AGY consume identically — see [docs/ref/agent-skills-standard.md](docs/ref/agent-skills-standard.md).
 3. Copies `claude/agents/*.md` into `~/.claude/agents/` **file by file, never a directory mirror with `--delete`** — that folder is a shared namespace where your own agent definitions sit beside Aki's, exactly like `~/.claude/skills/`, so nothing you did not install is ever removed.
 4. Replaces `~/.claude/CLAUDE.md` with the packaged guidance (timestamped backup first), appending this machine's source-repo path and an `@~/.claude/CLAUDE.local.md` import.
 5. Creates `~/.claude/CLAUDE.local.md` **only if missing** — never overwritten afterward. Put per-machine rules there (build constraints, IDE paths, remote flags); they survive every reinstall.
@@ -266,6 +276,8 @@ rm -f  ~/.claude/agents/aki-{hands,judge,conduct,challenger,maker}.md   # your o
 rm -f  ~/.claude/hooks/aki-update-check.py
 rm -f  ~/.gemini/GEMINI.md          # restore from a *.akidevrule-backup-* if needed; GEMINI.local.md is left untouched
 ```
+
+On **Windows** the same targets live under `%USERPROFILE%` (e.g. `%USERPROFILE%\.aki\akidevrule`, `%USERPROFILE%\.claude\skills\...`); remove them with `Remove-Item -Recurse -Force`.
 
 Then remove the akidevrule block from `~/.claude/CLAUDE.md` and its entries (permission, skillOverrides, SessionStart hook) from `~/.claude/settings.json` if desired.
 

@@ -1,6 +1,6 @@
 ---
 name: akilint
-description: Mechanical format lint for the penalty-card classes of RULE-agent-behavior.md §0 — hard-wrapped code comments and markdown prose ([WRAP]) and oversize comments ([YAP]) — via the shared scythe.sh detector. Deterministic file:line output; judgment stays with the session. Use when the user asks to lint/quét formatting, mentions wrapline, "bẻ dòng", "comment lảm nhảm", or calls a penalty card ([WRAP]/[YAP]/[FLUFF]) on recent output.
+description: Mechanical format lint for the penalty-card classes of RULE-agent-behavior.md §0 — hard-wrapped code comments and markdown prose ([WRAP]) and oversize comments ([YAP]) — via the shared scythe.py detector. Deterministic file:line output; judgment stays with the session. Use when the user asks to lint/quét formatting, mentions wrapline, "bẻ dòng", "comment lảm nhảm", or calls a penalty card ([WRAP]/[YAP]/[FLUFF]) on recent output.
 user-invocable: true
 ---
 
@@ -9,7 +9,7 @@ user-invocable: true
 Runs the shared detector — never a model sweep for what a grep settles:
 
 ```bash
-~/.claude/skills/akiflow/scripts/scythe.sh <file|dir> [...]   # on other CLIs: the same path under that CLI's skills root
+python3 ~/.claude/skills/akiflow/scripts/scythe.py <file|dir> [...]   # on other CLIs: the same path under that CLI's skills root
 ```
 
 The script is the SSoT for these detectors — akiflow's `akirule-enforcer` runs the same one, so a card name means the same thing everywhere. Exit code: 0 clean, 1 findings — usable from CI or hooks without parsing.
