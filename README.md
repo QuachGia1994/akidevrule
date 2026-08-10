@@ -10,6 +10,33 @@ Also available: `bash install.sh` from a local checkout, or the docs-site wrappe
 
 This Git repository is the source of truth; `dev.akitao.com` is the presentation layer. Edit here, run the installer, done. It is **not** an auto-updater, daemon, package manager, or control plane.
 
+## Contents
+
+- [Requirements](#requirements)
+- [What you get](#what-you-get)
+- [Repository layout](#repository-layout)
+- [What the installer does](#what-the-installer-does)
+- [Gemini / Antigravity model](#gemini--antigravity-model)
+- [What is excluded](#what-is-excluded)
+- [Why `~/.aki/akidevrule`](#why-akiakidevrule)
+- [Uninstall](#uninstall)
+
+## Requirements
+
+| Platform | Status | Notes |
+|---|---|---|
+| macOS | ✅ Supported | Primary target. `install.sh` is written to run under macOS's system bash 3.2 as well as GNU bash. |
+| Linux | ✅ Supported | Any distribution that has the tooling below. |
+| Windows | ❌ Not supported | `install.sh` is a POSIX bash script (`set -euo pipefail`, `rsync`, `python3`, `~`-rooted paths) with no Windows-native path. Running it under WSL or Git Bash is untested against this repo. |
+
+Tooling `install.sh` calls directly — have these installed first:
+
+- `bash` ≥ 3.2
+- `git`
+- `rsync`
+- `python3`
+- `curl` (only needed for the one-line remote install)
+
 ## What you get
 
 ### Nine skills
@@ -211,7 +238,7 @@ Targets 4-6 only get the shared skill corpus (no rule corpus / no `CLAUDE.md`/`G
 
 Re-running the installer updates the same managed files cleanly.
 
-### Gemini / Antigravity model
+## Gemini / Antigravity model
 
 Claude Code loads the rule corpus automatically (harness-guaranteed `@`-imports via the `akirule` skill). Antigravity/Gemini has no such loader, so the split is: `~/.gemini/GEMINI.md` carries **hard-loaded behavior overrides** that patch Antigravity's weak spots (unrequested artifacts, over-engineering, verbosity), and a tiny per-project `GEMINI.md` bootstrap points the agent at that project's `CLAUDE.md` as its single source of truth. The per-project bootstrap is copied into a project by hand (it is not distributed by the installer).
 
