@@ -28,3 +28,5 @@ ref-ECC/
 
 # Disposable visual export from /akihtmlreport skill — regenerated each run, not a doc source of truth
 REPORT.html
+Icon?
+.DS_Store
