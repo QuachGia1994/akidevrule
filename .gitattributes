@@ -1,0 +1,10 @@
+# Force LF in every checkout, including Windows runners/clones with autocrlf=true.
+# The installer copies payload bytes verbatim, so LF here is what guarantees the
+# plan's LF discipline in installed rules on every platform.
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
