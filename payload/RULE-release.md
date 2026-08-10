@@ -97,9 +97,14 @@ Run once when `CHANGELOG.md` was not produced under this rule from project incep
 4. Report mismatches and propose retroactive entries for any gaps. Never renumber or delete public versions.
 5. If a gap's historical content cannot be determined (a tag exists but nobody knows what it contained), the retroactive entry must say so explicitly ("historical content unknown") — never invent or infer changes that cannot be verified.
 
-### B4. GitHub Release output — copy-ready summary
+### B4. GitHub Release — create it, do not just describe it
 
-After updating CHANGELOG and version bump, automatically output a copy-ready GitHub Release block without waiting for the user to ask:
+A pushed git tag is **not** a release: A1 lists the GitHub Release as a required artifact alongside CHANGELOG/releases.json. Stopping at `git push --tags` and reporting "released" is the exact gap this item closes — the Releases page still shows the previous version while the tag and code have moved on.
+
+After updating CHANGELOG and the version bump, produce the GitHub Release without waiting to be asked:
+- **Repo publishes GitHub Releases and `gh` is available** (`gh release list` succeeds) → create it directly: `gh release create <tag> --title "…" --notes-file <file> --latest`. An already-pushed tag is reused, not duplicated. Verify with `gh release list` that the new version now reads `Latest`.
+- **Otherwise** (no `gh`, or the user will publish manually) → output the copy-ready block below instead.
+- Before minting, cross-check tags against Releases (`gh release list` vs `git tag`) and offer to backfill any tag that has no matching Release, so the Releases page has no gaps.
 
 **Title:** `v{version} — {2–5 word specific impact}` — no generic words ("patch fixes", "bug fixes", "improvements")
 - Good: `v1.5.1 — fix production icons blank, caret, grid gap`

@@ -9,7 +9,7 @@
 - Commit messages: English, imperative style
 
 ### A2. Philosophy
-- Single-developer friendly
+- Single-maintainer friendly — about who maintains, not how many use; never an excuse to cut UX
 - MVP-first
 - DRY, but no abstraction for its own sake
 - YAGNI
