@@ -106,6 +106,7 @@ Walk the topology, checking each doc against what is actually true now:
 - `docs/research/` — a conclusion whose recorded context no longer holds needs a successor doc plus a `Status: superseded by` line (B2), never an edit to the original
 - `docs/ref/` — commands, paths, and setup steps still run
 - Doc references inside code comments (B3) still point at a heading that exists
+- **The inverse walk — code → docs:** a complex feature or subsystem shipped with no corresponding `feat/`/`arch/` doc is an **Incomplete** finding (C4). The audit checks both directions, never only whether existing docs still hold
 
 ### C4. Severity — drift is not one thing
 

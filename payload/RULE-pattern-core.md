@@ -1,8 +1,8 @@
-# Design Core — Universal Pattern Rules
+# Pattern Core — Universal Architecture Pattern Rules
 
-<!-- Address map: design.A1-8 · design.B1-3 · design.C1 -->
+<!-- Address map: pattern.A1-8 · pattern.B1-3 · pattern.C1 -->
 
-**Tier: Contextual (high sensitivity).** Stack-agnostic. This file is the universal pattern-design philosophy — the "forest view" that keeps a codebase coherent as it grows, instead of accreting local patches. It applies to every project type: backend, API/worker, Tauri/desktop, CLI, library, DB layer, and UI.
+**Tier: Core** — `@`-imported by `~/.claude/CLAUDE.md`, in context every session. Stack-agnostic. This file is the universal pattern philosophy — the "forest view" that keeps a codebase coherent as it grows, instead of accreting local patches. It applies to every project type: backend, API/worker, Tauri/desktop, CLI, library, DB layer, and UI.
 
 It **sharpens** `RULE-coding.md` (which owns baseline DRY/YAGNI/SRP and the Result pattern); it does not restate it. UI-specific enforcement of these same laws lives in `RULE-ui-pattern.md`.
 
@@ -19,7 +19,7 @@ These are constraints on **structure and reuse**, not style. Reach for this file
 
 ---
 
-## A. 8 định luật — checkable, stack-agnostic
+## A. The 8 laws — checkable, stack-agnostic
 
 **A1 — Single Source of Truth.** Every value, rule, or decision that can change lives in exactly one place; everything else references it. This covers config, constants, types, enums, business thresholds, and visual tokens — not just one category. A value written twice is a future inconsistency, not a convenience.
 
@@ -41,7 +41,7 @@ These are constraints on **structure and reuse**, not style. Reach for this file
 
 ---
 
-## B. Phân rã & quét rừng
+## B. Decomposition & the forest pass
 
 ### B1. Module decomposition — how to split
 - Split by **responsibility/domain**, not by technical layer alone and not by file size.
@@ -64,10 +64,10 @@ No new shared layer, base module, or generalization ships without a quick `METHO
 - **Attack the abstraction** — one concrete way it could be the wrong shape, and how you'd know.
 - **Smaller first** — is the first version smaller than the imagined final one?
 
-## C. Chốt
+## C. Closure
 
-### C1. Definition of done — design level
-A change is design-complete when all hold:
+### C1. Definition of done — pattern level
+A change is pattern-complete when all hold:
 - No value/rule is duplicated (Law 1).
 - Every new unit passes the "and" test (Law 3).
 - No abstraction was added without ≥3 evidence — or ≥2 for risk logic (Law 2).

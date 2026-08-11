@@ -223,7 +223,7 @@ AG_RULE_MAP = [
     ("RULE-coding.md", "model_decision",
      'Coding philosophy, source-of-truth discipline, error handling and security. Load when writing, reviewing or refactoring code.',
      ""),
-    ("RULE-design-core.md", "model_decision",
+    ("RULE-pattern-core.md", "model_decision",
      'Universal design laws: single source of truth, Rule of Three, single-responsibility "and"-test, composition over inheritance, naming by role. Load on any structural or decomposition decision.',
      ""),
     ("RULE-docs.md", "model_decision",

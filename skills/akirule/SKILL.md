@@ -1,6 +1,6 @@
 ---
 name: akirule
-description: Aki's contextual rule router. Signal-triggered loading with high sensitivity for contextual and analytical rules; full load on explicit command. Core rules are not routed here — the harness embeds them via CLAUDE.md.
+description: Aki's contextual rule router — invoke BEFORE acting whenever the task touches any of - .md/.vue/.css/.tsx/.rs/.sql files; docs, plan, README, CHANGELOG; UI, component, CSS, tailwind; SEO, schema, sitemap; release, version, commit, push, deploy; DB schema, migration; Tauri; i18n, UI copy; pricing, biz; UX review; refactor, flow tracing; audit or minimize sweeps; big decisions (should we / có nên). Full corpus load on "nạp full". Core rules are not routed here — the harness embeds them via CLAUDE.md.
 user-invocable: false
 ---
 
@@ -8,7 +8,7 @@ user-invocable: false
 
 **Nothing in this file is guaranteed to run.** A skill loads only when the model chooses to invoke it, so every rule routed below is best-effort.
 
-The rules that must apply unconditionally are not here. `index.md`, `RULE-agent-behavior.md`, `RULE-coding.md` and `RULE-design-core.md` are embedded by the harness through `@` imports in `~/.claude/CLAUDE.md`, which is read mechanically at session start. Do not move them back into this file: an `@` path inside a skill body is not expanded by the harness the way it is inside `CLAUDE.md`, so declaring them here would look like an import while loading nothing.
+The rules that must apply unconditionally are not here. `index.md`, `RULE-agent-behavior.md`, `RULE-coding.md` and `RULE-pattern-core.md` are embedded by the harness through `@` imports in `~/.claude/CLAUDE.md`, which is read mechanically at session start. Do not move them back into this file: an `@` path inside a skill body is not expanded by the harness the way it is inside `CLAUDE.md`, so declaring them here would look like an import while loading nothing.
 
 The last two used to be routed here as "default ON" Tier 1 entries. That phrasing promised a guarantee the mechanism could not deliver — a file routed by a skill loads only if the model first decides to invoke the skill — and the observed failure was not the rules being read and ignored but never being read at all. Do not re-add them below: they are already in context on every turn, so a signal block for them would only produce a redundant `Read`.
 
@@ -26,7 +26,7 @@ Before responding, scan the user message and any file paths mentioned. For each 
 
 **A file extension alone is a sufficient signal.** Touching a `.md` loads `RULE-docs.md`; a `.vue`/`.css` loads `RULE-ui-pattern.md`; `.rs`/`Cargo.toml` loads `RULE-stack-tauri.md`; `.sql`/`migrations/` loads `RULE-db-design.md`. The project does **not** need a matching folder structure, a `docs/` tree, or an existing design system first — match on what is being touched, not on how mature the project is. The keyword and action lists below are additional entry points, never a required second condition.
 
-### RULE-coding.md · RULE-design-core.md — not routed, already loaded
+### RULE-coding.md · RULE-pattern-core.md — not routed, already loaded
 Both are core `@` imports (see the section above) and are in context on every turn without this skill running. Nothing to match, nothing to `Read`, and they never appear in a load-confirmation line.
 
 ### RULE-docs.md
@@ -135,7 +135,7 @@ Load if message contains any of:
 One line at the start of the response, reporting the **whole rule context**, not this skill's delta:
 
 ```
-[RULES] agent,coding,design (core) + docs,ui (router) | missing: none
+[RULES] agent,coding,pattern (core) + docs,ui (router) | missing: none
 ```
 
 | Element | Rule |

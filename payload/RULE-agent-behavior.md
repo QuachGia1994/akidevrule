@@ -14,7 +14,7 @@ Named tokens shared by three surfaces: the owner's correction ("vi phạm WRAP")
 
 Being called with a card means: re-read the root rule, fix **every** instance in the current output (not only the cited one), and reply with the fix — never with a restatement of the rule. `[WRAP]` and `[YAP]` are mechanically detectable (`skills/akiflow/scripts/scythe.sh`, run via `/akilint` or akiflow's enforcer); `[FLUFF]` is content judgment and is never claimed by a script.
 
-## A. Giao tiếp
+## A. Communication
 
 ### A1. Response language
 - Use Vietnamese for complex, long, or strategic discussions
@@ -62,7 +62,7 @@ A worker is a subagent, or the same or another CLI called headlessly (`claude -p
 - **Judgment does not delegate downward.** A cheap tier is for retrieval. Deciding what a finding *means* stays with the caller — a cheap model's confident misclassification costs more than the sweep saved.
 - **Spend that crosses a process or CLI boundary is invisible to the caller's own accounting.** If the total matters, read each call's own usage figures and add them by hand.
 
-## B. Kỷ luật phạm vi & quyết định
+## B. Scope & decision discipline
 
 ### B1. Scope discipline
 - Do exactly what was asked
@@ -102,7 +102,7 @@ An audit — of code, docs, versions, UI, or a working tree — **reports**; it 
 
 Domain audits: `docs.C` (docs vs reality), `release.B` (version state), `release.B7` (pre-ship gate), `ui.C` (class/token), `METHOD-flow-audit.md` (flow/state).
 
-## C. File & bộ nhớ
+## C. Files & memory
 
 ### C1. File creation and naming
 - Follow the current project's existing naming conventions before applying shared defaults

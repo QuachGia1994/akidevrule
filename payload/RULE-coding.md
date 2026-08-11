@@ -2,7 +2,7 @@
 
 <!-- Address map: coding.A1-3 · coding.B1-4 · coding.C1-5 -->
 
-## A. Triết lý & nguồn sự thật
+## A. Philosophy & source of truth
 
 ### A1. Language
 - Code and comments: English only
@@ -23,10 +23,10 @@ Priority order:
 
 Project docs and memory are useful context, not final truth.
 
-## B. Chất lượng & sửa code
+## B. Quality & changing code
 
 ### B1. Code quality
-- Naming: `design.A7` is the root rule — not restated here
+- Naming: `pattern.A7` is the root rule — not restated here
 - Prefer one clear responsibility per function/module
 - Modularize only when it improves clarity, reuse, or testability
 - Prefer existing code and patterns over re-implementation
@@ -39,18 +39,20 @@ A principle with the procedure that guarantees it — apply to any edit of code 
 ### B3. Verification
 - Done means verified — never claim success from intention alone.
 - Verify by the **narrowest tool that actually settles the doubt**: static reading and type/lint/unit checks first. Never spin up a full build or dev server just to catch a typo a typecheck would catch.
+- **Static reading IS verification** when the property is fully determined by visible code flow — state what was read as the evidence and close the checklist item on that evidence. Escalate a tier (typecheck → unit → runtime) only when you can name the specific doubt that tier settles.
+- **Never gate a done-transition on human manual testing for a check that static reading or an automated tier settles.** A plan's verify checklist stays fully detailed — the violation is not the checklist, it is parking finished work as "waiting for manual test" on items whose truth the code flow already proves. Hand the human only what genuinely needs human runtime judgment: UX feel, visual rendering, live external integration.
 - **Running the app is not a default verification step — but not running it does not let you claim "Done".** Starting a dev server, making live network calls, or driving a full build/headless screenshot is **user-triggered**, not self-authorized (cost and side effects are the user's call). When a change's real risk lives **only at runtime** — hydration, layout/z-index, route/auth flow, a dynamically-built class a build step may purge — and you cannot settle it statically, you may **not** report "Done": halt and report the state as **"unverified — needs a runtime check"**, propose the exact command, and hand it to the user (see [[RULE-agent-behavior]] A3). "Done" for logic you only compiled is not done.
 - **A change that requires a separate action against an external system to take effect is not done when the file describing that action is written.** Migrations, remote config, env vars, cache purges, cron/schedule registration — writing the script/config is not the same event as the target system actually reflecting it. Git diff and a green build both stay silent about this gap: neither touches the external system, so both can look complete while the real target (a remote database, a dashboard toggle, a deployed cron) is still on the old state. Verify the action was actually executed **against the real target**, not just that the instructions to perform it exist locally, before reporting "Done" on that change. Domain instantiation: [[RULE-release]] (a release/CHANGELOG entry is not truthful until this holds) and stack-specific execution commands (e.g. `RULE-stack-akiNuxtCf.md` §C8 for D1 migrations).
 
 ### B4. Self-documenting code — comments are a last resort
-Domain application of the density root (`agent.A4` — every line must carry information the reader does not already have); the naming root is `design.A7`. Penalty card: `[YAP]` (`agent` §0).
-- Naming and shape come first: a comment that explains *what* a block does is a failed name or a failed extraction — fix the name/structure (`design.A7`, `design.A3`), then delete the comment. Clean flow plus role-named functions and variables need no narration.
+Domain application of the density root (`agent.A4` — every line must carry information the reader does not already have); the naming root is `pattern.A7`. Penalty card: `[YAP]` (`agent` §0).
+- Naming and shape come first: a comment that explains *what* a block does is a failed name or a failed extraction — fix the name/structure (`pattern.A7`, `pattern.A3`), then delete the comment. Clean flow plus role-named functions and variables need no narration.
 - A comment may state only what the code cannot say: a non-obvious constraint, an external contract, a genuine why. Never narrate the next line, restate the signature, or record change history.
 - Deletion test, per comment: if removing it loses nothing a reader needs beyond what the code already says, remove it. Default is silence — comment density is a smell, not a virtue.
 - Comments rot: no compiler checks a comment, so it drifts silently as the code under it changes, and a stale comment misleads worse than none — one more reason deletion is the default, and why a rationale that must stay current lives in a doc the code references ([[RULE-docs]] B3), never duplicated inline.
 - One line when a comment is genuinely needed; a rationale bigger than that lives in docs, with the comment holding only the reference (see [[RULE-docs]] B3).
 
-## C. An toàn runtime
+## C. Runtime safety
 
 ### C1. Error handling
 - Validate at system boundaries: user input, external APIs, filesystem, network, persistence

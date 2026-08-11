@@ -69,7 +69,7 @@ The five agents live in `~/.claude/agents/` and carry their own tools, model tie
 | Definition | Seat is for |
 |---|---|
 | `aki-hands` | retrieval with `file:line`; judgment forbidden. Also the file that names every worker substrate (Claude subagent · agy · kiro-cli · `cl-9rt`) and the recorded harness facts that make re-probing them unnecessary |
-| `aki-judge` | one standard, named at spawn — `design`, `proportion`, `ux`, `db`, `docs`, `release`, `biz`, whichever the item is judged by |
+| `aki-judge` | one standard, named at spawn — `pattern`, `proportion`, `ux`, `db`, `docs`, `release`, `biz`, whichever the item is judged by |
 | `aki-conduct` | the process: whether rules arrived (LOAD-fail) and whether they were followed (COMPLY-fail); `scythe.py` is its tool |
 | `aki-challenger` | attacks the result from a clean context; closes on *"what can be cut?"* and *"does this answer the anchored words?"* |
 | `aki-maker` | turns a decision into a diff; `execute` mode only |
@@ -105,7 +105,7 @@ A seat rejoining reads `--pinned` plus `--from <its last turn>`. The lead watche
 
 **Domain consults are mandatory once a seat exists.** An item whose closure touches a domain with a seated judge closes only after that judge's recorded turn. "Nobody asked UX" is a closure defect. This does not create seats — it binds the ones the anchor already justified.
 
-**Recurring conflict is a design smell, not a refereeing job.** The same ground contested across two or more items is the signature of a missing pattern underneath (`design.A8`). Open a root item, name the pattern, re-close the conflicted items against it.
+**Recurring conflict is a design smell, not a refereeing job.** The same ground contested across two or more items is the signature of a missing pattern underneath (`pattern.A8`). Open a root item, name the pattern, re-close the conflicted items against it.
 
 **Steering is judgment, not a counter.** Depth is why this skill exists; never cut a productive argument short for being long. Intervene on a real signal — ground re-covered with no new evidence, a closing criterion that has stopped getting closer, scope drifting outside mandates, cost visibly outrunning the decision's worth — and then do the minimum: one pinned `CHECKPOINT` line, messaged only to the seats that are drifting.
 

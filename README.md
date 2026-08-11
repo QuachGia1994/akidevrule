@@ -68,14 +68,14 @@ A seat used to be convened by job title and then handed rules. The order is inve
 | Agent | Tools | Standard of "correct" |
 |---|---|---|
 | `aki-hands` | Read, Grep, Glob | none — **judgment forbidden**; facts with `file:line` only. Carries the cross-CLI substrate table (Claude subagent · agy flash · kiro-cli · `cl-9rt` proxy lane), with flags and failure modes read from recorded harness facts rather than re-probed |
-| `aki-judge` | Read, Grep, Glob | **exactly one** standard, named at spawn (`design`, `proportion`, `ux`, `db`, …). Several standards in one head average into one mild opinion and the disagreement — the useful part — disappears |
+| `aki-judge` | Read, Grep, Glob | **exactly one** standard, named at spawn (`pattern`, `proportion`, `ux`, `db`, …). Several standards in one head average into one mild opinion and the disagreement — the useful part — disappears |
 | `aki-conduct` | + Bash | the corpus itself. Its unique job is separating **LOAD-fail** (the rule never arrived) from **COMPLY-fail** (it arrived and was violated); `scythe.sh` is one of its tools, never a seat and never a gate |
 | `aki-challenger` | Read, Grep, Glob | attacks the result from a clean context — defined by what it is *not* given (the reasoning). Always closes with *"what can be cut?"* and *"does this answer the anchored words?"* |
-| `aki-maker` | Read, Edit, Write, Bash | `coding` + `design` + the domain rules in its brief. The only agent permitted to write, and therefore the most narrowly scoped: it implements a decision, it does not make one |
+| `aki-maker` | Read, Edit, Write, Bash | `coding` + `pattern` + the domain rules in its brief. The only agent permitted to write, and therefore the most narrowly scoped: it implements a decision, it does not make one |
 
 A catalog is not a roster. Five files on disk make it easy to pick seats from a menu, which is the failure they were built to end — a seat is convened only when it traces to a requirement in the owner's own words.
 
-**Claude Code only, deliberately.** `SKILL.md` is an open standard with five implementations; an agent-definition format currently has one, so building a vendor-neutral layer over a single consumer would be exactly the speculative generality `design.A2` forbids. Reopen trigger: a second CLI publishing an agent format promotes `claude/agents/` to a top-level `agents/` rendered per vendor, the way `AG_RULE_MAP` already renders rules for Antigravity.
+**Claude Code only, deliberately.** `SKILL.md` is an open standard with five implementations; an agent-definition format currently has one, so building a vendor-neutral layer over a single consumer would be exactly the speculative generality `pattern.A2` forbids. Reopen trigger: a second CLI publishing an agent format promotes `claude/agents/` to a top-level `agents/` rendered per vendor, the way `AG_RULE_MAP` already renders rules for Antigravity.
 
 ### A rule corpus that routes itself
 
@@ -87,7 +87,7 @@ A catalog is not a roster. Five files on disk make it easy to pick seats from a 
 
 Loading happens on two different mechanisms, and the difference matters more than the tier numbering does.
 
-**Core — harness-embedded, not routed.** `index.md`, `RULE-agent-behavior.md`, `RULE-coding.md` and `RULE-design-core.md` are `@`-imported by `~/.claude/CLAUDE.md`, which Claude Code reads mechanically at session start. No model decision is involved, so they are the only rules that genuinely apply to every task. The two rule files were promoted out of Tier 1 after "default ON" proved to be a statement of intent rather than a mechanism: routing them through a skill meant they loaded only when the model first chose to invoke that skill, and the rules needing the most owner correction were absent from the context rather than present and disobeyed. They cost context in every session, including sessions with no code in them — that is the price of the guarantee. `@` imports have this effect **only** inside `CLAUDE.md` — the same syntax written into a skill body looks like an import but loads nothing, because a skill body is read only after the model has already chosen to invoke the skill.
+**Core — harness-embedded, not routed.** `index.md`, `RULE-agent-behavior.md`, `RULE-coding.md` and `RULE-pattern-core.md` are `@`-imported by `~/.claude/CLAUDE.md`, which Claude Code reads mechanically at session start. No model decision is involved, so they are the only rules that genuinely apply to every task. The two rule files were promoted out of Tier 1 after "default ON" proved to be a statement of intent rather than a mechanism: routing them through a skill meant they loaded only when the model first chose to invoke that skill, and the rules needing the most owner correction were absent from the context rather than present and disobeyed. They cost context in every session, including sessions with no code in them — that is the price of the guarantee. `@` imports have this effect **only** inside `CLAUDE.md` — the same syntax written into a skill body looks like an import but loads nothing, because a skill body is read only after the model has already chosen to invoke the skill.
 
 **Everything else — routed by the `akirule` skill**, and therefore best-effort: it applies when the model invokes the skill and a signal matches. Sensitivity is deliberately high (err toward loading — a false positive costs a few tokens, a false negative causes wrong behavior).
 
@@ -122,7 +122,7 @@ payload/                          → installed to ~/.aki/akidevrule/
   index.md
   RULE-agent-behavior.md
   RULE-coding.md
-  RULE-design-core.md
+  RULE-pattern-core.md
   RULE-docs.md
   RULE-content-write.md
   RULE-stack-akiNuxtCf.md

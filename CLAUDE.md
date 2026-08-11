@@ -22,7 +22,13 @@ Files in `payload/` follow this convention:
 - `RULE-*.md` — constraint rules: behavior, coding, content, stack requirements.
 - `METHOD-*.md` — analytical frameworks loaded on demand for auditing or optimization tasks.
 
-Do not rename existing files or introduce new top-level prefixes without updating `payload/index.md`, `skills/akirule/SKILL.md`, `claude/CLAUDE.md`, `README.md`, and `install.sh` consistently.
+Do not rename existing files or introduce new top-level prefixes without updating `payload/index.md`, `skills/akirule/SKILL.md`, `claude/CLAUDE.md`, `README.md`, and `install.py` (the installer SSOT; `install.sh`/`install.ps1` are thin launchers) consistently.
+
+## Rule authoring principles
+
+- **Standard over legacy.** This repo IS the standard. When a better name, shape, or convention is identified, adopt it fully and migrate every live reference in the same change — never keep a worse form for backward compatibility. Only immutable event records (past CHANGELOG entries, `docs/research/`, `docs/plan/done/`) keep their historical wording.
+- **Dense technical wording, keyword-first.** A rule is written in condensed scientific-technical language whose exact terms are the trigger keywords an AI pattern-matches on (`group-hover`, `spawn_blocking`, `NFC`) — never narrative prose. Line budget follows violation frequency, not felt importance; every line passes the deletion test (`agent.A4`).
+- **Self-compliance (dogfood).** The corpus obeys its own rules: a new rule, section, or skill needs a unique evidence-backed reason to exist (`pattern.A2` bar), overlaps an existing rule only as a pointer (never restated text), and passes the `pattern.B3` critique gate before shipping. A corpus that violates itself teaches violation.
 
 ## Content language
 

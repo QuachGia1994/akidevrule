@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.1.0] - 2026-08-12
+
+### Changed
+- **`RULE-design-core.md` → `RULE-pattern-core.md`, slug `design.*` → `pattern.*`.** The old name kept reading as UI/visual design; the file owns universal architecture-pattern law (SSoT, Rule of Three, SRP, OCP, boundaries). Full rename per the new "standard over legacy" principle — every live reference migrated in this change (payload manifest + cross-cutting lens, `RULE-coding`/`RULE-ui-pattern`/`METHOD-subtraction-audit`/`METHOD-proportionality` slug refs, `claude/CLAUDE.md` `@`-import, agent briefs and `[RULES]` receipt examples in `claude/agents/*`, `skills/akirule|akihelp|akiflow`, `install.py` AG map, `README.md`, `docs/index.md`, `docs/arch/akiflow.md`). Historical records (past CHANGELOG entries, `docs/research/`, `docs/plan/done/`) intentionally keep the old name. Also fixed the file's stale tier header ("Contextual" → Core `@`-import, drifted since the 1.x promotion).
+- **`ui.B5` rewritten: hover bridge → hover proximity.** The old rule prescribed only the patch (transparent `::before`/`::after` bridge over the gap); the root cause — trigger and hover-shown content rendered far apart so the popup closes mid-travel — was never stated. Now an invariant (popup stays open while the pointer travels trigger → content) with the root fix first (nest in the trigger's hover scope, spacing via inner `padding` not `margin`) and bridge/close-grace-delay demoted to the portal/teleport + `overflow`-clipping escape hatch.
+- **`coding.B3` gains anti-over-verification clauses aimed at done-gating, not test-writing.** Static reading IS verification when the property is fully determined by visible code flow — the item closes on that stated evidence; escalating a tier requires naming the specific doubt that tier settles; and a done-transition must never be parked on human manual testing for checks the agent can settle statically — the human is handed only what needs human runtime judgment (UX feel, visual rendering, live external integration). Plan checklists stay fully detailed; the gate abuse was the violation.
+- **`akirule` skill description now carries the trigger signals.** The description is the only router surface the model sees every turn (the signal lists in the body load only after invocation), and a headless 5-prompt experiment measured 0/5 router firings with the old signal-free wording. It now enumerates the concrete entry points — file extensions (.md/.vue/.css/.tsx/.rs/.sql), docs/release/commit/deploy, UI/SEO/DB/Tauri/i18n/biz/UX/refactor/audit topics, big decisions — so invocation no longer depends on the model recalling an unstated mapping.
+- **English-only sweep of the public corpus.** Vietnamese section/group headers and stray Vietnamese prose in `payload/`, `skills/`, `claude/` translated to English per the CLAUDE.md content-language rule, with `payload/index.md` group tables synced to the new headers. Functional Vietnamese is untouched: routing keyword/signal lists, literal trigger phrases (`nạp full`), and worked examples that need Vietnamese text (NFC "Nguyễn", accented SEO queries).
+
+### Added
+- **`release.B4` compare-link footer.** GitHub-hosted repos must end release notes with `**Full Changelog**: <repo-url>/compare/<prev-tag>...<new-tag>` (or use `gh release create --generate-notes`, which inserts it) — the Release page shows notes only and the tag points at a single commit, so without the link there is no one-click view of the commits accumulated since the previous release; first release links `<repo-url>/commits/<new-tag>`.
+- **`content.C2` content audit** — three read-only sweeps (canonical-term drift, density deletion test, i18n coverage) severity-classified per `docs.C4`; closes the one audit domain that had no playbook.
+- **`docs.C3` inverse walk** — a complex feature/subsystem with no corresponding `feat/`/`arch/` doc is now an explicit Incomplete finding; drift audit checks code → docs, not only docs → code.
+- **`CLAUDE.md` "Rule authoring principles"** — standard over legacy (this repo IS the standard; migrate fully, never keep a worse form for compatibility), dense keyword-first technical wording budgeted by violation frequency, and self-compliance (a new rule/skill needs a `pattern.A2`-grade reason to exist and passes the `pattern.B3` critique gate).
+
+### Fixed
+- **`CLAUDE.md` rename checklist pointed at `install.sh`** — the installer SSOT has been `install.py` since 2.0.0; the launchers are thin.
+
 ## [2.0.2] - 2026-08-11
 
 ### Changed

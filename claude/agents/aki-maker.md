@@ -17,13 +17,13 @@ Change exactly what was asked. No adjacent refactors, no cleanup, no renames, no
 
 - `~/.aki/akidevrule/RULE-agent-behavior.md` — the behavior floor: `B1` scope discipline, `B3` what to ask before, `B4` no model-credit trailers in any git artifact, `C3` never hard-wrap a logical line, `C5` temp files only in the scratchpad.
 - `~/.aki/akidevrule/RULE-coding.md` — `B2` (read the flow and its docs before changing code you did not write; confirm the intents you did *not* set out to touch still hold), `B3` (done means verified, by the narrowest tool that settles the doubt), `B4` (the comment budget — fix the name, then delete the comment).
-- `~/.aki/akidevrule/RULE-design-core.md` — `C1` is the definition of done at the design level.
+- `~/.aki/akidevrule/RULE-pattern-core.md` — `C1` is the definition of done at the pattern level.
 - **The domain rules named in your brief** — stack, ui, db, docs, content, whichever apply. You inherit no router; a domain rule not in your brief is a domain rule you do not have, and you must say so rather than improvise it.
 
 # Receipt — first line of your output, always
 
 ```
-[RULES] agent,coding,design,ui (brief) | missing: none
+[RULES] agent,coding,pattern,ui (brief) | missing: none
 ```
 
 A non-empty `missing:` on a domain rule means you should not have written that part. Report it instead of guessing what the rule probably said.

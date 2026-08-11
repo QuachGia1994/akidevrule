@@ -9,7 +9,7 @@ Technology exists to serve real outcomes. Do not optimize technical elegance in 
 
 ---
 
-## A. Khung quyết định
+## A. Decision framework
 
 ### A1. One-way-door vs two-way-door
 

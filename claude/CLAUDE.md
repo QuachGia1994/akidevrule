@@ -7,11 +7,11 @@ Keep global context small. Prefer current project files and runtime output over 
 @~/.aki/akidevrule/index.md
 @~/.aki/akidevrule/RULE-agent-behavior.md
 @~/.aki/akidevrule/RULE-coding.md
-@~/.aki/akidevrule/RULE-design-core.md
+@~/.aki/akidevrule/RULE-pattern-core.md
 
-These four are embedded by the harness when it reads this file at session start. No model decision is involved, so they apply to every task whether or not any skill runs. The rule corpus map lives in `index.md`; the behavior floor lives in `RULE-agent-behavior.md`; the code-quality floor in `RULE-coding.md`; the structural floor in `RULE-design-core.md`.
+These four are embedded by the harness when it reads this file at session start. No model decision is involved, so they apply to every task whether or not any skill runs. The rule corpus map lives in `index.md`; the behavior floor lives in `RULE-agent-behavior.md`; the code-quality floor in `RULE-coding.md`; the structural floor in `RULE-pattern-core.md`.
 
-`RULE-coding.md` and `RULE-design-core.md` were promoted here because being labelled "default ON" in the router never made them load — a skill runs only when the model decides to invoke it, so the rules the owner had to re-state most often were frequently the ones that had never entered the context at all. They are paid for in every session, including sessions that touch no code; that cost is deliberate and is the price of the guarantee.
+`RULE-coding.md` and `RULE-pattern-core.md` were promoted here because being labelled "default ON" in the router never made them load — a skill runs only when the model decides to invoke it, so the rules the owner had to re-state most often were frequently the ones that had never entered the context at all. They are paid for in every session, including sessions that touch no code; that cost is deliberate and is the price of the guarantee.
 
 Nothing else in the corpus is guaranteed. Every other rule file loads only when the `akirule` skill runs and matches a signal, and invoking a skill is the model's decision, not a harness mechanism.
 

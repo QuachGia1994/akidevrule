@@ -4,7 +4,7 @@
 
 **Tier: Contextual** — load when designing a schema, writing a migration, or refactoring a database layer. Do not load by default on every task.
 
-## A. Nguyên tắc dữ liệu
+## A. Data principles
 
 ### A1. Immutability & Event Sourcing
 For business domains with transactions or mutable-looking state (wallets/credits, transaction history, audit logs): never mutate state directly — only append action records (append-only log). Current balance/state is a materialized view derived by replaying/summing the log. On error, replay the log instead of patching state by hand.

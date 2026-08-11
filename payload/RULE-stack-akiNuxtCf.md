@@ -5,7 +5,7 @@
 ## Stack
 Nuxt 4 · Vue 3 · Tailwind v4 · @nuxtjs/i18n · @nuxtjs/seo · SweetAlert2 · FontAwesome 7.2 · aki-info-detect
 
-## A. Cloudflare & TypeScript nền
+## A. Cloudflare & TypeScript foundation
 
 ### A1. Build & TypeScript
 - Pin `packageManager` (e.g. `npm@10.9.2`) and `engines.node` in `package.json` to match the Cloudflare Pages build image version. Always use `npx npm@<pinned_version> install` to regenerate lockfiles before committing to avoid version drift (especially with optional peer dependencies).
@@ -81,7 +81,7 @@ Nuxt 4 · Vue 3 · Tailwind v4 · @nuxtjs/i18n · @nuxtjs/seo · SweetAlert2 · 
 - Favicon: keep `favicon.ico` at the project's `public/` root
 - Web manifest: full `name`/`short_name`/`icons` (192 + 512 maskable)/`apple-touch-icon`/`theme_color`, linked via `<link rel="manifest">` in `<head>`
 
-## C. ⟨Aki⟩ Quy ước hệ sinh thái
+## C. ⟨Aki⟩ Ecosystem conventions
 
 ### C1. Canonical component names
 Fixed names for these roles — do not invent new names for them. Each site assembles from this set as needed (top nav is the minimum required; sidebar/rail/dock added when the site needs them). Rename on drift whenever you touch one of these files.

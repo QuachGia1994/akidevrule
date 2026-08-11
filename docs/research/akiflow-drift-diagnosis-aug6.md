@@ -172,7 +172,7 @@ These are constraints on any follow-up work, not findings:
 
 ## Decision
 
-**Action** — [`../plan/akiflow-reduction-agent-layer.md`](../plan/akiflow-reduction-agent-layer.md) sequences the changes in three batches. Pending owner approval; no file may be modified before that.
+**Action** — [`../plan/done/akiflow-reduction-agent-layer.md`](../plan/done/akiflow-reduction-agent-layer.md) sequences the changes in three batches. Pending owner approval; no file may be modified before that.
 
 **Rejected/closed** — consolidating the four routing descriptions into a single manifest. Measured drift is zero, so the change would add machinery against a failure that has never occurred. Reopens only on the first observed drift.
 

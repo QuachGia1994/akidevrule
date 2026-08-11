@@ -5,7 +5,7 @@
 ## Scope — when this applies
 Every Aki desktop project built on Tauri v2 + Rust (backend commands) + any JS frontend framework. Generic lessons only — project-specific facts (titlebar height, bundle naming, etc.) stay in that project's own `CLAUDE.md`.
 
-## A. Không block UI
+## A. Never block the UI
 
 ### A1. Never block the UI (ABSOLUTE — zero exceptions, no case-by-case judgment calls)
 

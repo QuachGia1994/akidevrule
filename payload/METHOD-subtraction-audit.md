@@ -27,9 +27,9 @@ Run only what the project actually has; name what was skipped and why (`zero-tru
 | Pass | Looks for | Detectors owned by |
 |---|---|---|
 | Code reachability | unreferenced exports, unreachable branches, dead files, parameters nobody passes | the project's own linter / typecheck |
-| Abstraction | a shared layer with fewer call sites than its evidence bar — the inverse of the Rule of Three | `design.A2`, `design.B3` |
-| Guards | repeated checks, fallbacks, and defensive branches around one transition | `design.A8`, `METHOD-flow-audit.md` B4, sized by `METHOD-proportionality.md` B4 |
-| Duplication | one concept defined in two places, one name with two live definitions | `design.A1`, `ui.B4` |
+| Abstraction | a shared layer with fewer call sites than its evidence bar — the inverse of the Rule of Three | `pattern.A2`, `pattern.B3` |
+| Guards | repeated checks, fallbacks, and defensive branches around one transition | `pattern.A8`, `METHOD-flow-audit.md` B4, sized by `METHOD-proportionality.md` B4 |
+| Duplication | one concept defined in two places, one name with two live definitions | `pattern.A1`, `ui.B4` |
 | UI surface | class strings, arbitrary values, style blocks that survive the delete/inherit/hoist pass | `ui.A1`, `ui.C1` |
 | Dependencies | packages nobody imports, polyfills the runtime no longer needs | package manifest versus import graph |
 | Docs | docs nothing links, plans whose work shipped, superseded research with no chain marker | `docs.C3` |
@@ -38,7 +38,7 @@ Run only what the project actually has; name what was skipped and why (`zero-tru
 
 ### B2. Severity classes for subtraction — and the class that forbids removal
 - **Dead** — no reference anywhere in the locked scope. CERTAIN, machine-decidable, countable.
-- **Redundant** — a second definition of something that already exists elsewhere; removing it is the SSoT fix (`design.A1`).
+- **Redundant** — a second definition of something that already exists elsewhere; removing it is the SSoT fix (`pattern.A1`).
 - **Oversized** — it exists for a real need, but a smaller shape covers that need entirely.
 - **Unjustified** — an abstraction, layer, or option below its evidence bar. SUGGESTED, always: the mechanism locates it, judgment rules on it.
 - **Load-bearing but ugly** — reported explicitly as *do not remove*. A subtraction report that lists only removals reads as though everything examined was removable, and the next reader deletes accordingly.

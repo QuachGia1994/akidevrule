@@ -36,7 +36,7 @@ Low reach times low motive never licenses skipping a control whose blast radius 
 `coding.C4` (sanitize external input, never expose secrets, injection and XSS classes) and `biz.C3` (no dark patterns) are absolute floors. This METHOD sizes what sits **above** them and never argues below them. A dimensioning exercise that concludes "cheap enough to skip" on a floor item has been misused — the correct output there is which rung of B3 implements the floor, never whether to.
 
 ### B3. Cheapest sufficient control — take the lowest rung that covers the dimensioned threat
-1. **Impossible by shape** — the state cannot be reached, so nothing needs checking (`design.A8`; the flow is reshaped, not guarded).
+1. **Impossible by shape** — the state cannot be reached, so nothing needs checking (`pattern.A8`; the flow is reshaped, not guarded).
 2. **Enforced once at the trust boundary that already exists** — the server handler, the DB constraint, the signed token. One place, not one place per caller.
 3. **Detected and alerted** — the action succeeds, the anomaly is visible. Correct when the damage is recoverable and prevention would cost more than the cure.
 4. **Accepted and recorded** — a legitimate outcome, but only as a written verdict per C1, never as silence.

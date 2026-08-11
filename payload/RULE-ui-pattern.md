@@ -2,9 +2,9 @@
 
 <!-- Address map: ui.A1-4 · ui.B1-5 · ui.C1-5 -->
 
-**Tier: Contextual.** Load on any UI authoring/refactor signal, or on an audit signal (see the Audit section). This file is the **UI-specific enforcement** of the universal laws in `RULE-design-core.md` — it does not redefine them. Nuxt/Cloudflare stack mechanics (rendering, i18n, layout chrome, deploy) live in `RULE-stack-akiNuxtCf.md`; this file owns the design-system layer: tokens, class taxonomy, variant API, and UI audit.
+**Tier: Contextual.** Load on any UI authoring/refactor signal, or on an audit signal (see the Audit section). This file is the **UI-specific enforcement** of the universal laws in `RULE-pattern-core.md` — it does not redefine them. Nuxt/Cloudflare stack mechanics (rendering, i18n, layout chrome, deploy) live in `RULE-stack-akiNuxtCf.md`; this file owns the design-system layer: tokens, class taxonomy, variant API, and UI audit.
 
-## Map to RULE-design-core (which universal law each rule enforces)
+## Map to RULE-pattern-core (which universal law each rule enforces)
 
 - **SSoT (Law 1)** → design tokens are the single source for every visual value.
 - **Evidence-based abstraction (Law 2)** → Rule of Three before a pattern class or base component.
@@ -37,7 +37,7 @@ Every style belongs to exactly one tier — there is no fifth tier.
 
 Rules between tiers:
 - Tier 1 is the default first reach for any styling need that survives the subtraction pass.
-- **The second copy is the STOP; the third is only the extraction threshold.** Rule of Three (Law 2) counts ≥3 occurrences *repo-wide* — a count no editing session can observe, since one open file cannot see the other ninety. Waiting for a trigger nothing can fire is why a codebase reaches thousands of duplicates with an empty pattern layer. The observable trigger is the one in front of you (`design.A5`): the moment you are about to write a class string you already wrote once, stop and decide the shared shape. "Leave both inline" is a legitimate outcome — but it must be a decision, not a default. When the decision needs the real count, scan for it (`C1`); never estimate it.
+- **The second copy is the STOP; the third is only the extraction threshold.** Rule of Three (Law 2) counts ≥3 occurrences *repo-wide* — a count no editing session can observe, since one open file cannot see the other ninety. Waiting for a trigger nothing can fire is why a codebase reaches thousands of duplicates with an empty pattern layer. The observable trigger is the one in front of you (`pattern.A5`): the moment you are about to write a class string you already wrote once, stop and decide the shared shape. "Leave both inline" is a legitimate outcome — but it must be a decision, not a default. When the decision needs the real count, scan for it (`C1`); never estimate it.
 - Tier 3 in Vue is **always prop-driven** (a computed class-map). Loose CSS modifiers are only for markup Vue does not render — Markdown/CMS output, static email templates.
 - Tier 4 is the destination: once a pattern has variants, package it as a base component so callers never hand-assemble class strings.
 
@@ -68,7 +68,7 @@ Before adding **any** custom token — font-size, spacing, radius, shadow, whate
 - Prefer **fewer, framework-aligned steps** over a deep bespoke scale. If a redesign of the scale is on the table, count how many genuine semantic roles exist (not how many raw values exist) — they are almost always far fewer than the raw-value count suggests.
 - This is a stack-wide UI hygiene issue, not a one-page fix: when the same drift pattern (e.g. a near-continuous spread of hardcoded font-sizes) shows up on more than one page/component, treat it as a systemic gap in the token set, not N independent one-off violations — fix the pattern once at the token layer, then sweep every call site.
 
-## B. Cấu trúc component
+## B. Component structure
 
 ### B1. Atomic component structure (Law 3 + Law 6)
 
@@ -98,9 +98,9 @@ The duty runs **both ways, and the lookup half comes first**: grep the project's
 
 Recording alone does not prevent this. A write-only duty produces a documented pattern that the next session never reads, then redefines locally in an SFC `<style>` block; the shared name now has two live definitions, and the one that wins depends on load order rather than on anything visible at either site. That is strictly worse than raw duplication, because the shared name promises a consistency it no longer delivers. One name, one definition, one file — checked by lookup, not by memory.
 
-### B5. Hover bridge (Law of Usability)
+### B5. Hover proximity — no dead gap on the pointer path (Law 8)
 
-Any `:hover`-triggered menu or tooltip separated from its trigger by a positioning gap **must have a transparent bridging pseudo-element (`::before`/`::after`)** covering the gap to prevent hover loss during cursor movement.
+Invariant: a `:hover`-shown popup/menu/tooltip stays open while the pointer travels trigger → content. Root fix first: eliminate the gap — nest the popup in the trigger's hover scope (parent `:hover` / `group-hover`) and create visual spacing with inner `padding`, never external `margin`. Only when the popup must escape the flow (portal/teleport, `overflow` clipping): transparent `::before`/`::after` bridge over the gap, or a short close-grace delay (~300ms). Closing mid-travel is a bug, not a styling choice.
 
 ---
 
@@ -149,7 +149,7 @@ One pattern at a time: extract the token / pattern class / variant → replace e
 
 ### C5. Compliance scorecard
 
-Score the codebase against `RULE-design-core.md` Definition of Done and the four-tier taxonomy: any tier-0 breach (hardcoded value), any un-evidenced abstraction, any forked component, any value-named token is a fail to record.
+Score the codebase against `RULE-pattern-core.md` Definition of Done and the four-tier taxonomy: any tier-0 breach (hardcoded value), any un-evidenced abstraction, any forked component, any value-named token is a fail to record.
 
 **Report template**
 

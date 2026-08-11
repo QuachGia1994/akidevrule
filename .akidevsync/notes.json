@@ -9,8 +9,8 @@
       "done": false,
       "id": "task-1783161634342",
       "pin": true,
-      "title": "bổ sung một skill có quy trình để kiểm tra chặt chẽ mọi thứ lần lượt tuần tự ",
-      "updated_at": 1783161635962,
+      "title": "bổ sung hoặc tìm một skill nếu đã có - quy trình để kiểm tra chặt chẽ mọi thứ lần lượt tuần tự ",
+      "updated_at": 1786478684416,
       "wish": false
     },
     {
@@ -32,7 +32,27 @@
       "title": "RULE CSS popup hover",
       "updated_at": 1785760146278,
       "wish": false
+    },
+    {
+      "created_at": 1786478711061,
+      "detail": "cái tên file hiện tại nó đang dễ gây hiểu lầm sang design (UI)",
+      "done": false,
+      "id": "task-1786478711061",
+      "pin": true,
+      "title": "cân nhắc đổi tên design core nó thuộc về kiến trúc pattern",
+      "updated_at": 1786478724669,
+      "wish": false
+    },
+    {
+      "created_at": 1786478750527,
+      "detail": "Có những thứ tự thấy hiển nhiên qua code flow được thì không đùn đẩy sang test, phải có nguyên tắc rõ ràng để tránh phán đoán sai",
+      "done": false,
+      "id": "task-1786478750527",
+      "pin": true,
+      "title": "Nghiên cứu xem rule nào cứ bắt verify những thứ quá hiển nhiên",
+      "updated_at": 1786478801565,
+      "wish": false
     }
   ],
-  "updated_at": 1785760146281
+  "updated_at": 1786478801569
 }

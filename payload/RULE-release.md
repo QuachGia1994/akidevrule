@@ -51,7 +51,7 @@ Finishing a piece of work does not earn a version number. Only shipping does —
 - **Recovery when drift already happened.** Versions that were never published to production/tagged are not public, so they are **not protected by B3's "never renumber public versions"**. Squash them: collapse every unpublished version's entries into one `[Unreleased]` section, reset the manifest to the last *actually released* version, then mint one version. Only versions with a real deploy/tag/build behind them are frozen. If it is unclear whether a version ever shipped, treat it as shipped and ask the user.
 - **Date = confirmed live, not drafted.** The version's date (CHANGELOG heading, `releases.json`) is the day C5's live-verification passes, never the day the entry was drafted or committed. Readers read the date as "when I got this," not "when the dev wrote the note." Same-day push makes the two dates match by default; they diverge on a late-night commit or a build that fails and gets fixed the next day — verified-live wins.
 
-## B. Xác định & audit
+## B. Identify & audit
 
 ### B1. Identify the current version — cold-start, not session-memory
 
@@ -111,6 +111,8 @@ After updating CHANGELOG and the version bump, produce the GitHub Release withou
 - Bad: `v1.5.1 — patch fixes`, `v1.5.1 — various improvements`
 
 **Body:** same `#### Fixed` / `#### Changed` / `#### Added` sections as CHANGELOG, but each bullet trimmed to one short sentence — symptom first, no file paths, no internal jargon.
+
+**Compare link (GitHub-hosted repos — mandatory footer):** the notes end with `**Full Changelog**: <repo-url>/compare/<prev-tag>...<new-tag>` — or use `gh release create --generate-notes`, which inserts it automatically. The Release page renders notes only, never a diff, and the tag itself points at a single commit (usually the version-mint commit, a tiny diff) — without this line there is no one-click view of the commits accumulated since the previous release. First release with no prior tag: link `<repo-url>/commits/<new-tag>` instead.
 
 ### B5. Migration/infra completeness gate — a schema or infra change is not "released" until it ran
 

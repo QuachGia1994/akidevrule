@@ -7,7 +7,7 @@ Cross-project rules for all Nuxt 4 + Cloudflare Pages sites. For project-specifi
 
 ---
 
-## A. Meta & cấu trúc
+## A. Meta & structure
 
 ### A1. Meta title & description
 
@@ -79,7 +79,7 @@ sitemap: {
 - **Fallback**: if page-level image is absent, the composable falls back to the site-wide default OG image
 - Never reference an OG image path that doesn't exist in `public/`
 
-## B. Hiển thị AI & entity
+## B. AI visibility & entity
 
 ### B1. AI / LLM visibility
 

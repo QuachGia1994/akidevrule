@@ -11,7 +11,7 @@ The goal is not to add more controls around a weak flow. The goal is to redesign
 
 ---
 
-## A. Tư duy flow
+## A. Flow thinking
 
 ### A1. Core mindset
 A good flow does not depend on constant enforcement. A good flow makes the correct behavior natural.
@@ -42,7 +42,7 @@ Use this skill when any trigger appears:
 
 ---
 
-## B. 8 câu hỏi first-principles
+## B. 8 first-principles questions
 
 ### B1. Define the flow
 - What is the exact start point?
@@ -96,7 +96,7 @@ Use this skill when any trigger appears:
 
 ---
 
-## C. Chốt & output
+## C. Closure & output
 
 ### C1. Decision test
 Before recommending fixes, check:
