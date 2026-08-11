@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [2.0.2] - 2026-08-11
+
+### Changed
+- **`aki-article-writer` image handling is now `article_arch`-aware.** The skill previously assumed every project embeds images via markdown `![]()` in body content and generates hero + N body images by default. It now requires the Image Scout brief to resolve `article_arch` (`markdown` vs `component`) by inspecting the project's actual render path before deciding image count and embed method — a real project (akitao.com) stores articles as structured `.ts` records rendered by a shared Vue component with a hand-written inline-markdown parser that does not support `![]()`, so following the old instructions verbatim would have shipped literal broken markdown text into the rendered page. `component` architecture now forces single-image mode: one file at `public/images/articles/<slug>.<ext>` reused as both the rendered hero and the record's `ogImage`/share-image field, instead of a separate hero + per-body image set.
 
 ## [2.0.1] - 2026-08-11
 

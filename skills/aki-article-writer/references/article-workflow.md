@@ -165,12 +165,20 @@ At every call-to-action point (sign-up, purchase, download, consult), identify t
 
 Spawn a separate **Image Scout subagent** with model Gemini Flash or Claude Haiku.
 
+### Step 0 — Resolve `article_arch` before spawning
+
+Check the render path, not just `CLAUDE.md` prose: open the component/template that actually renders an article body (e.g. `ContentArticle.vue`, an MDX renderer, a markdown-to-HTML pipeline) and confirm whether it parses inline markdown image syntax `![]()` inside body content.
+
+- **Renderer parses `![]()` or reads a per-block `image` field → `article_arch: markdown`.** Multiple images (hero + N body) are safe. Proceed with `count_needed: <1 hero + N body images>` as before.
+- **Renderer does NOT parse `![]()`** (e.g. a hand-written `renderMarkdown()` that only handles bold/link/code, with no image field in the content schema) **→ `article_arch: component`, single-image mode.** `count_needed` is forced to **1**. Do not generate body images the renderer cannot display — they would ship as literal, broken `![alt](path)` text.
+
 **Brief to pass:**
 ```
 {
   "slug": "<article-slug>",
   "topic": "<article topic in plain language>",
-  "count_needed": <1 hero + N body images>,
+  "article_arch": "markdown" | "component",
+  "count_needed": <1 hero + N body images, or exactly 1 if article_arch is "component">,
   "output_dir": "<project image directory, e.g. public/images/articles/>",
   "format": "webp"   // or "jpg" per project config
 }
@@ -226,11 +234,18 @@ If a candidate fails → go back to Step 1 and find a replacement URL.
 ### Step 4 — File naming (slug convention)
 
 ```
-Pattern:  <article-slug>-<zero-padded-index>.<ext>
-Hero:     giai-ma-que-thuan-can-01.webp
-Body 1:   giai-ma-que-thuan-can-02.webp
-Body 2:   giai-ma-que-thuan-can-03.webp
+Multi-image mode (article_arch: markdown):
+  Pattern:  <article-slug>-<zero-padded-index>.<ext>
+  Hero:     giai-ma-que-thuan-can-01.webp
+  Body 1:   giai-ma-que-thuan-can-02.webp
+  Body 2:   giai-ma-que-thuan-can-03.webp
+
+Single-image mode (article_arch: component, count_needed: 1):
+  Pattern:  <article-slug>.<ext>
+  File:     giai-ma-que-thuan-can.webp
 ```
+
+Single-image mode always writes to `public/images/articles/<slug>.<ext>` regardless of the project's `image_dir` fallback default — this is the one path the record's `ogImage`/share-image field and the rendered hero both point to (see Phase 5).
 
 ### Step 5 — Processing (`ffmpeg` / `sips`)
 
@@ -299,17 +314,26 @@ body:  [
 
 ## Phase 5 — Image Embed
 
-Article Worker receives the Image Scout's result and embeds images in the article body.
+Article Worker receives the Image Scout's result. Embed method depends on `article_arch` resolved in Phase 4 Step 0 — never default to markdown syntax without checking.
 
-**Alt text rules:**
+**Alt text rules (both paths):**
 - Must contain the focus keyphrase
 - Must accurately describe the image content (no keyword stuffing)
 - ≤ 125 characters
 
-**Markdown syntax:**
+### `article_arch: markdown`
+
+Embed with markdown image syntax directly in body content:
 ```markdown
 ![Giải mã quẻ Thuần Càn trong Kinh Dịch — ý nghĩa và ứng dụng](/images/articles/giai-ma-que-thuan-can-01.webp)
 ```
+
+### `article_arch: component` (single-image mode)
+
+Do **not** write `![]()` anywhere in body/paragraph fields — the renderer does not parse it and will print the literal text. Instead:
+1. Set the content record's existing share-image field (e.g. `ogImage`) to `/images/articles/<slug>.<ext>`.
+2. Confirm the shared render component (e.g. `ContentArticle.vue`) already displays that field as a hero image above the body. If it does not yet, that is a one-time component change to flag to the user — do not route around it with markdown text in a paragraph.
+3. No separate body images in this mode; one image serves as both hero and OG/share image.
 
 ---
 
@@ -338,9 +362,9 @@ Article Worker runs through the full checklist before reporting completion.
 
 ### 6.3 Image
 - [ ] Hero image exists at the correct path, correct dimensions, visually sharp
-- [ ] All body images exist, correct spec
-- [ ] Every image filename follows slug-index convention (`<slug>-01.webp`, etc.)
-- [ ] Every `img` / `![]()` has a focus-keyphrase-containing alt text ≤ 125 chars
+- [ ] `article_arch` was resolved from the actual renderer, not assumed
+- [ ] If `markdown`: all body images exist, correct spec, filenames follow slug-index convention (`<slug>-01.webp`, etc.), every `![]()` has a focus-keyphrase alt text ≤ 125 chars
+- [ ] If `component` (single-image mode): exactly one image at `public/images/articles/<slug>.<ext>`, no `![]()` written into any body/paragraph field, the record's `ogImage`/share-image field points to that same file
 - [ ] `/tmp/` scratch files removed
 
 ### 6.4 SSR / prerender

@@ -36,8 +36,9 @@ Before spawning the Article Worker, read the project's own `CLAUDE.md` (or `docs
 | `schema_type` | `CLAUDE.md` or `docs/ref/seo.md` | `BlogPosting` |
 | `image_dir` | `CLAUDE.md` or `nuxt.config` public path | `public/images/articles/` |
 | `image_format` | `CLAUDE.md` | `webp` |
+| `article_arch` | Inspect how existing articles are actually stored and rendered — `.md`/`.mdx` files under `content/`/`docs/` → `markdown`; structured records in `.ts`/`.js`/`.vue` (e.g. a `posts.ts` data file rendered by a shared Vue/React component) → `component` | detect from repo; never assume |
 
-Pass these as the Article Worker brief alongside the topic and slug.
+Pass these as the Article Worker brief alongside the topic and slug. `article_arch` gates Phase 4/5 image behavior — see workflow doc.
 
 ## Subagent model assignment
 
