@@ -1,6 +1,6 @@
 # Core Docs Rules
 
-<!-- Address map: docs.A1-3 · docs.B1-3 · docs.C1-4 -->
+<!-- Address map: docs.A1-4 · docs.B1-3 · docs.C1-4 -->
 
 ## Goals
 Docs should be readable for both humans and LLMs.
@@ -26,12 +26,30 @@ Do not create new top-level doc topics unless the existing set clearly fails.
 
 `biz/`, `feat/`, and `arch/` hold only current/target state — never accumulate history or superseded reasoning (`research/` is where that lives, see B2). Threshold: a rationale that fits in one sentence may stay inline (e.g. `(chose D1 over Postgres — serverless-native, no extra infra)`); a rationale that needs its own strategy, comparison, or verification to be trustworthy belongs in `research/` instead, with the doc here holding only the conclusion and a link.
 
-Filenames across all `docs/*` never lead with a date — the content-identifying name comes first: concise, precise, and unique to that file's own content (short preferred). Record creation/modification dates in the doc's own metadata, not the filename. A compact date suffix (abbreviated month + day, no year, no separator — e.g. `jun24`, `jul27`) may be appended at the very end as a lightweight, optional disambiguator (existing example: `docs/plan/improve-jun24.md`) — separate from the domain-specific supersede-chain naming already defined for `plan/` (B1, version-increment) and `research/` (B2, ADR-style numeric suffix).
+Filenames across all `docs/*` never lead with a date — the content-identifying name comes first: concise, precise, and unique to that file's own content (short preferred). Dates live in the doc's own header stamp (A4), not the filename. A compact date suffix (abbreviated month + day, no year, no separator — e.g. `jun24`, `jul27`) may be appended at the very end as a lightweight, optional disambiguator (existing example: `docs/plan/improve-jun24.md`) — separate from the domain-specific supersede-chain naming already defined for `plan/` (B1, version-increment) and `research/` (B2, ADR-style numeric suffix).
 
 ### A3. Business backbone — `docs/biz/`
 - For any project with a business dimension, `docs/biz/` is REQUIRED and is the spine.
 - All `arch/`, `feat/`, and `plan/` docs that touch product direction or money must reference it.
 - When code intent and a `biz/` doc disagree, the `biz/` doc wins — reconcile or escalate.
+
+### A4. Anchor stamp — `updated <time> <version>` on every `arch|biz|feat` doc
+
+`arch/`, `biz/` and `feat/` hold current state and are the SSoT other docs and code are written against, so a reader cannot tell a still-true doc from a silently rotted one without knowing when it was last confirmed. These three folders carry a stamp; `plan/`, `research/` and `ref/` do not — the first two are immutable event records whose own schema already dates them (B1, B2), and `ref/` is verified by running its commands, not by a date.
+
+**Placement** — first line of the file's own header block: immediately under the H1 for a plain Markdown doc, or as a `updated:` key in the frontmatter/description field where the file already has one. One stamp per file, never per section.
+
+```markdown
+# Rule delivery architecture
+
+> updated 2026-08-12 · v2.1.0
+```
+
+**`<time>`** is `YYYY-MM-DD`, the date of this edit. **`<version>`** is the project version the doc's content was confirmed against — the last **released** version at edit time, read from `CHANGELOG.md` (`release.A`), never an `[Unreleased]` buffer and never a number invented for the doc. A project with no version scheme stamps the short commit hash instead.
+
+**Every content update rewrites the stamp, in the same edit.** A stamp older than the change under it is worse than no stamp: it certifies as verified something nobody checked. Pure-cosmetic edits (typo, link fix, reflow) leave it alone — the stamp records when the *content* was last true, not when bytes last moved.
+
+The stamp is what makes drift mechanically visible: a `docs/arch/` file stamped three releases back is a drift-audit lead (C3) before anyone reads a line of it.
 
 ## B. Lifecycle & Sync
 
