@@ -11,6 +11,7 @@
 #   4. rule receipts — every posting agent emitted a '[RULES]' line
 #   5. evidence tags — every posting agent used FACT/CONSTRAINT/ASSUMPTION at least once
 #   6. reminders     — every REMIND-<n> has a later ACK or OVERRULE
+#   7. REQ coverage  — every REQ-<n> in the ledger is named by some item's 'covers:' line
 #
 # NOT checked, deliberately: the presence of any named seat. Roster composition is judgment; evidence is not.
 # Exit 0 = all PASS. Exit 1 = at least one FAIL.
@@ -22,6 +23,20 @@ from pathlib import Path
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding='utf-8', errors='replace')
+
+
+def _strip_comments(text: str) -> str:
+    return re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
+
+
+def _req_ids(text: str) -> list[str]:
+    """REQ ids in first-seen order, expanding the compact run form `REQ-2,3` to REQ-2 and REQ-3."""
+    ids: list[str] = []
+    for run in re.findall(r'REQ-[0-9]+(?:[ \t]*,[ \t]*[0-9]+)*', _strip_comments(text)):
+        for num in re.findall(r'[0-9]+', run):
+            if f'REQ-{num}' not in ids:
+                ids.append(f'REQ-{num}')
+    return ids
 
 
 def extract_anchor(chat: str) -> str:
@@ -36,10 +51,7 @@ def extract_anchor(chat: str) -> str:
             break
         if in_block:
             block_lines.append(line)
-    block = '\n'.join(block_lines)
-    # Strip inline and block HTML comments (mirrors sed -e 's/<!--.*-->//' -e '/<!--/,/-->/d').
-    block = re.sub(r'<!--.*?-->', '', block, flags=re.DOTALL)
-    return block
+    return _strip_comments('\n'.join(block_lines))
 
 
 def get_posters(chat: str) -> list[str]:
@@ -133,6 +145,33 @@ def check_evidence_tags(chat: str, posters: list[str]) -> tuple[bool, str]:
     return True, "PASS evidence-tags: every posting agent tagged evidence"
 
 
+def check_req_coverage(checklist: str) -> tuple[bool, str]:
+    """Diff the ledger against the items — the lead's omissions, found without asking the lead.
+
+    Parsed by section rather than by line shape: both the block form (`covers:` on its own line) and
+    the one-line pipe form (`ITEM 5 · … | covers REQ-1 | …`) are in real use, and a parser that only
+    knows one of them fails open — the silent direction for a coverage check."""
+    ledger_text, items_text = [], []
+    target = None
+    for line in checklist.splitlines():
+        if line.startswith('## '):
+            head = line[3:].strip().lower()
+            # Anchored, not substring: '## REQ with no item' contains 'item' and would otherwise route an explicitly-uncovered REQ into the covered set — a silent pass.
+            target = ledger_text if 'ledger' in head else (items_text if head.startswith('item') else None)
+            continue
+        if target is not None:
+            target.append(line)
+
+    ledger = _req_ids('\n'.join(ledger_text))
+    covered = set(_req_ids('\n'.join(items_text)))
+    if not ledger:
+        return False, "FAIL req-coverage: no REQ-<n> lines in checklist.md — the ledger was never written"
+    orphans = [r for r in ledger if r not in covered]
+    if orphans:
+        return False, f"FAIL req-coverage: no item covers: {' '.join(orphans)}"
+    return True, f"PASS req-coverage: all {len(ledger)} REQs owned by an item"
+
+
 def check_reminders(chat: str) -> tuple[bool, str]:
     remind_ids = set(re.findall(r'REMIND-[0-9]+', chat))
     open_reminds = []
@@ -193,6 +232,11 @@ def main() -> None:
 
     # 6. unanswered reminders
     ok, msg = check_reminders(chat)
+    print(msg)
+    fail = fail or not ok
+
+    # 7. REQ coverage
+    ok, msg = check_req_coverage(checklist)
     print(msg)
     fail = fail or not ok
 

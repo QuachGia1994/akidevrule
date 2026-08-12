@@ -78,6 +78,14 @@ The five agents live in `~/.claude/agents/` and carry their own tools, model tie
 
 **Name each seat `<definition>-<scope>`** — `judge-schema`, `hands-callsites`, `challenger` — because the name is the address `SendMessage` routes to and the key `chat.md` turns are grouped by. **Convene the whole roster in one call**: each subagent's sibling list is captured at its own startup, so an agent named later is invisible to those named earlier — a silent one-way channel with no error. Assign each a distinct turn-number block at the same time (`judge-schema` 10–19, `challenger` 20–29), since parallel writers cannot see each other's latest number and would collide on `#1`. Check `disallowedTools` does not strip `SendMessage`, or the roster is decorative.
 
+**Before the spawn batch, the checklist must pass its own gate** — the room is not convened on an uncut question:
+
+```bash
+python3 ~/.claude/skills/akiflow/scripts/council_open.py --convene <session-dir>
+```
+
+Exit 1 unless ≥1 `ITEM` carries all of `owner` / `challenger` / `closes when`. It gates *convening*, not file creation: the anchor has to be pinned before the ledger can quote it (R1), so `chat.md` necessarily exists first — the cost this prevents is N agents circling an undecomposed question, and that cost is paid at spawn.
+
 **Every spawn passes `model` explicitly.** An omitted `model` inherits the lead's own top tier, mechanical sweeps included — silence is an expensive choice made by accident. The in-session Agent tool has **no `effort` parameter**; only headless calls take `--effort`, so do not declare per-seat effort for in-session spawns. A read-only seat names its enforcing mechanism (`--tools`, `--mode plan`, `--trust-tools=`) on the roster line; read-only by wording is not read-only.
 
 **The lead does no menial work — ever.** Arbitration quality is its only product and it degrades with every unrelated token. Bulk reads, greps, inventory scans go to `aki-hands` even when doing it directly feels faster, because "faster" spends the one context the run cannot replace. The lead reads at orientation depth: the anchor, the checklist, `--stats`, and the specific excerpt a decision turns on.
@@ -92,7 +100,7 @@ The five agents live in `~/.claude/agents/` and carry their own tools, model tie
 | `chat.md` | everyone | the anchor, the pinned block, and the meeting in time order |
 | `checklist.md` | **the lead only** | the REQ ledger, the items, their closures and rationale; the durable copy goes to `docs/plan/` (`docs.B1`) |
 
-Turns are `### <HH:MM> <seat-name> #<n>` followed by `#### CLAIM / EVIDENCE / ATTACK / OPEN`, under 200 words, never hard-wrapped, everyone appends and nobody edits another's turn.
+Turns are `### <HH:MM> <seat-name> #<n>`, under 200 words, never hard-wrapped, everyone appends and nobody edits another's turn. **Every claim in a turn is tagged `FACT` / `CONSTRAINT` / `ASSUMPTION`** (`METHOD-deep-think.md` B2) — the gate checks each posting agent used at least one, because an untagged room is where a guess closes an item wearing a fact's clothes.
 
 ```bash
 R="python3 ~/.claude/skills/akiflow/scripts/council_read.py"
@@ -117,7 +125,7 @@ Before items close, and again before the Step 6 tally, the lead runs the gate an
 python3 ~/.claude/skills/akiflow/scripts/council_verify.py <session-dir>
 ```
 
-It fails on a missing anchor, a REQ quoting nothing the owner wrote, a declared owner/challenger that never posted, a posting agent with no `[RULES]` receipt, a posting agent that never tagged evidence, and an unanswered `REMIND-<n>`. A FAIL is a closure blocker, not a note. It proves presence, never quality — and it deliberately does not require any named seat, because a gate that manufactures a seat gets gamed rather than questioned.
+It fails on a missing anchor, a REQ quoting nothing the owner wrote, a declared owner/challenger that never posted, a posting agent with no `[RULES]` receipt, a posting agent that never tagged evidence, an unanswered `REMIND-<n>`, and a ledger `REQ-<n>` no item's `covers` names. That last one is the only check aimed at the lead itself: `aki-challenger` sees the items the lead cut and therefore cannot see a requirement that never became one, so the gate diffs the ratified ledger against `covers` rather than asking the lead to declare its own omissions — a declaration the omitting party is the worst-placed to make (`agent.B2`). A FAIL is a closure blocker, not a note. It proves presence, never quality — and it deliberately does not require any named seat, because a gate that manufactures a seat gets gamed rather than questioned.
 
 **A reminder from `conduct` blocks what it targets**: the target answers `ACK REMIND-<n>` plus the fix applied, or the lead posts `OVERRULE REMIND-<n> <reason>` — a logged lead judgment, never a default and never the target's own call.
 
@@ -153,7 +161,7 @@ The roster line declared `model` before a token was spent; this closes that loop
 python3 ~/.claude/skills/akiflow/scripts/council_cost.py   # newest transcript for this project, or pass a .jsonl path
 ```
 
-**One `haiku` subagent runs it and reports the table — never the lead**; reading the raw transcript is the largest bulk-read in the run. The script aggregates in-shell and prints tokens only, because per-model prices drift and a hardcoded table in a distributed script would rot: look the price up, bill `input + cache_creation` as input, price `cache_read` and `output` separately. **Headless spend is invisible to it** — an `agy` call writes no Claude transcript and a `claude -p` call writes its own, so those `usage` blocks are added by hand. The close-out line goes into the run's `docs/plan/` record, beside the roster declaration it reconciles.
+**One `haiku` subagent runs it and reports the table — never the lead**; reading the raw transcript is the largest bulk-read in the run. It must be a seat that actually holds `Bash` — `aki-conduct`, or a generic subagent — since the retrieval seat the lead reaches for by reflex (`aki-hands`) is `Read, Grep, Glob` only and will return a refusal rather than a table. The script aggregates in-shell and prints tokens only, because per-model prices drift and a hardcoded table in a distributed script would rot: look the price up, bill `input + cache_creation` as input, price `cache_read` and `output` separately. **Headless spend is invisible to it** — an `agy` call writes no Claude transcript and a `claude -p` call writes its own, so those `usage` blocks are added by hand. The close-out line goes into the run's `docs/plan/` record, beside the roster declaration it reconciles.
 
 ## Anti-patterns — all of these are default behaviour unless forbidden by name
 

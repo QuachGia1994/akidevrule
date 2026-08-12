@@ -2,6 +2,7 @@
 # akiflow — open a council session directory, and prune stale ones on the way in.
 #
 # Usage:  council_open.py <slug> <owner-message>        ('-' reads the message from stdin)
+#         council_open.py --convene <session-dir>       exit 1 unless the checklist is actually cut
 #   <slug>           short, human-readable, covers the whole session. Slugified here, not validated.
 #   <owner-message>  the owner's request VERBATIM — pinned as chat.md's first block; every REQ must quote a fragment of it. Why it is an argument and not a discipline: docs/research/akiflow-drift-diagnosis-aug6.md (root R1).
 #
@@ -29,7 +30,45 @@ def slugify(text: str) -> str:
     return text
 
 
+def convene(session_dir: Path) -> int:
+    """Gate the spawn batch on a real decomposition. The anchor is pinned at open time (R1 needs it
+    before the ledger can quote it), so the checklist cannot gate file creation — it gates convening,
+    which is where 'N agents circling an uncut question' actually costs money."""
+    checklist = session_dir / "checklist.md"
+    if not checklist.is_file():
+        print(f"council_open.py --convene: no checklist.md in {session_dir}", file=sys.stderr)
+        return 1
+
+    text = re.sub(r"<!--.*?-->", "", checklist.read_text(encoding="utf-8", errors="replace"), flags=re.DOTALL)
+
+    # An item's three fields may sit on the ITEM line itself (pipe form) or on the lines under it
+    # (block form); both are in real use, so the scope is the ITEM line up to the next ITEM/heading.
+    blocks: list[str] = []
+    for line in text.splitlines():
+        if re.match(r"^[ \t]*ITEM[ \t]+\S", line):
+            blocks.append(line)
+        elif line.startswith("## "):
+            blocks.append("")
+        elif blocks:
+            blocks[-1] += "\n" + line
+
+    complete = sum(
+        1 for b in blocks
+        if all(re.search(rf"{f}[ \t]*:?[ \t]*\S", b, re.IGNORECASE) for f in ("owner", "challenger", "closes"))
+    )
+
+    if complete == 0:
+        print("FAIL convene: checklist.md has no ITEM carrying all of owner / challenger / closes when.", file=sys.stderr)
+        print("       Decomposition is a precondition for the room, never a product of it — cut the items, then convene.", file=sys.stderr)
+        return 1
+    print(f"PASS convene: {complete} item(s) fully specified — roster may be spawned")
+    return 0
+
+
 def main():
+    if len(sys.argv) == 3 and sys.argv[1] == "--convene":
+        sys.exit(convene(Path(sys.argv[2])))
+
     root = Path(os.environ.get("AKI_COUNCIL_ROOT", Path.home() / ".aki" / "agent-council"))
     retention_days = int(os.environ.get("AKI_COUNCIL_RETENTION_DAYS", "30"))
 
