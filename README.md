@@ -59,7 +59,7 @@ Interpreter convention (documented once): **Unix** uses `python3` (via `./instal
 | `akigitcommit` | `/akigitcommit` | Turns a messy working tree into a few clean, logically grouped Conventional Commits. Triages a half-finished tree first — finished vs mid-edit vs abandoned vs accidental, asking rather than guessing — then stages by explicit path, never `git add -A`, never pushes unasked. |
 | `aki-article-writer` | `/aki-article-writer` or natural language | Per-project article writing pipeline: research & fact-verification, SEO metadata, JSON-LD schema, UX-psychology-aware content, and a dedicated Image Scout subagent (Gemini Flash / Haiku) for search → download → visual inspection → ffmpeg processing → slug-named WebP output. One subagent per article; image work is always isolated to a separate lightweight subagent. |
 | `akidevsync-notes` | natural language | Reads/edits a project's `.akidevsync/notes.json` — the per-project task list the Aki-Dev-Sync app itself writes (list/add/pin/mark-done/edit/delete tasks) via a bundled script that preserves the app's own JSON formatting, plus a workflow for cross-checking pinned notes against a shipped release (CHANGELOG + code) before marking them done. |
-| `akilint` | `/akilint` or a penalty card | Mechanical format lint for the penalty-card classes of `RULE-agent-behavior.md` §0: hard-wrapped code comments and markdown prose (`[WRAP]`) and oversize comments (`[YAP]`, always labeled *review* — a flag for judgment against `coding.B4`, never an auto-delete verdict). Thin wrapper over the shared `scythe.sh` detector (deterministic grep/awk, exit-code aware, cannot fabricate evidence) — the same script akiflow's `akirule-enforcer` uses, so a card name means the same thing everywhere. `[FLUFF]` (density) is content judgment and explicitly out of a script's reach. |
+| `akilint` | `/akilint` or a penalty card | Mechanical format lint for the penalty-card classes of `RULE-agent-behavior.md` §0: hard-wrapped code comments and markdown prose (`[WRAP]`) and oversize comments (`[YAP]`, always labeled *review* — a flag for judgment against `coding.B4`, never an auto-delete verdict). Thin wrapper over the shared `scythe.py` detector (deterministic line matching, exit-code aware, cannot fabricate evidence) — the same script akiflow's `akirule-enforcer` uses, so a card name means the same thing everywhere. `[FLUFF]` (density) is content judgment and explicitly out of a script's reach. |
 
 ### Five agent definitions
 
@@ -69,7 +69,7 @@ A seat used to be convened by job title and then handed rules. The order is inve
 |---|---|---|
 | `aki-hands` | Read, Grep, Glob | none — **judgment forbidden**; facts with `file:line` only. Carries the cross-CLI substrate table (Claude subagent · agy flash · kiro-cli · `cl-9rt` proxy lane), with flags and failure modes read from recorded harness facts rather than re-probed |
 | `aki-judge` | Read, Grep, Glob | **exactly one** standard, named at spawn (`pattern`, `proportion`, `ux`, `db`, …). Several standards in one head average into one mild opinion and the disagreement — the useful part — disappears |
-| `aki-conduct` | + Bash | the corpus itself. Its unique job is separating **LOAD-fail** (the rule never arrived) from **COMPLY-fail** (it arrived and was violated); `scythe.sh` is one of its tools, never a seat and never a gate |
+| `aki-conduct` | + Bash | the corpus itself. Its unique job is separating **LOAD-fail** (the rule never arrived) from **COMPLY-fail** (it arrived and was violated); `scythe.py` is one of its tools, never a seat and never a gate |
 | `aki-challenger` | Read, Grep, Glob | attacks the result from a clean context — defined by what it is *not* given (the reasoning). Always closes with *"what can be cut?"* and *"does this answer the anchored words?"* |
 | `aki-maker` | Read, Edit, Write, Bash | `coding` + `pattern` + the domain rules in its brief. The only agent permitted to write, and therefore the most narrowly scoped: it implements a decision, it does not make one |
 
@@ -91,7 +91,7 @@ Loading happens on two different mechanisms, and the difference matters more tha
 
 **Everything else — routed by the `akirule` skill**, and therefore best-effort: it applies when the model invokes the skill and a signal matches. Sensitivity is deliberately high (err toward loading — a false positive costs a few tokens, a false negative causes wrong behavior).
 
-- **Tier 1 — Contextual, read on signal match:** `RULE-docs.md` (structure and lifecycle, plus the docs-vs-code drift audit), `RULE-content-write.md`, `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context), `RULE-ui-pattern.md` (design-system layer: the subtraction pass that runs before the tier ladder, class taxonomy, tokens, variant API, and the audit playbook), `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md`, `RULE-biz.md` (market-facing decisions: positioning, pricing, audience) — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 1): `METHOD-flow-audit.md` (refactors, multi-file bugs, fragile flows), `METHOD-zero-trust-audit.md` (strict mechanical-first audit: detectors before opinion, exact matches separated from pattern-level candidates), `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking), `METHOD-ux-psych.md` (UX/user-behavior evaluation, onboarding and conversion flows), `METHOD-proportionality.md` (sizing a guard, limit or accepted risk against reach, capability, motive and blast radius — the lens that stops both over-engineering and client-side-limits-as-enforcement), and `METHOD-subtraction-audit.md` (repo-wide "does this need to exist" sweep, terminating on two dry rounds).
+- **Tier 1 — Contextual, read on signal match:** `RULE-docs.md` (structure and lifecycle, plus the docs-vs-code drift audit), `RULE-content-write.md` (UI copy and writing style, plus the content audit — canonical-term drift, density deletion test, i18n coverage), `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context), `RULE-ui-pattern.md` (design-system layer: the subtraction pass that runs before the tier ladder, class taxonomy, tokens, variant API, and the audit playbook), `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md`, `RULE-biz.md` (market-facing decisions: positioning, pricing, audience) — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 1): `METHOD-flow-audit.md` (refactors, multi-file bugs, fragile flows), `METHOD-zero-trust-audit.md` (strict mechanical-first audit: detectors before opinion, exact matches separated from pattern-level candidates), `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking), `METHOD-ux-psych.md` (UX/user-behavior evaluation, onboarding and conversion flows), `METHOD-proportionality.md` (sizing a guard, limit or accepted risk against reach, capability, motive and blast radius — the lens that stops both over-engineering and client-side-limits-as-enforcement), and `METHOD-subtraction-audit.md` (repo-wide "does this need to exist" sweep, terminating on two dry rounds).
 - **Tier 2 — Full load on explicit command:** `nạp full` / `load all rules` reads every `RULE-*`/`METHOD-*` file at once.
 
 No harness magic beyond the `CLAUDE.md` import: Tier 1 is trigger instructions telling Claude to Read the file from `~/.aki/akidevrule/` when signals match; Tier 2 is the explicit-command escape hatch.
@@ -144,11 +144,12 @@ skills/                            → shared Agent Skills corpus (SKILL.md open
                                      unmodified to BOTH ~/.claude/skills/ and ~/.gemini/config/skills/
   akirule/SKILL.md
   akiflow/SKILL.md
-  akiflow/scripts/council-open.sh      (opens + prunes the session workspace)
-  akiflow/scripts/council-read.sh      (slices chat.md without loading it whole)
-  akiflow/scripts/council-cost.sh      (tallies per-agent token usage from the transcript at close-out)
-  akiflow/scripts/council-verify.sh    (mechanical closure gate: ghost seats, missing evidence tags, unanswered REMINDs)
-  akiflow/scripts/scythe.sh            (penalty-card lint [WRAP]/[YAP] — shared engine of /akilint and the enforcer's evidence sweeps)
+  akiflow/scripts/council_open.py      (opens + prunes the session workspace)
+  akiflow/scripts/council_read.py      (slices chat.md without loading it whole)
+  akiflow/scripts/council_cost.py      (tallies per-agent token usage from the transcript at close-out)
+  akiflow/scripts/council_verify.py    (mechanical closure gate: ghost seats, missing evidence tags, unanswered REMINDs)
+  akiflow/scripts/scythe.py            (penalty-card lint [WRAP]/[YAP] — shared engine of /akilint and the enforcer's evidence sweeps)
+  akiflow/scripts/*.sh                 (transitional Unix wrappers, one per script above — each execs its .py sibling)
   akiflow/references/harness-facts.md  (subagent/cost/model facts, with sources)
   akithink/SKILL.md
   akihtmlreport/SKILL.md
@@ -178,7 +179,7 @@ install.ps1                                 (thin Windows launcher → py -3 ins
 ```mermaid
 flowchart TD
     subgraph SRC["📦 Source: akidevrule Repo"]
-        PAYLOAD["payload/ (15 raw rule files)"]
+        PAYLOAD["payload/ (18 raw rule files)"]
         PGEMINI["payload/GEMINI.md (template)"]
         CSKILLS["skills/ (9 skills, shared open standard)"]
         CCLAUDE["claude/CLAUDE.md (template)"]

@@ -1,13 +1,15 @@
 # Architecture — how rules reach the two agents
 
+> updated 2026-08-12 · v2.1.0
+
 akidevrule is the single source of truth for a reusable rule baseline. That baseline has to reach two different agents that load context in fundamentally different ways: **Claude Code** and **Gemini / Antigravity**. This document describes how one source is installed onto a machine and consumed by each.
 
 ## The core asymmetry
 
 | | Claude Code | Gemini / Antigravity |
 |---|---|---|
-| How rule files reach the model | Harness-guaranteed `@`-imports via the `akirule` skill | Context files concatenated and prepended to every prompt |
-| Determinism | **Deterministic** — 0 model-dependent hops; the content is in-context whether or not the model "decides" to read it | **Deterministic for the files it auto-loads**, but any "please read file X" pointer inside them is a soft hop the model may skip |
+| How rule files reach the model | **Core (4 files)** — `@`-imported by `~/.claude/CLAUDE.md`, read by the harness at session start, no model decision involved. **Everything else** — read only if the model invokes the `akirule` skill and a signal matches | Context files concatenated and prepended to every prompt |
+| Determinism | **Core: deterministic** — 0 model-dependent hops, harness-guaranteed. **Everything else: best-effort** — depends on the model choosing to invoke `akirule` and a signal matching | **Deterministic for the files it auto-loads**, but any "please read file X" pointer inside them is a soft hop the model may skip |
 | Consequence | Rule *content* always arrives | Rule *content* arrives only if it sits in a file the tool hard-loads — not behind a chain of pointers |
 
 **Design conclusion:** behavior rules that Gemini/Antigravity must always obey cannot live behind a soft pointer chain. They are placed in the one file the tool hard-loads globally — `~/.gemini/GEMINI.md` — as literal content, not as a link to go fetch.
@@ -23,14 +25,16 @@ akidevrule/
                                           unmodified to both agents, see docs/ref/agent-skills-standard.md
   claude/
     CLAUDE.md, hooks/                  → Claude Code-only runtime assets
+    agents/                            → 5 agent definitions, deployed per file to ~/.claude/agents/
+    fragments/                         → illustrative reference only, never applied manually
   GEMINI.md (repo root)                → per-project bootstrap template (copied into a project by hand)
-  install.sh                           → installs all of the above onto a machine
+  install.py                           → installer SSOT (install.sh/install.ps1 are thin launchers)
 ```
 
 Two distinct `GEMINI.md` files, different jobs:
 
 - **`payload/GEMINI.md`** — the **global behavior overrides**. Installed to `~/.gemini/GEMINI.md`. Line 1 carries a version marker `# [AKIRULE-AG-OVERRIDES-<version>]`. Ends with `@~/.gemini/GEMINI.local.md` to pull in machine-local facts.
-- **`GEMINI.md` at repo root** — a tiny **per-project bootstrap**. Copied into an individual project so Antigravity, on opening that project, is pointed at the project's `CLAUDE.md` as its source of truth. It also checks whether the global override marker is present. It is **not** distributed by `install.sh`.
+- **`GEMINI.md` at repo root** — a tiny **per-project bootstrap**. Copied into an individual project so Antigravity, on opening that project, is pointed at the project's `CLAUDE.md` as its source of truth. It also checks whether the global override marker is present. It is **not** distributed by the installer.
 
 ## Rule delivery — source to consumers
 
@@ -44,13 +48,13 @@ flowchart TD
         BOOT["GEMINI.md (root)<br/>per-project bootstrap template"]
     end
 
-    INSTALL["install.sh"]
+    INSTALL["install.py<br/>(install.sh/install.ps1 launchers)"]
     P --> INSTALL
     PG --> INSTALL
     SKSRC --> INSTALL
     CCSRC --> INSTALL
 
-    INSTALL -->|"rsync, excludes GEMINI.md"| RULES["~/.aki/akidevrule/*.md<br/>rule corpus"]
+    INSTALL -->|"shutil copy + prune (rsync --delete semantics), excludes GEMINI.md"| RULES["~/.aki/akidevrule/*.md<br/>rule corpus"]
     INSTALL -->|"overwrite + backup"| GCLAUDE["~/.claude/CLAUDE.md<br/>+ @CLAUDE.local.md"]
     INSTALL -->|"skills"| SKILLS["~/.claude/skills/akirule …"]
     INSTALL -->|"sed marker, overwrite + backup"| GGEM["~/.gemini/GEMINI.md<br/>managed"]
@@ -64,11 +68,11 @@ flowchart TD
     subgraph AGC["Gemini / Antigravity — concatenated context"]
         GGEML -->|"cat, appended verbatim at install time"| GGEM
         GRULES["~/.gemini/config/rules/akirule-*.md<br/>18 rules with YAML trigger frontmatter"]
-        GSKILLS["~/.gemini/config/skills/<br/>8 skills (native auto-discovery)"]
+        GSKILLS["~/.gemini/config/skills/<br/>9 skills (native auto-discovery)"]
     end
 
     INSTALL -->|"generate frontmatter + deploy"| GRULES
-    INSTALL -->|"rsync skills"| GSKILLS
+    INSTALL -->|"shutil sync per skill folder (rsync --delete semantics)"| GSKILLS
 
     BOOT -.->|"copied by hand into a project"| PROJ["&lt;project&gt;/GEMINI.md<br/>points AG at &lt;project&gt;/CLAUDE.md"]
     PROJ -.->|"checks marker present"| GGEM
@@ -86,21 +90,21 @@ Each agent gets a **managed** file the installer owns and overwrites, plus a **`
 The two agents join the local file differently, and the difference is deliberate:
 
 - **Claude Code** — the managed file ends with `@~/.claude/CLAUDE.local.md`. The harness resolves the import itself, so this is a hard load, not a pointer the model may skip.
-- **Gemini / Antigravity** — `install.sh` **appends `GEMINI.local.md` verbatim** (`cat …local >> …managed`) at install time. The text is physically present in the managed file; there is no import to honor and therefore nothing to verify per environment.
+- **Gemini / Antigravity** — `install.py` **appends `GEMINI.local.md` verbatim** (string concatenation + write, not a shell `cat`) at install time. The text is physically present in the managed file; there is no import to honor and therefore nothing to verify per environment.
 
 Either way, per-machine facts (local paths, CLIs, emulator commands) survive every reinstall while shared rules stay centrally managed and overwrite-safe.
 
-> **Note (2026-07-22):** an earlier revision of this document described the Gemini side as an `@import` too, and flagged "does the Antigravity IDE honor imports?" as an open risk. That risk was never real — the installer has always concatenated. Corrected here so the mermaid, the prose, and `install.sh` finally agree.
+> **Note (2026-07-22):** an earlier revision of this document described the Gemini side as an `@import` too, and flagged "does the Antigravity IDE honor imports?" as an open risk. That risk was never real — the installer has always concatenated. Corrected here so the mermaid, the prose, and `install.py` finally agree.
 
-## install.sh — Gemini handling and the two run scenarios
+## install.py — Gemini handling and the two run scenarios
 
-`install.sh` is usually run by an **AI agent**, occasionally by a human. The installer does only mechanical work; anything requiring **semantic judgement** is delegated to the agent via an explicit printed directive, because shell cannot reliably tell a machine-local fact from a behavior rule.
+`install.py` (invoked via `install.sh`/`install.ps1`) is usually run by an **AI agent**, occasionally by a human. The installer does only mechanical work; anything requiring **semantic judgement** is delegated to the agent via an explicit printed directive, because shell cannot reliably tell a machine-local fact from a behavior rule.
 
 The key case is a pre-existing **unmanaged** `~/.gemini/GEMINI.md` (hand-written, or created by Antigravity's "+ Global"). The installer never parses it — there is no universal way to know where an arbitrary user's machine-local section begins, so it must not guess by heading name. It backs the file up, installs the managed template, then prints a strong directive telling the running agent to migrate only the **non-duplicate** machine-local lines into `GEMINI.local.md`.
 
 ```mermaid
 flowchart TD
-    START["install.sh reaches Gemini block"] --> Q1{"~/.gemini/GEMINI.md<br/>exists?"}
+    START["install.py reaches Gemini block"] --> Q1{"~/.gemini/GEMINI.md<br/>exists?"}
     Q1 -->|no| FRESH["fresh install"]
     Q1 -->|yes| Q2{"contains marker<br/>AKIRULE-AG-OVERRIDES?"}
     Q2 -->|"yes — managed"| MANAGED["re-install: just re-stamp"]
@@ -135,13 +139,13 @@ If the source working tree is dirty at install time, the git-hash portion still 
 ## Invariants (do not regress)
 
 - The installer never encodes any one machine's specifics (paths, section names) into shared logic. Machine-specific migration is delegated to the running agent, not hard-coded.
-- `payload/GEMINI.md` is excluded from the rule-corpus rsync; it is the source for `~/.gemini/GEMINI.md` only.
+- `payload/GEMINI.md` is excluded from the payload → `~/.aki/akidevrule` sync (Python `shutil`, `EXCLUDED` set in `install.py`); it is the source for `~/.gemini/GEMINI.md` only.
 - `*.local.md` files are created only when missing and are never overwritten.
 - Managed files are always backed up (timestamped, pruned to the 2 most recent) before overwrite.
 
 ## Verified behavior (2026-07-23)
 
 - **`trigger: glob` rules do not appear in initial context dumps.** This is by design — AG holds them on disk and injects them only when the user interacts with files matching the glob pattern. A "list your context" test will never show glob rules; the correct test is to open a matching file and check if the rule appears.
-- **`skills.json` tilde paths (`~/...`) are not expanded by AG's JSON parser.** The installer registers both the absolute path and the tilde path. Primary delivery is via direct rsync to `~/.gemini/config/skills/` (native auto-discovery, no `skills.json` needed).
+- **`skills.json` tilde paths (`~/...`) are not expanded by AG's JSON parser.** The installer registers both the absolute path and the tilde path. Primary delivery is via `sync_aki_skills()`'s per-folder `shutil` copy (rsync `--delete` semantics, no rsync binary) to `~/.gemini/config/skills/` (native auto-discovery, no `skills.json` needed).
 - **YAML frontmatter in SKILL.md must have each key on its own physical line.** `name: x description: y` on one line causes AG to silently skip the skill.
 - **Cross-platform verification (2026-07-23):** 5/5 skills and 13/13 rules confirmed across AG IDE (Mac), AGY CLI (Linux), Claude Code (Mac), Claude Code (Linux).

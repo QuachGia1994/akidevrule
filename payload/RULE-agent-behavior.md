@@ -4,7 +4,7 @@
 
 ## §0. Penalty cards — one vocabulary for the highest-frequency violations
 
-Named tokens shared by three surfaces: the owner's correction ("vi phạm WRAP"), the `scythe.sh` lint output, and akiflow's enforcer REMINDs. Each card is a pointer — the rule text lives only at its root, never here.
+Named tokens shared by three surfaces: the owner's correction ("vi phạm WRAP"), the `scythe.py` lint output, and akiflow's enforcer REMINDs. Each card is a pointer — the rule text lives only at its root, never here.
 
 | Card | Violation | Root | Fix when called |
 |---|---|---|---|
@@ -12,7 +12,7 @@ Named tokens shared by three surfaces: the owner's correction ("vi phạm WRAP")
 | `[FLUFF]` | padded output — lines that fail the deletion test | `A4` (domain: `docs.B3`, `content.B2`) | delete every line carrying no information; never trim load-bearing detail |
 | `[YAP]` | comment narrating WHAT/HOW, restating code, or outgrowing its one-line budget | `coding.B4` | fix the name/shape first, then delete the comment; keep only what code cannot say |
 
-Being called with a card means: re-read the root rule, fix **every** instance in the current output (not only the cited one), and reply with the fix — never with a restatement of the rule. `[WRAP]` and `[YAP]` are mechanically detectable (`skills/akiflow/scripts/scythe.sh`, run via `/akilint` or akiflow's enforcer); `[FLUFF]` is content judgment and is never claimed by a script.
+Being called with a card means: re-read the root rule, fix **every** instance in the current output (not only the cited one), and reply with the fix — never with a restatement of the rule. `[WRAP]` and `[YAP]` are mechanically detectable (`skills/akiflow/scripts/scythe.py`, run via `/akilint` or akiflow's enforcer); `[FLUFF]` is content judgment and is never claimed by a script.
 
 ## A. Communication
 
