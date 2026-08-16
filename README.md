@@ -83,7 +83,7 @@ A catalog is not a roster. Five files on disk make it easy to pick seats from a 
 
 `payload/` files follow a strict naming convention:
 
-- `RULE-*.md` — constraints: what the agent must or must not do (behavior, coding, design/patterns, docs, content, stacks — Nuxt/Cloudflare + Tauri, UI, SEO, release, DB design, business/market).
+- `RULE-*.md` — constraints: what the agent must or must not do (behavior, coding, agent workflow, design/patterns, docs, content, stacks — Nuxt/Cloudflare + Tauri, UI, SEO, release, DB design, business/market).
 - `METHOD-*.md` — analytical frameworks: how to reason through a specific class of problem. Heavy, loaded only when the task is genuinely analytical.
 - `index.md` — file manifest, precedence order, cross-cutting lens.
 
@@ -93,7 +93,9 @@ Loading happens on two different mechanisms, and the difference matters more tha
 
 **Everything else — routed by the `akirule` skill**, and therefore best-effort: it applies when the model invokes the skill and a signal matches. Sensitivity is deliberately high (err toward loading — a false positive costs a few tokens, a false negative causes wrong behavior).
 
-- **Tier 1 — Contextual, read on signal match:** `RULE-docs.md` (structure and lifecycle, plus the docs-vs-code drift audit), `RULE-content-write.md` (UI copy and writing style, plus the content audit — canonical-term drift, density deletion test, i18n coverage), `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context, the macOS TCC/Gatekeeper boundary for spawned sidecars), `RULE-ui-pattern.md` (design-system layer: the subtraction pass that runs before the tier ladder, class taxonomy, tokens, variant API, and the audit playbook), `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md`, `RULE-biz.md` (market-facing decisions: positioning, pricing, audience) — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 1): `METHOD-audit-flow.md` (refactors, multi-file bugs, fragile flows), `METHOD-audit-zero-trust.md` (strict mechanical-first audit: detectors before opinion, exact matches separated from pattern-level candidates), `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking), `METHOD-ux-psych.md` (UX/user-behavior evaluation, onboarding and conversion flows), `METHOD-proportionality.md` (sizing a guard, limit or accepted risk against reach, capability, motive and blast radius — the lens that stops both over-engineering and client-side-limits-as-enforcement), and `METHOD-audit-subtraction.md` (repo-wide "does this need to exist" sweep, terminating on two dry rounds).
+`RULE-agent-engineering.md` is the agent-workflow layer: it distills current practices from the Matt Pocock, Superpowers, Ponytail, and Strix skill ecosystems into Aki-native rules without importing vendor-specific commands or ceremony. It covers skill-first/process ordering, shared vocabulary, TDD, root-cause debugging, independent review, context isolation, validated security findings, and skill self-testing.
+
+- **Tier 1 — Contextual, read on signal match:** `RULE-agent-engineering.md` (agent workflow and skill discipline), `RULE-docs.md` (structure and lifecycle, plus the docs-vs-code drift audit), `RULE-content-write.md` (UI copy and writing style, plus the content audit — canonical-term drift, density deletion test, i18n coverage), `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context, the macOS TCC/Gatekeeper boundary for spawned sidecars), `RULE-ui-pattern.md` (design-system layer: the subtraction pass that runs before the tier ladder, class taxonomy, tokens, variant API, and the audit playbook), `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md`, `RULE-biz.md` (market-facing decisions: positioning, pricing, audience) — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 1): `METHOD-audit-flow.md` (refactors, multi-file bugs, fragile flows), `METHOD-audit-zero-trust.md` (strict mechanical-first audit: detectors before opinion, exact matches separated from pattern-level candidates), `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking), `METHOD-ux-psych.md` (UX/user-behavior evaluation, onboarding and conversion flows), `METHOD-proportionality.md` (sizing a guard, limit or accepted risk against reach, capability, motive and blast radius — the lens that stops both over-engineering and client-side-limits-as-enforcement), and `METHOD-audit-subtraction.md` (repo-wide "does this need to exist" sweep, terminating on two dry rounds).
 - **Tier 2 — Full load on explicit command:** `nạp full` / `load all rules` reads every `RULE-*`/`METHOD-*` file at once.
 
 No harness magic beyond the `CLAUDE.md` import: Tier 1 is trigger instructions telling Claude to Read the file from `~/.aki/akidevrule/` when signals match; Tier 2 is the explicit-command escape hatch.
@@ -154,6 +156,7 @@ payload/                          → installed to ~/.aki/akidevrule/
   RULE-agent-behavior.md
   RULE-coding.md
   RULE-pattern-core.md
+  RULE-agent-engineering.md
   RULE-docs.md
   RULE-content-write.md
   RULE-stack-akiNuxtCf.md

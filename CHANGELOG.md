@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- **`RULE-agent-engineering.md` (`agent-eng`).** New contextual rule layer distilled from current agent-skill engineering practices in Matt Pocock Skills, Superpowers, Ponytail, and Strix: skill-first/process-before-implementation, shared domain language, red-green-refactor TDD, root-cause debugging, independent spec/standards review, verification-before-completion, context-isolated handoffs, validated security findings, and skill self-testing. `akirule` routes it on agent/skill/subagent/TDD/debugging/review/security-testing signals.
+
 ## [2.6.0] - 2026-08-22
 
 ### Added
@@ -19,7 +24,6 @@
 - **`/akihtmlreport` wrote `report.html`, and `.gitignore` was widened to hide it.** The skill states the output is `REPORT.html` — uppercase, no variant names, exactly one per project — so the lowercase file was a violation of the skill's own naming rule, and adding a second ignore line legitimised the variant instead of removing it (git's matcher is case-sensitive on Linux, which is why the existing entry missed it). File renamed to `REPORT.html`, the extra ignore line reverted; the repo now has exactly the one path the skill defines.
 - **The installer shipped Python bytecode to every skill root.** `sync_dir_delete()` mirrored `skills/*/scripts/` verbatim, so any local run of a helper left a `__pycache__/` that the next install copied into `~/.claude/skills/`, `~/.gemini/config/skills/`, `~/.agents/skills/`, `~/.kiro/skills/` and `~/.grok/skills/`. `.gitignore` had declared the intent since the Python migration; the installer simply never honoured it, and the deployed trees had accumulated `.pyc` files from two different interpreter versions. `sync_dir_delete()` now skips `__pycache__`, `*.pyc`, `*.pyo` and `.DS_Store` on the copy side *and* omits them from the name set that drives `--delete`, so one install also prunes what earlier installs shipped (verified: all five roots plus `~/.aki/akidevrule` back to zero).
 - **Repo-wide `.md` consistency sweep.** Four contradictions, all introduced by this round's own work or left by an earlier one: V4 claimed `install.py` had "exactly one `sys.platform` branch" while V5's launcher fix had just added a second (the conclusion survives — neither branch is macOS — but the evidence sentence was false in four files); `docs/ref/cli-permission-allowlist-standard.md` §1.2 called V2 "still pending" ten lines below a bullet reporting V2's measurement, and described the rule count without the Windows launcher multiplication; the permissions plan's architecture table still deferred the scoped `write_file()` row to the owner and marked Mac "pending"; and `docs/index.md` listed `improve-jun24.md` as "⏳ pending, not yet applied" though it was executed 2026-08-17 and had moved to `plan/done/`. Also repaired: two stale relative links to plans that moved into `done/`, one `../` path that never resolved from `plan/done/`, and two hard-wrapped comments (`agent.C3`) in an Aug-16 record. Checks now clean repo-wide: `scythe` exit 0 over every `.md`, zero unresolved relative links, `payload/index.md` manifest ↔ `payload/*.md` ↔ `akirule/SKILL.md` routing in exact agreement, every `docs/` file indexed in both directions.
-
 ## [2.5.0] - 2026-08-19
 
 ### Added
@@ -75,7 +79,6 @@
 ### Changed
 - **`harness-facts.md` gained a § Worker invocation quick-facts table at the top, so a caller assigning a lane stops reading 169 lines of rationale to find one command.** The file is referenced as the anti-probing source of truth — `aki-hands` is told to read it *instead of* running `agy --help` — but everything in it was written as design record: correction histories ("a prior version of this row said…"), the fork/subtask saga, benchmark curves. All true, none of it needed to launch a worker, and a lookup that costs a long read is a lookup that gets skipped in favour of the probe it was meant to replace. The new table carries five lanes × three columns: literal command, the flag that makes it read-only *by mechanism*, and the one silent failure each lane hides (agy's `SUCCESS`-with-empty-`response`, `-p` eating the next token, `cl-9rt` being a shell alias absent in non-interactive shells, the in-harness Agent tool having no `effort` parameter, `--session-id` being cwd-scoped). The rationale sections stay put, unedited, below it. Because two files now address that section **by name**, the section carries a cross-file lock naming both dependents — a renamed section reads as a missing fact and sends the reader straight back to probing.
 - **`aki-hands` now states its Claude-family model tier as a rule, not as a frontmatter value one lane happens to carry.** `model: haiku` in frontmatter is what executes for the in-harness lane, but nothing said what a *headless* Claude lane should pick, so the tier was a per-caller guess. Stated explicitly: haiku by default, escalate to a Sonnet-class model when the sweep is wide enough that comprehension rather than throughput is the binding constraint (a large context read carelessly returns a confident partial answer — the one failure a retrieval seat cannot afford), and **never opus or fable**, which are the calling session's own tier: retrieval priced like judgment deletes the reason to delegate it.
-
 ## [2.3.1] - 2026-08-16
 
 ### Fixed

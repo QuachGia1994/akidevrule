@@ -31,6 +31,12 @@ Skip the Read if that file was already loaded earlier in this conversation — a
 ### RULE-coding.md · RULE-pattern-core.md — not routed, already loaded
 Both are core `@` imports (see the section above) and are in context on every turn without this skill running. Nothing to match, nothing to `Read`, and they never appear in a load-confirmation line.
 
+### RULE-agent-engineering.md
+Load if message or file path contains any of:
+- **Keywords:** `agent`, `agents`, `subagent`, `agentic`, `skill`, `skills`, `Agent Skills`, `SKILL.md`, `skill authoring`, `skill testing`, `brainstorming`, `TDD`, `test-driven`, `red-green-refactor`, `debugging`, `root cause`, `code review`, `reviewer`, `handoff`, `context isolation`, `domain modeling`, `deep module`, `security testing`, `PoC`, `false positive`, `pentest`, `SAST`, `vulnerability validation`
+- **Paths:** `skills/**`, `.agents/**`, `.claude/skills/**`, `.claude/agents/**`, any `SKILL.md`, `AGENTS.md` when the task concerns agent workflow or skill behavior
+- **Actions:** selecting or designing agent workflows, invoking/authoring/testing skills, delegating work to subagents, debugging through an agentic workflow, reviewing agent-produced changes, or validating security findings
+
 ### RULE-docs.md
 Load if message or file path contains any of:
 - **Keywords:** `docs`, `CLAUDE.md`, `README`, `PLAN`, `plan/`, `diagram`, `mermaid`, `architecture`, `arch/`, `doc sync`, `documentation`, `docs/feat/`, `plan lifecycle`, `tài liệu`, `sơ đồ`, `kiến trúc`
