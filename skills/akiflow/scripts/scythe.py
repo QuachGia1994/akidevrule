@@ -16,6 +16,7 @@ from pathlib import Path
 
 SLASH_EXT = {'ts', 'tsx', 'js', 'jsx', 'mjs', 'rs', 'go', 'c', 'h', 'cc', 'cpp', 'swift', 'kt', 'scss'}
 HASH_EXT = {'sh', 'bash', 'py', 'rb', 'toml', 'yaml', 'yml'}
+DASH_EXT = {'sql'}
 HTML_EXT = {'vue', 'html'}
 
 # Directive/exempt prefixes inside a comment's text portion — mirrors the awk exempt list.
@@ -84,6 +85,8 @@ def _marker_pattern(ext: str) -> re.Pattern | None:
         return re.compile(r'^[ \t]*(//)')
     if ext in HASH_EXT:
         return re.compile(r'^[ \t]*(#)')
+    if ext in DASH_EXT:
+        return re.compile(r'^[ \t]*(--)')
     if ext in HTML_EXT:
         return re.compile(r'^[ \t]*(//)|(<!--)')
     return None
@@ -222,12 +225,14 @@ def main() -> None:
         print("usage: scythe.py [--all] <file|dir> [...]", file=sys.stderr)
         sys.exit(2)
 
-    files: list[str] = []
+    # Overlapping targets are a normal call shape, so identity is the real path: one file, one entry.
+    seen: dict[str, str] = {}
     for t in targets:
-        files.extend(collect_files(t))
+        for f in collect_files(t):
+            seen.setdefault(os.path.realpath(f), f)
 
     all_findings: list[str] = []
-    for f in files:
+    for f in seen.values():
         all_findings.extend(lint_file(f))
 
     if not all_findings:

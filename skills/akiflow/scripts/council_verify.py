@@ -7,14 +7,15 @@
 # Checks only what a script can check — the classes real runs lost silently:
 #   1. anchor        — chat.md carries a non-empty '## anchor' block
 #   2. REQ quotes    — every 'REQ-<n>' line in checklist.md quotes a fragment found in that anchor
-#   3. ghost seats   — every owner/challenger named in checklist.md posted >=1 turn in chat.md
-#   4. rule receipts — every posting agent emitted a '[RULES]' line
-#   5. evidence tags — every posting agent used FACT/CONSTRAINT/ASSUMPTION at least once
+#   3. ghost seats   — every owner/challenger named in checklist.md left a trace somewhere in the session
+#   4. rule receipts — every seat emitted a '[RULES]' line
+#   5. evidence tags — every seat used FACT/CONSTRAINT/ASSUMPTION at least once
 #   6. reminders     — every REMIND-<n> has a later ACK or OVERRULE
 #   7. REQ coverage  — every REQ-<n> in the ledger is named by some item's 'covers:' line
 #
+# A seat's evidence is its chat.md turns plus its own <seat>.md at any depth. Nothing to check prints SKIP, never PASS.
 # NOT checked, deliberately: the presence of any named seat. Roster composition is judgment; evidence is not.
-# Exit 0 = all PASS. Exit 1 = at least one FAIL.
+# Exit 0 = no FAIL. Exit 1 = at least one FAIL.
 
 import re
 import sys
@@ -37,6 +38,38 @@ def _req_ids(text: str) -> list[str]:
             if f'REQ-{num}' not in ids:
                 ids.append(f'REQ-{num}')
     return ids
+
+
+def read_mode(chat: str) -> str:
+    """Mode from chat.md's line-2 stamp, duplicating council_open.py::read_mode() — the scripts
+    are deliberately standalone. No match (pre-dispatch room, malformed file) reads as council."""
+    lines = chat.splitlines()
+    if len(lines) < 2:
+        return "council"
+    match = re.search(r"mode[ \t]+(\S+)", lines[1])
+    return match.group(1).rstrip("`") if match else "council"
+
+
+LANE_HEADING = re.compile(r"^#{0,6}[ \t]*LANE[ \t]+\S")
+
+
+def get_lane_names(checklist: str) -> list[str]:
+    """Dispatch's trace unit is the lane, not its worker — the lane is what dispatch partitions
+    into, and 'worker' is roster/cost metadata that two lanes may legitimately share. A LANE
+    heading's text after '·' is slugified (lowercase, spaces→dashes) so it matches both a
+    <lane>.md file stem and a turn header's agent field."""
+    names: set[str] = set()
+    for line in _strip_comments(checklist).splitlines():
+        if not LANE_HEADING.match(line):
+            continue
+        _, sep, short = line.partition('·')
+        if not sep:
+            continue
+        slug = re.sub(r'[ \t]+', '-', short.strip().lower())
+        slug = re.sub(r'[^a-z0-9-]', '', slug)
+        if slug:
+            names.add(slug)
+    return sorted(names)
 
 
 def extract_anchor(chat: str) -> str:
@@ -63,6 +96,39 @@ def get_posters(chat: str) -> list[str]:
             if len(parts) >= 3:
                 posters.add(parts[2])
     return sorted(posters)
+
+
+def get_seat_files(session_dir: Path) -> dict[str, str]:
+    """Text of every non-core .md at any depth, keyed by stem — live rooms group seat files into phase subdirectories.
+
+    A file only supplies evidence for a seat the checklist or chat already names; it never adds a seat of its own,
+    or a lead's summary.md would be conscripted into a roster it was never part of."""
+    seats: dict[str, str] = {}
+    for path in sorted(session_dir.rglob('*.md')):
+        if path.name in ('chat.md', 'checklist.md'):
+            continue
+        seats[path.stem] = seats.get(path.stem, '') + read_text(path)
+    return seats
+
+
+def get_declared(checklist: str, mode: str) -> list[str]:
+    """Seat names the lead assigned in checklist.md.
+
+    Council: owner/challenger/worker field values ARE the seat identity.
+    Dispatch: the lane is the unit of dispatch, so trace by lane name instead — a lane's
+    'worker' is a substrate detail, and two lanes sharing a worker type must still trace
+    separately or one file/turn silently covers both."""
+    if mode == "dispatch":
+        return get_lane_names(checklist)
+    declared: set[str] = set()
+    for line in checklist.splitlines():
+        # Items declare fields block-form, lanes declare them as markdown bullets — a leading dash must not hide a worker from the ghost-seat check.
+        m = re.match(r'^[ \t]*(?:[-*][ \t]+)?(owner|challenger|worker):[ \t]*(\S+)', line, re.IGNORECASE)
+        if m:
+            name = m.group(2).split()[0]  # first token only
+            if re.match(r'^[a-z0-9][a-z0-9-]*$', name):
+                declared.add(name)
+    return sorted(declared)
 
 
 def check_anchor(anchor: str) -> tuple[bool, str]:
@@ -98,18 +164,13 @@ def check_req_quotes(checklist: str, anchor: str) -> tuple[bool, list[str]]:
     return ok, messages
 
 
-def check_ghost_seats(checklist: str, posters: list[str]) -> tuple[bool, str]:
-    declared: set[str] = set()
-    for line in checklist.splitlines():
-        m = re.match(r'^[ \t]*(owner|challenger):[ \t]*(\S+)', line, re.IGNORECASE)
-        if m:
-            name = m.group(2).split()[0]  # first token only
-            if re.match(r'^[a-z0-9][a-z0-9-]*$', name):
-                declared.add(name)
-    ghosts = [n for n in sorted(declared) if n not in posters]
+def check_ghost_seats(declared: list[str], traced: dict[str, str]) -> tuple[bool, str]:
+    ghosts = [n for n in declared if n not in traced]
     if ghosts:
-        return False, f"FAIL ghost-seats: declared but never posted a turn: {' '.join(ghosts)}"
-    return True, "PASS ghost-seats: every declared owner/challenger posted"
+        return False, f"FAIL ghost-seats: declared but left no turn and no file: {' '.join(ghosts)}"
+    if not declared:
+        return True, "SKIP ghost-seats: checklist.md declares no owner/challenger"
+    return True, "PASS ghost-seats: every declared owner/challenger left a trace"
 
 
 def _agent_blocks(chat: str, agent: str) -> str:
@@ -125,24 +186,25 @@ def _agent_blocks(chat: str, agent: str) -> str:
     return '\n'.join(result)
 
 
-def check_rule_receipts(chat: str, posters: list[str]) -> tuple[bool, str]:
-    noreceipt = [
-        name for name in posters
-        if '[RULES]' not in _agent_blocks(chat, name)
-    ]
+def check_rule_receipts(traced: dict[str, str]) -> tuple[bool, str]:
+    noreceipt = [name for name, text in sorted(traced.items()) if '[RULES]' not in text]
     if noreceipt:
-        return False, f"FAIL rule-receipts: no [RULES] line anywhere in turns by: {' '.join(noreceipt)}"
-    return True, "PASS rule-receipts: every posting agent reported what it loaded"
+        return False, f"FAIL rule-receipts: no [RULES] line anywhere from: {' '.join(noreceipt)}"
+    if not traced:
+        return True, "SKIP rule-receipts: no seat left a trace to check"
+    return True, "PASS rule-receipts: every seat reported what it loaded"
 
 
-def check_evidence_tags(chat: str, posters: list[str]) -> tuple[bool, str]:
+def check_evidence_tags(traced: dict[str, str]) -> tuple[bool, str]:
     untagged = [
-        name for name in posters
-        if not re.search(r'FACT|CONSTRAINT|ASSUMPTION', _agent_blocks(chat, name))
+        name for name, text in sorted(traced.items())
+        if not re.search(r'FACT|CONSTRAINT|ASSUMPTION', text)
     ]
     if untagged:
-        return False, f"FAIL evidence-tags: no FACT/CONSTRAINT/ASSUMPTION in any turn by: {' '.join(untagged)}"
-    return True, "PASS evidence-tags: every posting agent tagged evidence"
+        return False, f"FAIL evidence-tags: no FACT/CONSTRAINT/ASSUMPTION anywhere from: {' '.join(untagged)}"
+    if not traced:
+        return True, "SKIP evidence-tags: no seat left a trace to check"
+    return True, "PASS evidence-tags: every seat tagged evidence"
 
 
 def check_req_coverage(checklist: str) -> tuple[bool, str]:
@@ -157,7 +219,7 @@ def check_req_coverage(checklist: str) -> tuple[bool, str]:
         if line.startswith('## '):
             head = line[3:].strip().lower()
             # Anchored, not substring: '## REQ with no item' contains 'item' and would otherwise route an explicitly-uncovered REQ into the covered set — a silent pass.
-            target = ledger_text if 'ledger' in head else (items_text if head.startswith('item') else None)
+            target = ledger_text if 'ledger' in head else (items_text if head.startswith('item') or head.startswith('lane') else None)
             continue
         if target is not None:
             target.append(line)
@@ -200,7 +262,13 @@ def main() -> None:
     checklist = read_text(checklist_path)
 
     anchor = extract_anchor(chat)
-    posters = get_posters(chat)
+    seat_files = get_seat_files(session_dir)
+    declared = get_declared(checklist, read_mode(chat))
+    roster = sorted(set(get_posters(chat)) | set(declared))
+    traced = {
+        name: text for name in roster
+        if (text := f"{_agent_blocks(chat, name)}\n{seat_files.get(name, '')}".strip())
+    }
 
     fail = False
 
@@ -216,17 +284,17 @@ def main() -> None:
     fail = fail or not ok
 
     # 3. ghost seats
-    ok, msg = check_ghost_seats(checklist, posters)
+    ok, msg = check_ghost_seats(declared, traced)
     print(msg)
     fail = fail or not ok
 
     # 4. rule receipts
-    ok, msg = check_rule_receipts(chat, posters)
+    ok, msg = check_rule_receipts(traced)
     print(msg)
     fail = fail or not ok
 
     # 5. evidence tags
-    ok, msg = check_evidence_tags(chat, posters)
+    ok, msg = check_evidence_tags(traced)
     print(msg)
     fail = fail or not ok
 

@@ -1,31 +1,13 @@
 #!/usr/bin/env python3
-# akiflow — tally token usage per agent from a Claude Code session transcript.
+# akiflow — tally token usage per seat for a closed council session, at Step 6 close-out.
 #
-# Run once at the close of a Tier 1/2 run (Step 9). It aggregates the raw usage
-# numbers the harness already records so the lead can report actual token/cost
-# against the roster it declared up front (Step 1) — never by pulling the raw
-# transcript into the lead's context, which is exactly the flooding the council
-# exists to avoid.
+# Usage:  council_cost.py [<session-dir>] [--session <uuid>]
+#   <session-dir>  a room under ~/.aki/agent-council/<project>/<session>/; its chat.md line 2 carries the `claude-session <uuid>` stamp council_open.py writes. Rooms opened before that stamp carry none.
+#   --session      explicit session id — the only way to cost an unstamped room, and takes precedence over a parsed stamp when both are given.
 #
-# Usage:  council_cost.py [transcript.jsonl]
-#   With no argument it picks the newest *.jsonl in this project's transcript
-#   directory: ~/.claude/projects/<cwd-path-with-slashes-as-dashes>/.
-#
-# What the harness gives us (all [obs], re-verify if a transcript format changes):
-#   - Every assistant turn is one JSONL line with message.model and message.usage
-#     {input_tokens, output_tokens, cache_creation_input_tokens,
-#      cache_read_input_tokens}. Subagent turns are the same shape but carry
-#     "isSidechain": true.
-#   - Each subagent (Task spawn) is a chain of isSidechain lines. akiflow's
-#     thinking floor makes every specialist prompt begin "You are <NAME>, ..." —
-#     this script reads that NAME to label the chain. Chains without that marker
-#     fall back to "sidechain-<n>". The main thread (the lead) is "LEAD".
-#
-# Attribution is therefore exact per model and per chain; the chain→name label is
-# best-effort and the lead should sanity-check it against the roster. Dollar cost
-# is intentionally NOT computed here: per-model prices drift, and a hardcoded
-# table in a distributed script rots. The script prints tokens; the lead (or the
-# haiku running it) multiplies by the current per-model price to get cost.
+# The harness writes each seat its own transcript, so a seat IS one ~/.claude/projects/<cwd-slug>/<session-id>/subagents/agent-*.jsonl and the lead is the plain <session-id>.jsonl beside it — no chain-walking to separate interleaved turns.
+# Scope is the Claude meter, and that is the complete answer rather than a partial one — why a headless lane on another vendor's quota is left out instead of missing: docs/arch/akiflow.md § Close-out accounting.
+# Dollar cost is deliberately not computed: per-model prices drift, and a hardcoded table in a distributed script rots.
 import sys
 import json
 import re
@@ -33,143 +15,134 @@ from pathlib import Path
 from collections import OrderedDict
 
 
-NAME_RE = re.compile(r"You are ([A-Za-z0-9][A-Za-z0-9._-]*)")
-
-
-def chain_root(d, by_uuid):
-    """Walk parentUuid up while staying inside the same sidechain; return root uuid."""
-    seen = set()
-    cur = d
-    while True:
-        p = cur.get("parentUuid")
-        if not p or p in seen or p not in by_uuid:
-            return cur.get("uuid")
-        parent = by_uuid[p]
-        if not parent.get("isSidechain"):
-            return cur.get("uuid")
-        seen.add(p)
-        cur = parent
-
-
-def text_of(d):
-    msg = d.get("message", {})
-    c = msg.get("content")
-    if isinstance(c, str):
-        return c
-    if isinstance(c, list):
-        out = []
-        for part in c:
-            if isinstance(part, dict) and part.get("type") == "text":
-                out.append(part.get("text", ""))
-            elif isinstance(part, str):
-                out.append(part)
-        return "\n".join(out)
-    return ""
+USAGE = "usage: council_cost.py [<session-dir>] [--session <uuid>]"
+STAMP_RE = re.compile(r"claude-session\s+([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})")
 
 
 def fmt(n):
     return f"{n:,}"
 
 
-def main():
-    transcript = sys.argv[1] if len(sys.argv) > 1 else ""
-
-    if not transcript:
-        slug = str(Path.cwd()).replace("/", "-")
-        dir_path = Path.home() / ".claude" / "projects" / slug
-        if not dir_path.is_dir():
-            print(f"no transcript directory: {dir_path}", file=sys.stderr)
-            print("pass the transcript .jsonl path explicitly.", file=sys.stderr)
-            sys.exit(1)
-        jsonl_files = sorted(dir_path.glob("*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True)
-        if not jsonl_files:
-            print(f"no *.jsonl in {dir_path}", file=sys.stderr)
-            sys.exit(1)
-        transcript = str(jsonl_files[0])
-
-    transcript_path = Path(transcript)
-    if not transcript_path.is_file():
-        print(f"transcript not found: {transcript}", file=sys.stderr)
-        sys.exit(1)
-
-    print(f"transcript: {transcript}")
-
-    lines = []
-    by_uuid = {}
-    with transcript_path.open(encoding="utf-8") as fh:
+def read_jsonl(path):
+    rows = []
+    with path.open(encoding="utf-8") as fh:
         for raw in fh:
             raw = raw.strip()
             if not raw:
                 continue
             try:
-                d = json.loads(raw)
+                rows.append(json.loads(raw))
             except Exception:
                 continue
-            lines.append(d)
-            u = d.get("uuid")
-            if u:
-                by_uuid[u] = d
+    return rows
 
-    root_label = {}
-    for d in lines:
-        if not d.get("isSidechain"):
-            continue
-        if d.get("type") != "user":
-            continue
-        r = chain_root(d, by_uuid)
-        if r in root_label:
-            continue
-        m = NAME_RE.search(text_of(d))
-        if m:
-            root_label[r] = m.group(1)
 
-    agents = OrderedDict()
+def seat_label(meta_path, seat_id):
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except Exception:
+        return f"unlabeled-{seat_id}"
+    agent_type = meta.get("agentType") or "unlabeled"
+    description = (meta.get("description") or "").strip()
+    if description and description.lower() != agent_type.lower():
+        return f"{agent_type}: {description}"
+    return agent_type
 
-    def bucket(label, model):
-        a = agents.setdefault(label, OrderedDict())
-        return a.setdefault(model or "?", {"turns": 0, "in": 0, "out": 0, "cw": 0, "cr": 0})
 
-    fallback_n = 0
-    fallback_map = {}
-    for d in lines:
+def tally(rows, label, agents):
+    for d in rows:
         if d.get("type") != "assistant":
             continue
         msg = d.get("message", {})
         usage = msg.get("usage") or {}
-        model = msg.get("model", "?")
-        if d.get("isSidechain"):
-            r = chain_root(d, by_uuid)
-            label = root_label.get(r)
-            if not label:
-                if r not in fallback_map:
-                    fallback_n += 1
-                    fallback_map[r] = f"sidechain-{fallback_n}"
-                label = fallback_map[r]
-        else:
-            label = "LEAD"
-        b = bucket(label, model)
+        model = msg.get("model") or "?"
+        b = agents.setdefault(label, OrderedDict()).setdefault(model, {"turns": 0, "in": 0, "out": 0, "cw": 0, "cr": 0})
         b["turns"] += 1
         b["in"] += usage.get("input_tokens", 0)
         b["out"] += usage.get("output_tokens", 0)
         b["cw"] += usage.get("cache_creation_input_tokens", 0)
         b["cr"] += usage.get("cache_read_input_tokens", 0)
 
+
+def main():
+    args = sys.argv[1:]
+    session_dir_arg = None
+    session_override = None
+    i = 0
+    while i < len(args):
+        a = args[i]
+        if a == "--session":
+            i += 1
+            session_override = args[i] if i < len(args) else None
+        elif session_dir_arg is None:
+            session_dir_arg = a
+        else:
+            print(f"council_cost.py: unexpected argument: {a}", file=sys.stderr)
+            sys.exit(2)
+        i += 1
+
+    if not session_dir_arg and not session_override:
+        print(USAGE, file=sys.stderr)
+        sys.exit(2)
+
+    session_id = session_override
+    if not session_id:
+        session_dir = Path(session_dir_arg)
+        chat_path = session_dir / "chat.md"
+        if not chat_path.is_file():
+            print(USAGE, file=sys.stderr)
+            print(f"no chat.md in {session_dir} — not a council room.", file=sys.stderr)
+            sys.exit(2)
+        text = chat_path.read_text(encoding="utf-8", errors="replace")
+        m = STAMP_RE.search(text)
+        if not m:
+            print(f"session id unknown: {chat_path} carries no claude-session stamp — this room predates the stamp.", file=sys.stderr)
+            print("per-seat cost cannot be attributed without a session id: rerun with --session <uuid>.", file=sys.stderr)
+            sys.exit(1)
+        session_id = m.group(1)
+
+    slug = str(Path.cwd()).replace("/", "-")
+    project_dir = Path.home() / ".claude" / "projects" / slug
+    main_file = project_dir / f"{session_id}.jsonl"
+    if not main_file.is_file():
+        print(f"no transcript for session {session_id}: {main_file} does not exist.", file=sys.stderr)
+        print("confirm the session id and that this runs from the project's own working directory.", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"session: {session_id}")
+    print(f"transcript: {main_file}")
+
+    subagents_dir = project_dir / session_id / "subagents"
+    seat_files = sorted(subagents_dir.glob("agent-*.jsonl")) if subagents_dir.is_dir() else []
+    if seat_files:
+        print(f"seats: {len(seat_files)} subagent transcript(s) under {subagents_dir}")
+    else:
+        print(f"seats: none under {subagents_dir} — LEAD-only is the whole session, not a partial table.")
+
+    agents = OrderedDict()
+    tally(read_jsonl(main_file), "LEAD", agents)
+    for seat_file in seat_files:
+        stem = seat_file.stem
+        seat_id = stem[len("agent-"):] if stem.startswith("agent-") else stem
+        label = seat_label(seat_file.with_suffix(".meta.json"), seat_id)
+        tally(read_jsonl(seat_file), label, agents)
+
+    header = f"{'agent':<32} {'model':<22} {'turns':>6} {'in':>10} {'out':>10} {'cache_w':>12} {'cache_r':>12}"
     grand = {"turns": 0, "in": 0, "out": 0, "cw": 0, "cr": 0}
     print()
-    print(f"{'agent':<20} {'model':<22} {'turns':>6} {'in':>10} {'out':>10} {'cache_w':>12} {'cache_r':>12}")
-    print("-" * 96)
+    print(header)
+    print("-" * len(header))
     for label, models in agents.items():
         for model, b in models.items():
-            print(f"{label:<20} {model:<22} {b['turns']:>6} {fmt(b['in']):>10} {fmt(b['out']):>10} {fmt(b['cw']):>12} {fmt(b['cr']):>12}")
+            print(f"{label:<32} {model:<22} {b['turns']:>6} {fmt(b['in']):>10} {fmt(b['out']):>10} {fmt(b['cw']):>12} {fmt(b['cr']):>12}")
             for k in grand:
                 grand[k] += b[k]
-    print("-" * 96)
-    print(f"{'TOTAL':<20} {'':<22} {grand['turns']:>6} {fmt(grand['in']):>10} {fmt(grand['out']):>10} {fmt(grand['cw']):>12} {fmt(grand['cr']):>12}")
+    print("-" * len(header))
+    print(f"{'TOTAL':<32} {'':<22} {grand['turns']:>6} {fmt(grand['in']):>10} {fmt(grand['out']):>10} {fmt(grand['cw']):>12} {fmt(grand['cr']):>12}")
     print()
     print("note: cache_w = cache_creation_input_tokens, cache_r = cache_read_input_tokens.")
-    print("cost = tokens x current per-model price (billed input = input + cache_creation;")
-    print("cache_read and output are priced separately). Prices drift — look them up; do not")
-    print("assume. Chain->agent labels are best-effort; check against the declared roster.")
+    print("cost = tokens x current per-model price (billed input = input + cache_creation; cache_read and output are priced separately) — prices drift, look them up, do not assume.")
+    print("seat labels come from each seat's meta.json sidecar (agentType/description), never guessed from prompt text — still worth a sanity-check against the declared roster.")
 
 
 if __name__ == "__main__":

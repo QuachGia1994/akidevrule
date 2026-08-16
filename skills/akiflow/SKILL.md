@@ -1,6 +1,6 @@
 ---
 name: akiflow
-description: Lead-coordinated agent council for work that needs more than one kind of judgment. The lead pins the owner's verbatim words as the run's immutable anchor, decomposes the request into owned work items each quoting a requirement from it, checks a three-condition activation gate, and convenes seats from the five installed agent definitions in ~/.claude/agents/ — one batch, each seat traced to a requirement, never picked from a menu. Every mechanism is off by default and turns on only when this run produces a reason. The lead does no menial work and settles what doctrine answers, escalating only a one-way door, a contradiction with documented design, or scope expansion — then writes the owner's answer back into doctrine so the same question never escalates twice. Three modes discriminated by what changes outside the room — discuss, audit (read-only), execute. A mechanical gate script refuses closure on a missing anchor, a REQ that quotes nothing the owner wrote, a declared seat that never posted, a posting agent with no rule receipt, or an unanswered reminder. Explicit invoke only.
+description: Lead-coordinated agent council for work that needs more than one kind of judgment. The lead pins the owner's verbatim words as the run's immutable anchor, decomposes the request into owned work items each quoting a requirement from it, checks a three-condition activation gate, and convenes seats from the five installed agent definitions in ~/.claude/agents/ — one batch, each seat traced to a requirement, never picked from a menu. Every mechanism is off by default and turns on only when this run produces a reason. The lead does no menial work and settles what doctrine answers, escalating only a one-way door, a contradiction with documented design, or scope expansion — then writes the owner's answer back into doctrine so the same question never escalates twice. Two shapes discriminated by whether anything is being arbitrated — a council of items with adversaries, or a dispatch of lanes with exclusive file ownership for fan-out work whose answer is already knowable; and three modes discriminated by what changes outside the room — discuss, audit (read-only), execute. A mechanical gate script refuses closure on a missing anchor, a REQ that quotes nothing the owner wrote, a declared seat that left neither a turn nor a file, a seat with no rule receipt, an untagged seat, an unanswered reminder, or a requirement no item covers. Explicit invoke only.
 ---
 
 # akiflow — lead-coordinated agent council
@@ -50,6 +50,8 @@ Declare both before any other output:
 roster: judge-schema(sonnet) · challenger(sonnet) · hands-callsites(haiku, ro:--tools Read,Grep,Glob) · maker-api(sonnet)
 ```
 
+**Shape comes before the gate: is there anything to arbitrate?** If two competent seats could reach different defensible answers, this is a **council** and the rest of this step applies. If the answer is knowable and the work is merely large, it is a **dispatch** (Step 1b) — the same anchor, ledger, receipts and closure gate, partitioned into lanes with exclusive file ownership instead of items with an adversary. Shape and mode are independent: a dispatch can be `audit` or `execute` just as a council can.
+
 All three conditions must hold, or this is not a council: **decomposable** into ≥2 items with real boundaries · **≥2 kinds of "correct"** (schema-correct ≠ UX-correct ≠ price-correct; if one standard covers everything, one good head suffices) · **cost of error exceeds cost of coordination**. Ambiguity resolves downward. Never ask the user which tier they want — the gate is auditable through these two lines.
 
 **Mode is decided by one question: what changes outside the room?**
@@ -60,7 +62,24 @@ All three conditions must hold, or this is not a council: **decomposable** into 
 | `audit` | nothing — read-only by construction (`agent.B5`) | findings, and a plan that schedules fixes | one item per domain, each owned by a `judge` seated on that domain's standard: `docs.C` · `ui.C` · `flow` · `release.B` · `ux.C` · `biz` · `subtract`. Fixes are a separate run through this gate |
 | `execute` | files | a diff, verified | `aki-maker` is the only seat permitted to write |
 
-**Bulk mechanical work is not a council** in any mode. The same transform across many files, or a sweep whose paths are known up front, has nothing for a roster to arbitrate and grows the lead's context with the item count. Route it to workers (`aki-hands`), or tell the owner that Claude Code's native `Workflow` tool fits better since it holds the loop outside any model's context — the owner must invoke it, this skill cannot. A subtraction audit is the clearest case: the scanning never enters the room, and the council joins only at classification, where *dead* versus *load-bearing but ugly* is the judgment the owner acts on.
+**Bulk mechanical work is not a council — but it no longer has to leave the skill.** The same transform across many files, or a sweep whose paths are known up front, has nothing for a roster to arbitrate and grows the lead's context with the item count. It still wants the anchor, the REQ ledger, the `[RULES]` receipts, the durable record and the closure gate, and that combination is a dispatch (Step 1b), not a reason to fall back to bare spawns. Claude Code's native `Workflow` tool is still the better fit where the loop itself must be held outside any model's context — the owner must invoke it, this skill cannot. A subtraction audit is the clearest split: the scanning is dispatch lanes, and the council convenes only at classification, where *dead* versus *load-bearing but ugly* is the judgment the owner acts on.
+
+## Step 1b — dispatch
+
+A fan-out with a paper trail. Reuses this skill's workspace, its three file kinds and its closure gate unchanged; replaces the debate with a partition. Declare it the same way:
+
+```
+[akiflow] shape=dispatch · mode=execute · REQ 1-4 → 3 lanes
+lanes: scripts(maker sonnet, writes skills/akiflow/scripts/*.py) · docs(maker sonnet, writes docs/** + CHANGELOG.md) · sweep(hands haiku, ro:--tools Read,Grep,Glob, writes none)
+```
+
+**A lane is an item whose adversary is replaced by an exclusive file set.** Every lane carries `covers` (the REQs it satisfies), `worker`, `writes`, `reads` and `returns`. `writes` is exclusive: a path claimed by two lanes is a gate failure, refused by `council_open.py --convene` before a token is spent, because two workers editing one file is the failure a fan-out actually dies of and it is invisible until the second one clobbers the first. `returns` exists because the lead merges the lanes and cannot merge a shape that was never specified.
+
+**Every lane leaves its own trace, and the lead does not hold them all.** The trace name for a lane IS the lane's own short name, never its `worker:` value — a lane whose worker can write puts its report in `<lane>.md` in the session directory and returns only its conclusion; a read-only lane returns to the lead, who posts it as one turn under the lane name. Either satisfies `council_verify.py`, and the first keeps a long report out of the lead's context until something makes it worth reading. `worker:` stays a required field — it is roster/cost metadata, the same as a council item's `model` — but it is never the trace identity: two lanes may declare the same `worker` type and must still leave two separately-traceable reports.
+
+**What dispatch drops, and why that is safe:** no challenger and no judge, because nothing is being arbitrated · no turn-numbered debate and no peer-to-peer laws, because lanes do not talk to each other · no three-condition gate, because the condition that justifies a dispatch is different — work partitionable into ≥2 independent lanes, each lane's paths and question nameable up front, and a result that must outlive the session. Fail the third and a bare spawn is enough; fail the second and it was a council question all along.
+
+**What dispatch keeps is the whole point:** the anchor immutable (R1 is unconditional), every REQ quoting the owner's own words, every worker's `[RULES]` receipt, the durable on-disk record, and all seven checks of `council_verify.py` — a lane's `worker` is a declared seat exactly as a council's `owner` is, and an untraced one is a ghost.
 
 ## Step 2 — convene from the definitions, never from a menu
 
@@ -86,7 +105,7 @@ python3 ~/.claude/skills/akiflow/scripts/council_open.py --convene <session-dir>
 
 Exit 1 unless ≥1 `ITEM` carries all of `owner` / `challenger` / `closes when`. It gates *convening*, not file creation: the anchor has to be pinned before the ledger can quote it (R1), so `chat.md` necessarily exists first — the cost this prevents is N agents circling an undecomposed question, and that cost is paid at spawn.
 
-**Every spawn passes `model` explicitly.** An omitted `model` inherits the lead's own top tier, mechanical sweeps included — silence is an expensive choice made by accident. The in-session Agent tool has **no `effort` parameter**; only headless calls take `--effort`, so do not declare per-seat effort for in-session spawns. A read-only seat names its enforcing mechanism (`--tools`, `--mode plan`, `--trust-tools=`) on the roster line; read-only by wording is not read-only.
+**The tier lives in each agent definition's frontmatter — that file is the single source of truth for `model`.** A spawn passes `model` only to override that default, not as a ritual on every call. The real remaining hazard is a generic subagent such as `general-purpose`, which carries no tier of its own and therefore inherits the lead's expensive default — this matters concretely at Step 6, where the cost seat must hold `Bash` and is spawned generically. The in-session Agent tool has **no `effort` parameter**; only headless calls take `--effort`, so do not declare per-seat effort for in-session spawns. A read-only seat names its enforcing mechanism (`--tools`, `--mode plan`, `--trust-tools=`) on the roster line; read-only by wording is not read-only.
 
 **The lead does no menial work — ever.** Arbitration quality is its only product and it degrades with every unrelated token. Bulk reads, greps, inventory scans go to `aki-hands` even when doing it directly feels faster, because "faster" spends the one context the run cannot replace. The lead reads at orientation depth: the anchor, the checklist, `--stats`, and the specific excerpt a decision turns on.
 
@@ -105,9 +124,13 @@ Turns are `### <HH:MM> <seat-name> #<n>`, under 200 words, never hard-wrapped, e
 ```bash
 R="python3 ~/.claude/skills/akiflow/scripts/council_read.py"
 $R <chat.md> --index | --pinned | --stats | --agent challenger --tail 5 | --from 12
+$R <chat.md> --grep "quota|pricing" --agent red-team     # locate: matching lines, tagged with the turn each came from
+$R <chat.md> --turn 14                                   # then read only that turn
 ```
 
-A seat rejoining reads `--pinned` plus `--from <its last turn>`. The lead watches `--stats` and `--index` and reads full turns only where something looks wrong; a lead that reads the whole room has rebuilt the flooded main thread with the least independent context now holding the arbitration seat.
+**Locate, then read — never scan.** `--grep` answers "did anyone raise X?" for a few hundred bytes; reading the room to answer the same question costs the whole file. That is the only pair of commands that removes a whole-file read, because every other flag (`--agent`, `--from`, `--tail`) needs you to already know where to look. A seat arriving reads `--pinned` plus `--index`, then only the turns its own mandate names — it has no `--from` to resume from, and pulling the whole file is exactly the context the spawn existed to avoid. A seat rejoining reads `--pinned` plus `--from <its last turn>`. The lead watches `--stats` and `--index` and reads full turns only where something looks wrong; a lead that reads the whole room has rebuilt the flooded main thread with the least independent context now holding the arbitration seat.
+
+**A read is a subscription, not a purchase.** Every tool call re-sends the whole history, so anything pulled into context is charged again on every later turn: a read of size `S` at turn `t` of a `T`-turn run costs about `S × (T − t)`, not `S`. Reading a 50k-token room at turn 50 of 200 costs ~7.5M cache-read tokens — a fifth of a real measured run's entire lead spend, from one call. `--stats` prints bytes per agent precisely so the lead can price a read before making it.
 
 **Peer-to-peer laws.** Direct challenge is the point of the room, but it removes the lead's view of how a conclusion was reached: every peer exchange ends in a `DECISION:` or `CONFLICT:` turn posted by whoever closes it · peer agreement is not a decision, only the lead closes an item · three rounds per pair then escalate, and cyclic chains (A→B→C→A) are forbidden · every message costs a full turn of the receiving agent.
 
@@ -142,7 +165,7 @@ It fails on a missing anchor, a REQ quoting nothing the owner wrote, a declared 
 | Implement from the plan | `aki-maker`, given the plan doc path and the checklist items in its prompt — the plan doc *is* the continuity mechanism, since no subagent inherits the lead's context |
 | Mechanical fan-out | `aki-hands` on the cheapest capable tier |
 | **Verify** — "did I do what I said?" plus the drift sweep | a subagent given the diff and the closing criteria. The drift sweep is part of verifying, not an extra: every doc, comment, i18n string and CHANGELOG line referencing the changed behavior, reported if it still describes the old one |
-| **Adversarial review** — "should this have been done?" | `aki-challenger`, strong model. Contamination is disqualifying |
+| **Adversarial review** — "should this have been done?" | `aki-challenger`, at the tier its frontmatter declares. Contamination is disqualifying — that is what makes the seat work, not the tier |
 | **Author user-facing prose** | a separate writer worker on the softest capable writing tier, never the implementer as a side effect, under an anti-fabrication brief: it phrases facts supplied in its prompt and tags anything else ASSUMPTION |
 
 **The one boundary that must never blur.** A reviewer briefed with the lead's self-justifying chain will agree with it — sycophancy given structure, worse than no review because it emits a stamp. `aki-challenger` receives **only the diff, the closing criteria, and the anchor**. What is withheld is the lead's *reasoning*, never the behavior floor: rules are constraints, not justification, so they cannot contaminate a review.
@@ -158,10 +181,11 @@ Even with no room at all, close direct work with a verifier subagent against wha
 The roster line declared `model` before a token was spent; this closes that loop with what was actually spent. Mandatory, not an extra the owner requests: a run that cost ten times its worth must not be indistinguishable from one that didn't. `council_verify.py` must already have passed.
 
 ```bash
-python3 ~/.claude/skills/akiflow/scripts/council_cost.py   # newest transcript for this project, or pass a .jsonl path
+python3 ~/.claude/skills/akiflow/scripts/council_cost.py <session-dir>            # session id read from the room's chat.md stamp
+python3 ~/.claude/skills/akiflow/scripts/council_cost.py --session <uuid>         # for a room opened before the stamp existed
 ```
 
-**One `haiku` subagent runs it and reports the table — never the lead**; reading the raw transcript is the largest bulk-read in the run. It must be a seat that actually holds `Bash` — `aki-conduct`, or a generic subagent — since the retrieval seat the lead reaches for by reflex (`aki-hands`) is `Read, Grep, Glob` only and will return a refusal rather than a table. The script aggregates in-shell and prints tokens only, because per-model prices drift and a hardcoded table in a distributed script would rot: look the price up, bill `input + cache_creation` as input, price `cache_read` and `output` separately. **Headless spend is invisible to it** — an `agy` call writes no Claude transcript and a `claude -p` call writes its own, so those `usage` blocks are added by hand. The close-out line goes into the run's `docs/plan/` record, beside the roster declaration it reconciles.
+**One `haiku` subagent runs it and reports the table — never the lead**; reading the raw transcript is the largest bulk-read in the run. It must be a seat that actually holds `Bash` — `aki-conduct`, or a generic subagent — since the retrieval seat the lead reaches for by reflex (`aki-hands`) is `Read, Grep, Glob` only and will return a refusal rather than a table. The script aggregates in-shell and prints tokens only, because per-model prices drift and a hardcoded table in a distributed script would rot: look the price up, bill `input + cache_creation` as input, price `cache_read` and `output` separately. **It measures the Claude meter completely and stops there** — the main session plus every subagent under it, which is exactly the budget Step 1's roster declared. A headless lane (`agy`, or a separate `claude -p`) writes no turn into this transcript and bills another quota: report its own `usage` beside the table if it matters, never summed into it, or the total is in no single currency. The close-out line goes into the run's `docs/plan/` record, beside the roster declaration it reconciles.
 
 ## Anti-patterns — all of these are default behaviour unless forbidden by name
 
