@@ -21,7 +21,7 @@ The version *attribute itself* is always bare semver, **never prefixed with `v`*
 - Tag only if the project already tags, or the user accepts a suggestion above: `git tag -l` empty and no acceptance → skip tag creation; CHANGELOG/releases.json/GitHub Release stay authoritative. Creating and pushing a tag is visible to others once pushed — propose it, never create or push one unasked ([[RULE-agent-behavior]] B3).
 - Create tags bare: `git tag 1.10.1`, never `git tag v1.10.1`.
 - Before cutting any release, check the existing tag convention with `git tag -l | sort -V | tail -5` — if a project's history has drifted to `v`-prefixed tags partway through, treat that drift as the bug being corrected (go back to bare), not as the precedent to keep following.
-- Human-facing display **may** prepend `v` at render time only — a GitHub Release title (`v{version} — …`, see below), a UI badge ("Update Available — v1.10.1"). That is a presentation concern, separate from and does not violate this rule. The forbidden thing is `v` baked into the stored/compared value itself.
+- Human-facing display **may** prepend `v` at render time only — a GitHub Release title (`v{version}: …`, see below), a UI badge ("Update Available — v1.10.1"). That is a presentation concern, separate from and does not violate this rule. The forbidden thing is `v` baked into the stored/compared value itself.
 - When resolving the last release's boundary commit, prefer the bare-tag form: `git rev-parse "<last-version>"`, falling back to `git rev-parse "v<last-version>"` only to read a legacy/already-existing `v`-prefixed tag — never as the form to create going forward.
 
 ### A4. Bump level — driven by content severity, not by step-count
@@ -106,13 +106,15 @@ After updating CHANGELOG and the version bump, produce the GitHub Release withou
 - **Otherwise** (no `gh`, or the user will publish manually) → output the copy-ready block below instead.
 - Before minting, cross-check tags against Releases (`gh release list` vs `git tag`) and offer to backfill any tag that has no matching Release, so the Releases page has no gaps.
 
-**Title:** `v{version} — {2–5 word specific impact}` — no generic words ("patch fixes", "bug fixes", "improvements")
-- Good: `v1.5.1 — fix production icons blank, caret, grid gap`
-- Bad: `v1.5.1 — patch fixes`, `v1.5.1 — various improvements`
+**Title:** `v{version}: {2-5 word specific impact}` — no generic words ("patch fixes", "bug fixes", "improvements")
+- Good: `v1.5.1: fix production icons blank, caret, grid gap`
+- Bad: `v1.5.1: patch fixes`, `v1.5.1: various improvements`
 
 **Body:** same `#### Fixed` / `#### Changed` / `#### Added` sections as CHANGELOG, but each bullet trimmed to one short sentence — symptom first, no file paths, no internal jargon.
 
 **Compare link (GitHub-hosted repos — mandatory footer):** the notes end with `**Full Changelog**: <repo-url>/compare/<prev-tag>...<new-tag>` — or use `gh release create --generate-notes`, which inserts it automatically. The Release page renders notes only, never a diff, and the tag itself points at a single commit (usually the version-mint commit, a tiny diff) — without this line there is no one-click view of the commits accumulated since the previous release. First release with no prior tag: link `<repo-url>/commits/<new-tag>` instead.
+
+**`--generate-notes` alone is not a substitute for Title/Body above.** It derives content from merged PRs only; a repo that commits straight to trunk (no PR history) gets a near-empty body — footer line only. Pair it with `--notes-file` for real content, or, when release creation is CI-automated rather than run interactively, have the workflow itself extract the tagged version's CHANGELOG section into the notes file — the content requirement above still applies even though no one is typing the `gh release create` command by hand.
 
 ### B5. Migration/infra completeness gate — a schema or infra change is not "released" until it ran
 

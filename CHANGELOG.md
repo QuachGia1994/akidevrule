@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.1] - 2026-08-16
+
+### Fixed
+- **`RULE-release.md` B4/B6 self-contradiction: the title template's mandatory `—` separator violated B6's blanket "no em/en dash" ban.** Caught live when a consuming project's release notes came out title-only, no body. Fixed at the root instead of carving out an exemption: the title separator changed from em dash to colon (`v{version}: {impact}`), so B6's ban now applies uniformly to title and body with nothing left to exempt.
+- **B4's `--generate-notes` mention read as a drop-in substitute for the whole Title/Body requirement, not just the compare-link footer it actually covers.** A CI-automated release workflow in a consuming project took it that way and shipped a release with an empty body (only the auto-inserted compare link) on a trunk-based repo with no PR history — `--generate-notes` derives content from merged PRs, so it has nothing to draw on there. B4 now states explicitly that CI-automated release creation still owes the Title/Body content, typically by having the workflow extract the tagged version's CHANGELOG section into `--notes-file`.
+
 ## [2.3.0] - 2026-08-16
 
 ### Added
