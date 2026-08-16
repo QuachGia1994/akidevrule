@@ -26,33 +26,43 @@
     {
       "created_at": 1784707369088,
       "detail": "CRITICAL: ALWAYS MAKE SURE\u0000 target group near trigger button",
-      "done": false,
+      "done": true,
       "id": "task-1784707369088",
       "pin": false,
       "title": "RULE CSS popup hover",
-      "updated_at": 1785760146278,
+      "updated_at": 1786757940519,
       "wish": false
     },
     {
       "created_at": 1786478711061,
       "detail": "cái tên file hiện tại nó đang dễ gây hiểu lầm sang design (UI)",
-      "done": false,
+      "done": true,
       "id": "task-1786478711061",
-      "pin": true,
+      "pin": false,
       "title": "cân nhắc đổi tên design core nó thuộc về kiến trúc pattern",
-      "updated_at": 1786478724669,
+      "updated_at": 1786757925656,
       "wish": false
     },
     {
       "created_at": 1786478750527,
       "detail": "Có những thứ tự thấy hiển nhiên qua code flow được thì không đùn đẩy sang test, phải có nguyên tắc rõ ràng để tránh phán đoán sai",
-      "done": false,
+      "done": true,
       "id": "task-1786478750527",
-      "pin": true,
+      "pin": false,
       "title": "Nghiên cứu xem rule nào cứ bắt verify những thứ quá hiển nhiên",
-      "updated_at": 1786478801565,
+      "updated_at": 1786757930604,
+      "wish": false
+    },
+    {
+      "created_at": 1786757953125,
+      "detail": "- tối ưu token context\n- tối ưu chi phí (sử dụng hands/crossCLI hiệu quả)\n- tối ưu luồng hoạt động của từng agent \n- tối ưu cách tương tác giữa các agent\n- quản lý chat hiệu quả",
+      "done": false,
+      "id": "task-1786757953125",
+      "pin": true,
+      "title": "Nghiên cứu tối ưu /akiflow",
+      "updated_at": 1786758013139,
       "wish": false
     }
   ],
-  "updated_at": 1786478801569
+  "updated_at": 1786758013142
 }
