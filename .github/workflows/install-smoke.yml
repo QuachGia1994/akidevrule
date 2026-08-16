@@ -44,8 +44,7 @@ jobs:
               home / ".claude" / "skills" / "akiflow" / "SKILL.md",
               home / ".claude" / "agents" / "aki-conduct.md",
           ]
-          # Note: ~/.gemini artifacts (skills.json, AG rules) are generated only when
-          # the user already has Antigravity installed — a clean HOME correctly skips them.
+          # ~/.gemini artifacts (skills.json, AG rules) are generated only when the user already has Antigravity installed — a clean HOME correctly skips them.
           missing = [str(p) for p in must_exist if not p.is_file()]
           if missing:
               print("MISSING after install on", sys.platform, ":", *missing, sep="\n  ")
