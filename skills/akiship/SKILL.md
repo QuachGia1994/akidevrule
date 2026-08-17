@@ -1,6 +1,6 @@
 ---
 name: akiship
-description: Run the full release ritual end-to-end with one command — front-loaded checks, then an unattended pass. Sequences RULE-release.md B7 (leftover triage, diff-scoped hygiene, external-action completeness, record truthfulness, doc sync, verification honesty, version decision) under the B8 autonomy contract (invocation = authorization; stop only on public-history ambiguity, unclassifiable work, or design contradiction). Commits via akigitcommit with confirmation pre-answered. Never pushes, deploys, or pushes tags unless the invocation names it. Use on "akiship", "release trọn gói", "chạy full release", "ship đợt này".
+description: Run the full release ritual end-to-end with one command — front-loaded checks, then an unattended pass. Sequences RULE-release.md B7 (leftover triage, diff-scoped hygiene, external-action completeness, record truthfulness, doc sync, verification honesty, version decision) under the B8 autonomy contract (invocation = authorization; stop only on public-history ambiguity, unclassifiable work, or design contradiction — completion-intensity phrasing like "trọn vẹn"/"hoàn thành, hoàn thiện" collapses the unclassifiable-work stop toward finish-it-anyway). Commits via akigitcommit with confirmation pre-answered. Never pushes, deploys, or pushes tags unless the invocation names it. Use on "akiship", "release trọn gói", "chạy full release", "ship đợt này".
 ---
 
 # akiship — one-command full release
@@ -13,7 +13,7 @@ Invoke with `/akiship`. Goal: replace the daily hand-typed ritual ("resolve left
 
 1. Derive release state cold per `release.B1` (manifest, CHANGELOG top, boundary commit, accumulation log).
 2. Triage the tree per B7 step 0 (the `/akigitcommit` step-0 taxonomy; read-only, `agent.B5`).
-3. Collect every hit on the B8 escalation floor — public-history ambiguity, unclassifiable work, design contradiction / scope beyond the invocation. **Any hits → report them all in one batch and stop.** No hits → proceed; from here the run asks nothing (`release.B8`: a question the repo already answers is a violation).
+3. Collect every hit on the B8 escalation floor — public-history ambiguity, unclassifiable work, design contradiction / scope beyond the invocation. **Completion-intensity phrasing in the invocation** ("trọn vẹn", "hoàn thành"/"hoàn thiện", "làm/xong hết", "tất cả"/"toàn bộ", or equivalent sentiment insisting the run finish everything) resolves the unclassifiable-work hit toward mid-edit by default — finish and integrate it, do not flag it. **Any hit on the remaining two → report them all in one batch and stop.** No hits → proceed; from here the run asks nothing (`release.B8`: a question the repo already answers is a violation).
 
 ## Phase 2 — gate, fixing in place
 
