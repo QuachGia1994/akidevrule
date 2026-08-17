@@ -16,6 +16,7 @@ Topic folders follow `RULE-docs.A2`. Only the folders that currently hold conten
 | Doc | Purpose |
 |-----|---------|
 | [agent-skills-standard.md](ref/agent-skills-standard.md) | Verified: `SKILL.md` is a shared open standard between Claude Code and Antigravity/AGY, zero per-agent transformation — the reason `skills/` moved out of `claude/` to a top-level, agent-neutral folder. |
+| [cli-permission-allowlist-standard.md](ref/cli-permission-allowlist-standard.md) | Permission & allowlist formats across Claude Code, Antigravity CLI/IDE, Kiro CLI, Grok CLI, and Codex CLI for unattended skill script execution. |
 
 ## `plan/` — active plans
 
@@ -27,6 +28,7 @@ Topic folders follow `RULE-docs.A2`. Only the folders that currently hold conten
 
 | Doc | Purpose |
 |-----|---------|
+| [pre-allow-improve-v2.4.2.md](plan/done/pre-allow-improve-v2.4.2.md) | Pre-allow skill scripts execution permissions across Claude Code, Antigravity CLI/IDE, and Kiro CLI in install.py. Shipped v2.4.2. |
 | [fix-dispatch-verify-aug16.md](plan/done/fix-dispatch-verify-aug16.md) | Defects from the 2026-08-16 audit of the dispatch change set: lane-vs-worker trace mismatch in `council_verify.py`, `writes:` glob overlap passing the exclusivity gate, a retracted measurement still live in `harness-facts.md`, two parser hardenings. P1–P5 fixed and verified 2026-08-16; P6 (one real end-to-end dispatch run) deferred with its reason recorded in the doc. |
 | [unify-desktop-support.md](plan/done/unify-desktop-support.md) | Windows + unified mechanics: Python SSOT for installer *and* skill scripts (ecosystem-aligned); thin `.sh`/`.ps1` launchers only; phased batches; aki-mcp-sv coupling left open. Shipped v2.0.0. |
 | [akiflow-reduction-agent-layer.md](plan/done/akiflow-reduction-agent-layer.md) | The mandatory `[RULES]` load receipt, a native `claude/agents/` layer of five agent definitions, and the akiflow reduction (435 → 181 lines). All three batches landed 2026-08-07. |

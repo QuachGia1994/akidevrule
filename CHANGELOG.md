@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.4.2] - 2026-08-18
+
+### Added
+- **Multi-CLI skill scripts pre-allow in `install.py`.** Running deterministic Python skill scripts (`scythe.py` format lint, `council_verify.py` gate validation) previously prompted for permission on each invocation in Antigravity CLI (`agy`), Antigravity IDE, and Claude Code. `install.py` now automatically and idempotently configures least-privilege execution permissions:
+  - **Claude Code** (`~/.claude/settings.json`): merges `Bash(python3 ~/.claude/skills/*)` and `Bash(python3 ~/.aki/akidevrule/agskills/*)` into `permissions.allow` — single `*`, since Bash rules have no gitignore-style `**` (`Read`/`Edit`-only distinction; verified against Claude Code's own permissions docs).
+  - **Antigravity CLI & IDE** (`~/.gemini/antigravity-cli/settings.json`, `~/.gemini/settings.json`): merges `command(python3 ~/.gemini/config/skills/*)`, `command(python3 ~/.claude/skills/*)`, and `command(python3 ~/.aki/akidevrule/agskills/*)` into `permissions.allow`.
+  - **Kiro CLI** (`~/.kiro/settings/permissions.yaml`): idempotently manages `capability: shell` allow rules for skill directories if `~/.kiro` exists.
+  - New reference doc `docs/ref/cli-permission-allowlist-standard.md` documents permission schemas, wildcard capabilities, and evaluation semantics across Claude Code, Antigravity CLI/IDE, Kiro CLI, Grok CLI, and Codex CLI.
+
 ## [2.4.1] - 2026-08-17
 
 ### Changed

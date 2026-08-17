@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Read(//~/.aki/akidevrule/**)"
+      "Read(//~/.aki/akidevrule/**)",
+      "Bash(python3 ~/.claude/skills/*)",
+      "Bash(python3 ~/.aki/akidevrule/agskills/*)"
     ],
     "additionalDirectories": [
       "~/.aki/akidevrule"
