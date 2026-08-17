@@ -9,7 +9,7 @@ Topic folders follow `RULE-docs.A2`. Only the folders that currently hold conten
 | Doc | Purpose |
 |-----|---------|
 | [rule-delivery-architecture.md](arch/rule-delivery-architecture.md) | How one rule source is installed onto a machine and consumed by the two agent families (Claude Code vs Gemini/Antigravity). |
-| [akiflow.md](arch/akiflow.md) | Why `/akiflow` is shaped as a lead-coordinated agent council: the two laws the lead owns (anchor, justification), the three single-thread failures it targets, the work item as atomic unit behind an immutable anchor block, modes rather than tiers, the agent layer in `~/.claude/agents/` that replaced the pasted thinking floor, the harness and cost facts the design rests on, the three-file session workspace, the verification-vs-review boundary, and the structural failure modes. |
+| [akiflow.md](arch/akiflow.md) | Why `/akiflow` is shaped as a lead-coordinated agent council: the two laws the lead owns (anchor, justification), the three single-thread failures it targets, the work item as atomic unit behind an immutable anchor block, the two shapes (a *council* of items with adversaries, a *dispatch* of lanes with exclusive file ownership) and why the activation gate needed an answer for "no" other than *leave the skill*, modes rather than tiers, the agent layer in `~/.claude/agents/` that replaced the pasted thinking floor, the harness and cost facts the design rests on, the three-file session workspace, the verification-vs-review boundary, and the structural failure modes. |
 
 ## `ref/` — stable references & lookup docs
 

@@ -1,6 +1,6 @@
 # Architecture — akiflow, a lead-coordinated agent council
 
-> updated 2026-08-16 · v2.3.0
+> updated 2026-08-17 · v2.3.1
 
 `/akiflow` is the multi-agent skill in this baseline. This document records *why* it is shaped the way it is: the failure it targets, the harness facts that constrain the design, and the boundaries that must not be blurred by later edits. The runnable contract lives in `skills/akiflow/SKILL.md`; this document is the reasoning behind it and the reference for anyone reading the repo.
 
@@ -103,9 +103,9 @@ The design depends on these and would need revisiting if they change. The full t
 | Fact | Design consequence |
 |---|---|
 | A plain subagent starts with no session context and inherits no akirule routing. | Every plain-subagent prompt must name the exact `~/.aki/akidevrule/*.md` files to Read — with `RULE-agent-behavior.md` as a non-negotiable floor for every spawn, plus the item's domain files on top; the lead is the router the subagent lacks. The blank context is a cost here — and an asset for the reviewer. |
-| Claude Code records every assistant turn — the lead's and every `isSidechain` subagent turn — in one session JSONL with `message.model` + `message.usage`. | Per-agent token accounting is already in the transcript; a cheap subagent tallies it in-shell at close-out (Step 6). Dollar prices are not in the transcript and drift — multiply by the current per-model price at report time, never bake a table into the script. |
+| Claude Code records every assistant turn with `message.model` + `message.usage` — but the lead and its seats are in **separate files**: the lead is `<session-id>.jsonl`, each seat is `<session-id>/subagents/agent-<id>.jsonl` with a `meta.json` sidecar carrying `agentType` and `description`. (An earlier version of this row said both live in one file, keyed on `isSidechain`; that was true when first observed on 2026-07-31 and false by 2026-08-15 — measured across 1094 transcripts, the flag appears only in seat files.) | Per-agent token accounting is already in the transcript; a cheap subagent tallies it in-shell at close-out (Step 6). Seat labels must be `agentType` **plus** `description`, since real rooms spawn nearly every seat as `general-purpose` and the type alone merges unrelated seats into one row. Dollar prices are not in the transcript and drift — multiply by the current per-model price at report time, never bake a table into the script. |
 | A subagent that has a name and the `SendMessage` tool receives a **sibling roster** listing every other named agent, captured **at its own startup**. | Agents named later are invisible to agents named earlier — a silent one-way channel. Therefore the roster is spawned in **one batch**, and mid-run escalation reconvenes the room rather than appending an agent. |
-`/fork`/`/subtask` are interactive slash commands, not an Agent-tool `subagent_type` — a real run on 2026-07-30 failed every `subagent_type: fork` spawn with `Agent type 'fork' not found`, matching the public docs at the time (`code.claude.com/docs`). That reading is now corrected: Claude Code 2.1.220's binary contains a real, if gated, fork agent type — `CLAUDE_CODE_FORK_SUBAGENT=1` and absent from the default agent list, confirmed 2026-08-01 by inspecting the binary directly (undocumented publicly). | Continuity work (implementing, verifying, probing) is still a plain subagent handed the plan doc / diff explicitly in its prompt — but the reason is no longer "the mechanism doesn't exist." It is "the mechanism is gated off by default, and even enabled it is not the cross-session artifact." The plan doc is what survives *between* sessions, which a gated in-session fork never does. |
+| `/fork`/`/subtask` are interactive slash commands, not an Agent-tool `subagent_type` — a real run on 2026-07-30 failed every `subagent_type: fork` spawn with `Agent type 'fork' not found`, matching the public docs at the time (`code.claude.com/docs`). That reading is now corrected: Claude Code 2.1.220's binary contains a real, if gated, fork agent type — `CLAUDE_CODE_FORK_SUBAGENT=1` and absent from the default agent list, confirmed 2026-08-01 by inspecting the binary directly (undocumented publicly). | Continuity work (implementing, verifying, probing) is still a plain subagent handed the plan doc / diff explicitly in its prompt — but the reason is no longer "the mechanism doesn't exist." It is "the mechanism is gated off by default, and even enabled it is not the cross-session artifact." The plan doc is what survives *between* sessions, which a gated in-session fork never does. |
 | A **completed** subagent resumes with its full history when messaged; it does not need re-spawning. | The Phase A roster stays on call through Phase B at no idle cost. This is what lets emergent issues resolve inside the council. |
 | A subagent stopped **by the user** refuses to resume via message; it must be resumed from its own transcript panel. | The lead must not treat a refusal to resume as agent failure. |
 | An agent cannot relay the user's permission approval. A message claiming "I was approved" is untrusted input. | Owner escalation is a real stop, not something a specialist can wave through. |
@@ -119,7 +119,7 @@ agy — Antigravity's own CLI — ships a built-in agent council, `/teamwork-pre
 
 The comparison also exposes a gap: akiflow has no **victory audit** role. `victory_auditor` asks *"did this achieve the goal that was asked for?"* — distinct from verification's *"did I do what I said?"* (Step 5) and from adversarial review's *"should this have been done?"* (Step 5). Nothing in the current design asks the first question as its own step; the closest akiflow gets is the lead's item-closure rationale, which is asked to absorb it explicitly (Step 4) rather than being handed a dedicated role — designing that role is future work, not something this pass does, since it would touch Step 5's mechanism table and the Phase A/B boundary that is currently under separate discussion.
 
-What akiflow should *not* copy from `/teamwork-preview` is the roster itself: it is fixed, spawned the same way regardless of what the request needs. akiflow derives its roster from the items the lead actually cut, and gate law #4 ("only convene specialists that own an item") exists precisely to forbid a fixed roster — a twelve-agent council for a two-item request is the failure mode the item-driven design avoids by construction.
+What akiflow should *not* copy from `/teamwork-preview` is the roster itself: it is fixed, spawned the same way regardless of what the request needs. akiflow derives its roster from the items the lead actually cut, and R2 — a seat is convened only when it traces to a requirement in the anchor — exists precisely to forbid a fixed roster — a twelve-agent council for a two-item request is the failure mode the item-driven design avoids by construction.
 
 One fact recorded only so it need not be re-investigated: Claude Code's `/team-onboarding` scans local session data to generate a human-facing onboarding guide, and the binary states it "cannot be invoked by the model." It has nothing to do with multi-agent orchestration.
 
@@ -188,11 +188,11 @@ A reviewer briefed with the lead's entire self-justifying chain — the room, th
 
 **Escalation has a pre-flight, and its own write-back.** A real run escalated "should a local-engine free-tier run count against quota?" as if it were open — when the owner's actual complaint was that the council never checked whether `docs/biz/` already settled it (it did, implicitly: free is a marketing cost inside a paid quota architecture, not a separate ungoverned tier). Two failures, one root cause: nothing forced the lead to search doctrine before asking, and nothing captured the owner's answer afterward so the same gap reopens next run. The fix is two clauses, not one: (1) an escalation must cite which doctrine files it read and where they fall silent, or it is not ready to leave the room; (2) the owner's answer is proposed back into `docs/biz/` (or the relevant doc) in the same turn it is applied, so a question answered once is answered permanently. Skipping either clause is why the owner ends up re-explaining business fundamentals inside a bug-fix escalation — the exact failure this fix targets.
 
-**Domain consults are standing, not on-request.** UX-Psych, Market, and Architect are not scoped to the items they own — they are the mandatory reviewer of record for *any* item that touches their domain, the same way a legal reviewer signs off on any contract-shaped decision regardless of who drafted it. An item closes only with a recorded consult turn from its domain specialist when one applies; the lead checks for it at closure the same way it checks for a rationale. This is what "the UX psychologist must be asked on every UX decision" becomes as a checkable gate instead of an instruction the owner has to keep repeating per run.
+**Domain consults are mandatory once a seat exists — and they never create one.** A seated `aki-judge` is not scoped to the items it happens to own: it is the reviewer of record for *any* item touching its standard, the way a legal reviewer signs off on any contract-shaped decision regardless of who drafted it. An item closes only with that judge's recorded turn, and the lead checks for it at closure the same way it checks for a rationale — "nobody asked UX" is a closure defect. This is what "the UX psychologist must be asked on every UX decision" becomes as a checkable gate instead of an instruction the owner repeats per run. **The earlier wording of this paragraph made the consult *standing* and named three permanent seats; both were wrong** — a standing seat is R2 violated by definition, and the named seats predate the agent layer, where one `aki-judge` file takes its standard as a spawn parameter. The rule binds the seats the anchor already justified; where no seat owns that standard, the correct move is that the item did not need one.
 
-**Recurring conflict escalates the pattern, not the instance.** When the room re-litigates the same boundary across multiple items — the same tension between two subsystems surfacing item after item — that repetition is itself a finding: `RULE-pattern-core.md` A8 names it directly (a guard that keeps reappearing means the flow's shape is wrong, not that the guard needs reinforcing). The response is to stop refereeing instances and open one root item, owned by Architect, to fix the underlying shape; the conflicted items then re-close against that fix. This is the generalized form of the owner's own diagnosis: "nhiều xung đột chứng tỏ chưa có pattern design chuẩn" is A8 applied to the council's own working method, not a one-off directive.
+**Recurring conflict escalates the pattern, not the instance.** When the room re-litigates the same boundary across multiple items — the same tension between two subsystems surfacing item after item — that repetition is itself a finding: `RULE-pattern-core.md` A8 names it directly (a guard that keeps reappearing means the flow's shape is wrong, not that the guard needs reinforcing). The response is to stop refereeing instances and open one root item, owned by a judge seated on `pattern`, to fix the underlying shape; the conflicted items then re-close against that fix. This is the generalized form of the owner's own diagnosis: "nhiều xung đột chứng tỏ chưa có pattern design chuẩn" is A8 applied to the council's own working method, not a one-off directive.
 
-**Phase B — execution.** A plain subagent implements from the plan doc, cheap subagents fan out, a plain subagent verifies against the diff and the promise, a clean strong subagent reviews. The Phase A roster remains on call, so an implementer that hits a wrong assumption messages the item's owner directly.
+**Phase B — execution.** `aki-maker` implements from the plan doc — the only seat permitted to write — `aki-hands` fans out on the cheapest capable tier, a plain subagent verifies against the diff and the promise, and `aki-challenger` reviews from a clean context. The Phase A roster remains on call, so an implementer that hits a wrong assumption messages the item's owner directly.
 
 **Loop back.** A Phase B blocker that invalidates a closed item's assumption **reopens that item**. Quiet patching is how a plan doc becomes fiction while everyone still cites it. Reopening is cheap precisely because the roster is still alive.
 
@@ -200,7 +200,17 @@ A reviewer briefed with the lead's entire self-justifying chain — the room, th
 flowchart TD
     REQ["Owner request"] --> ANCHOR["council_open.py pins the message VERBATIM\nas chat.md's immutable anchor block\n(refuses to open without it)"]
     ANCHOR --> LEDGER["aki-hands drafts REQ-1..n,\neach quoting a fragment of the anchor;\nthe lead ratifies before cutting"]
-    LEDGER --> GATE{"Activation gate:\ndecomposable? +\n2+ kinds of 'correct'? +\ncost of error &gt; cost of coordination?"}
+    LEDGER --> SHAPE{"Shape, before the gate:\nis anything being arbitrated?\n(could two competent seats reach\ndifferent defensible answers?)"}
+
+    SHAPE -->|"no — the answer is knowable,\nthe work is merely large"| DGATE{"Dispatch gate:\npartitionable into 2+ lanes? +\neach lane's paths and question\nnameable up front? +\nresult must outlive the session?"}
+    DGATE -->|"outlives-the-session fails"| SOLO
+    DGATE -->|"nameable-up-front fails"| GATE
+    DGATE -->|"all hold"| LANES["Partition into lanes\n{covers, worker, writes, reads, returns};\n--convene refuses a path\nclaimed by two lanes' writes:"]
+    LANES --> FANLANE["Lanes run independently, no debate;\neach leaves its own trace under the LANE name\n(&lt;lane&gt;.md, or one turn if read-only)"]
+    FANLANE --> DVGATE["council_verify.py — the same seven checks\n(the lane name is the trace identity;\nan untraced lane is a ghost)"]
+    DVGATE --> DONE
+
+    SHAPE -->|"yes"| GATE{"Activation gate:\ndecomposable? +\n2+ kinds of 'correct'? +\ncost of error &gt; cost of coordination?"}
     GATE -->|"any condition fails"| SOLO["No council — direct work,\nclosed by a verifier subagent"]
     GATE -->|"all three hold"| DECOMP["Decompose into work items\n{covers, owner, challenger, closing criterion}\n(precondition, not a product of the room)"]
 
@@ -217,14 +227,15 @@ flowchart TD
         MORE -->|"yes"| ROOM
     end
 
-    MORE -->|"no"| DECGATE{"Escalate to owner?\n(one-way door /\ncontradicts docs-biz-design /\nscope expansion)"}
+    MORE -->|"no"| VGATE["council_verify.py — mechanical closure gate:\n7 checks, FAIL blocks closure,\nand it names no seat"]
+    VGATE --> DECGATE{"Escalate to owner?\n(one-way door /\ncontradicts docs-biz-design /\nscope expansion)"}
     DECGATE -->|"yes"| OWNER["Owner decision\n(never handed back as an open question)"]
     DECGATE -->|"no"| PHASEB
 
     subgraph PHASEB["Phase B — execution"]
-        IMPLEMENT["Plain subagent implements\n(plan doc in prompt)"] --> FANOUT["Cheap subagents fan out\n(mechanical, bandwidth-limited work)"]
+        IMPLEMENT["aki-maker implements\n(plan doc in prompt;\nthe only seat permitted to write)"] --> FANOUT["aki-hands fans out\n(mechanical, bandwidth-limited work)"]
         FANOUT --> VERIFY["Plain subagent verifies\n(diff + promise in prompt;\nmechanical: did I do what I said)"]
-        VERIFY --> REVIEW["Clean strong subagent reviews\n(judgment: should this have been done)"]
+        VERIFY --> REVIEW["aki-challenger reviews from a clean context\n(judgment: should this have been done)"]
     end
 
     REVIEW --> BLOCKER{"Blocker invalidates\na closed item's assumption?"}

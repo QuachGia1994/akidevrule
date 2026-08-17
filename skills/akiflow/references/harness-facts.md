@@ -8,6 +8,24 @@ The skill's rules are consequences of these facts. If a fact changes, the rule i
 
 Every entry carries the date it was checked, because all of it is version-bound and expected to rot.
 
+## Worker invocation quick-facts
+
+The lookup table: literal command, read-only mechanism, and the one silent failure each lane hides. Every section below this one is the *why* — a caller assigning a lane needs none of it.
+
+**Cross-file lock.** Sections in this file are addressed **by name** from `claude/agents/aki-hands.md` (§ Substrates) and `skills/akiflow/SKILL.md` (the closing pointer under § Harness notes). Renaming or removing a section means updating both in the same change; a stale section name reads as a missing fact and sends the reader back to probing.
+
+| Lane | Literal command | Read-only by | Silent failure to check |
+|---|---|---|---|
+| **agy flash** — discovery default | `agy --model gemini-3.7-flash-high --mode plan --output-format json -p "<prompt>"` | `--mode plan` (mechanism, not wording) | a denied call still returns `status: "SUCCESS"` with empty `response`; `-p` takes the next token as its value, so any flag written after it is sent as prompt text |
+| **kiro-cli** | `kiro-cli chat --no-interactive --trust-tools=fs_read --model claude-sonnet-4.5 --effort high "<prompt>"` | `--trust-tools=fs_read` | none recorded; `--effort` is operative on every Kiro model, unlike `claude` + haiku |
+| **claude via proxy gateway** | `CLAUDE_CONFIG_DIR=~/.claude-9rt claude -p --tools "Read,Grep" --model <alias> --effort low "<prompt>"` | `--tools` allowlist | `cl-9rt` is a shell alias and does not exist in a non-interactive shell — run the expanded literal; the gateway may route an alias to a non-Anthropic core |
+| **claude in-harness subagent** | Agent tool, `model` passed explicitly | the agent file's `tools:` frontmatter | an omitted `model` inherits the caller's top tier; the Agent tool has no `effort` parameter at all, so a declared effort is decorative |
+| **claude persistent worker** | `claude -p --session-id <uuid> …`, then `--resume <uuid>` | `--tools` allowlist | the id is cwd-scoped — resuming from another directory fails with `No conversation found` (exit 5) |
+
+Two cheapness dials, set independently: agy carries the thinking tier inside the model name (`-low`/`-medium`/`-high`) and has no separate dial; Claude-family lanes need `--model` **and** `--effort`, except haiku, which has no extended thinking and ignores the flag.
+
+Probe exactly two things, once, at the moment of assigning a lane: liveness/quota (a one-token `… -p "ok"`) and `test -d ~/.claude-9rt`. Capability is recorded — never re-run `--help` or `agy models`, unless a caller names a model absent from § agy headless.
+
 ## Subagents
 
 | Fact | Design consequence |
@@ -29,7 +47,7 @@ Every entry carries the date it was checked, because all of it is version-bound 
 | Fact | Design consequence |
 |---|---|
 | **[obs]** The `agy` binary (v1.1.9) contains `enable-teamwork-subagent`, `GetEnableTeamworkSubagent`, `define_subagent`, `browser_subagent`, `SendAgentMessage`, and `subagent.jump_to_waiting`. agy 1.1.6 added custom agents defined in Markdown with `mainAgent` / `subagent` / `hidden` / `model` frontmatter, so an agy agent can run at a chosen model tier as a subagent; agy 1.1.8 added `subagent_info` (`conversation_id`, `log_uri`) to its `stream-json` output. (Confirmed 2026-08-01 by inspecting the `agy` binary.) | Antigravity/AGY has a real subagent mechanism. Any prior claim that it has none is wrong and must be corrected everywhere it appears in `SKILL.md`. |
-| **[obs]** agy ships a built-in agent council, `/teamwork-preview`, with a **fixed** roster read from the binary: `orchestrator_pure`, `explorer`, `spec_miner`, `armed_worker`, `armed_critic`, `empirical_challenger`, `forensic_auditor`, `reviewer_critic`, `sentinel`, `test_writer`, `victory_auditor`, `challenger`. (Confirmed 2026-08-01.) | Two consequences. **Convergent validation**: an independently designed council landed on nearly the same role split, including a *pure* orchestrator that only orchestrates — akiflow's "the lead does no menial work" was arrived at independently, not merely fashionable. **A gap**: akiflow has no **victory audit** role — *"did this achieve the goal that was asked for?"*, distinct from verification's *"did I do what I said?"* and adversarial review's *"should this have been done?"* **What not to copy**: the roster is fixed; akiflow derives its roster from the items it cut, and a fixed roster is exactly what gate law #4 ("only convene specialists that own an item") forbids. |
+| **[obs]** agy ships a built-in agent council, `/teamwork-preview`, with a **fixed** roster read from the binary: `orchestrator_pure`, `explorer`, `spec_miner`, `armed_worker`, `armed_critic`, `empirical_challenger`, `forensic_auditor`, `reviewer_critic`, `sentinel`, `test_writer`, `victory_auditor`, `challenger`. (Confirmed 2026-08-01.) | Two consequences. **Convergent validation**: an independently designed council landed on nearly the same role split, including a *pure* orchestrator that only orchestrates — akiflow's "the lead does no menial work" was arrived at independently, not merely fashionable. **A gap**: akiflow has no **victory audit** role — *"did this achieve the goal that was asked for?"*, distinct from verification's *"did I do what I said?"* and adversarial review's *"should this have been done?"* **What not to copy**: the roster is fixed; akiflow derives its roster from the items it cut, and a fixed roster is exactly what R2 ("a seat is convened only when it traces to a requirement in the anchor") forbids. |
 
 | **[owner]** `gemini-3.1-pro` (agy `gemini-3.1-pro-{low,high}`) writes noticeably softer, more natural user-facing prose than Sonnet-class implementers (owner observation across projects, 2026-08-03); its agy quota headroom is unmeasured here. | Default engine for akiflow's writer role (`SKILL.md` Step 5): a role split from the implementer, under an anti-fabrication brief — the writer phrases facts supplied in its brief, never sources its own. Probe quota before a long batch; fallback is a Claude-family writer plus a softening pass. |
 

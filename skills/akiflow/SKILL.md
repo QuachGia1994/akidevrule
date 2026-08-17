@@ -41,6 +41,8 @@ ITEM <id> · <one-line statement of what must be decided or built>
 
 Every REQ must be covered by ≥1 item; an orphan REQ is a decomposition bug, not a footnote. Cut along real boundaries — each item having its own definition of "correct" — never into phases of one undivided question. The checklist is a precondition for opening the room, never a product of it.
 
+**`aki-challenger`'s first assignment is always the decomposition itself**, before any content attack: the REQ with no item, the missing item, the item with two owners, the item whose closing criterion nobody can check. A bad cut means the room debates the wrong squares thoroughly — the one failure no other mechanism catches, because every other mechanism operates *within* the item structure.
+
 ## Step 1 — the gate, and the mode
 
 Declare both before any other output:
@@ -206,7 +208,7 @@ python3 ~/.claude/skills/akiflow/scripts/council_cost.py --session <uuid>       
 - **Headless (`claude -p`):** nobody can answer an escalation or a permission prompt. Record it as `BLOCKED: needs owner` in `checklist.md` and continue the other items — never guess what the owner would have wanted.
 - **Antigravity / AGY:** has a real subagent mechanism and its own fixed-roster council (`/teamwork-preview`), but akiflow does not drive either. The fallback is unchanged: run the items sequentially in one session, each opening with its rule Reads, each closing with a rationale. Independence is limited that way — compensate by giving the review pass only the diff, the criteria and the anchor. Where AGY is reachable from a Claude Code lead, prefer it as a worker substrate (`aki-hands`) rather than running the whole room there.
 
-Verified harness facts behind every flag named here: `references/harness-facts.md`. Design record: `docs/arch/akiflow.md` in the akidevrule repo.
+Verified harness facts behind every flag named here: `references/harness-facts.md` — its § Worker invocation quick-facts is the lookup table (literal command, read-only mechanism, silent failure per lane); the rest of the file is why. Design record: `docs/arch/akiflow.md` in the akidevrule repo.
 
 ## Invocation scope
 
