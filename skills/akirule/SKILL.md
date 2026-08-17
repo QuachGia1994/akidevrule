@@ -24,6 +24,8 @@ Every rule file is internally organized into groups `A`/`B`/`C` and numbered ite
 
 Before responding, scan the user message and any file paths mentioned. For each rule below: if ANY single signal matches → Read that file immediately, before generating a response.
 
+Skip the Read if that file was already loaded earlier in this conversation — a signal match on an already-loaded rule costs a redundant Read and changes nothing.
+
 **A file extension alone is a sufficient signal.** Touching a `.md` loads `RULE-docs.md`; a `.vue`/`.css` loads `RULE-ui-pattern.md`; `.rs`/`Cargo.toml` loads `RULE-stack-tauri.md`; `.sql`/`migrations/` loads `RULE-db-design.md`. The project does **not** need a matching folder structure, a `docs/` tree, or an existing design system first — match on what is being touched, not on how mature the project is. The keyword and action lists below are additional entry points, never a required second condition.
 
 ### RULE-coding.md · RULE-pattern-core.md — not routed, already loaded
@@ -31,21 +33,21 @@ Both are core `@` imports (see the section above) and are in context on every tu
 
 ### RULE-docs.md
 Load if message or file path contains any of:
-- **Keywords:** `docs`, `CLAUDE.md`, `README`, `PLAN`, `plan/`, `diagram`, `mermaid`, `architecture`, `arch/`, `doc sync`, `documentation`, `index.md`, `feat/`, `plan lifecycle`, `tài liệu`, `sơ đồ`, `kiến trúc`
+- **Keywords:** `docs`, `CLAUDE.md`, `README`, `PLAN`, `plan/`, `diagram`, `mermaid`, `architecture`, `arch/`, `doc sync`, `documentation`, `docs/feat/`, `plan lifecycle`, `tài liệu`, `sơ đồ`, `kiến trúc`
 - **Keywords (drift audit):** `drift`, `audit docs`, `stale docs`, `outdated docs`, `out of date`, `docs khớp code`, `còn khớp`, `lệch`, `lỗi thời`, `rà soát tài liệu`, `docs cũ`, `kiểm tra tài liệu`
 - **Paths:** **any `.md` file, anywhere** — writing or editing Markdown *is* a docs task; do not wait for a `docs/` folder to exist. Also `docs/**`, `PLAN.md`, `CLAUDE.md`, `README.md`, `CHANGELOG.md`, `*.mdx`, `SKILL.md`
 - **Actions:** creating, editing, moving, or completing any plan or doc file; checking whether docs still match the code after the fact (`docs.C`)
 
 ### RULE-content-write.md
 Load if message or file path contains any of:
-- **Keywords:** `button`, `label`, `heading`, `error message`, `tooltip`, `empty state`, `i18n`, `locale`, `translation`, `t(`, `$t(`, `meta title`, `meta description`, `og:`, `JSON-LD`, `FAQ`, `landing page`, `copy`, `UI text`, `nội dung`, `văn bản`, `nhãn`, `thông báo lỗi`, `semantic`
+- **Keywords:** `button`, `label`, `heading`, `error message`, `tooltip`, `empty state`, `i18n`, `locale`, `translation`, `t(`, `$t(`, `meta title`, `meta description`, `og:`, `JSON-LD`, `FAQ`, `landing page`, `UI text`, `nội dung UI`, `nội dung giao diện`, `nhãn`, `thông báo lỗi`, `semantic stability`
 - **Paths:** `locales/**`, `i18n/**`, `*.i18n.*`, `public/content/**`; any file where a string a user will read is being added or renamed
 - **Actions:** renaming a concept or term used across the product
 
 ### RULE-stack-akiNuxtCf.md
-**Default ON for any Aki project context.** Skip only when the task is provably stack-independent (plain markdown, isolated script, config unrelated to the Aki frontend stack). Load if message or file path contains any of:
-- **Keywords:** `nuxt`, `vue`, `cloudflare`, `workers`, `pages`, `wrangler`, `tailwind`, `composable`, `middleware`, `layout`, `plugin`, `component`, `useRoute`, `useFetch`, `definePageMeta`, `nitro`, `vite`, `breadcrumb`, `scroll-to-top`, `back-to-home`, `layout chrome`, `useBreadcrumb`
-- **Paths:** `components/**`, `pages/**`, `composables/**`, `layouts/**`, `middleware/**`, `wrangler.toml`, `nuxt.config.*`, `tailwind.config.*`, `app.vue`
+**Default ON when the project CLAUDE.md references the Aki web stack (Nuxt/Cloudflare — AkiNuxtCf).** Skip only when the task is provably stack-independent (plain markdown, isolated script, config unrelated to the Aki frontend stack). Load if message or file path contains any of:
+- **Keywords:** `nuxt`, `vue`, `cloudflare`, `cloudflare workers`, `cf workers`, `wrangler`, `tailwind`, `composable`, `middleware`, `nuxt layout`, `nuxt plugin`, `component`, `useRoute`, `useFetch`, `definePageMeta`, `nitro`, `vite`, `breadcrumb`, `scroll-to-top`, `back-to-home`, `layout chrome`, `useBreadcrumb`
+- **Paths:** `components/**`, `pages/**`, `composables/**`, `layouts/**`, `plugins/**`, `middleware/**`, `wrangler.toml`, `nuxt.config.*`, `tailwind.config.*`, `app.vue`
 
 ### RULE-ui-pattern.md
 Load if message or file path contains any of:
@@ -84,7 +86,7 @@ Load if message or file path contains any of:
 
 ### METHOD-flow-audit.md
 Load if message contains any of:
-- **Keywords:** `refactor`, `restructure`, `simplify`, `fragile`, `complicated`, `flow`, `state machine`, `async chain`, `tại sao phức tạp`, `luồng`, `tracing`, `cause and effect`, `over-guarded`, `conditional`, `timing`, `tái cấu trúc`, `đơn giản hóa`
+- **Keywords:** `refactor`, `restructure`, `simplify`, `fragile`, `complicated`, `state machine`, `async chain`, `tại sao phức tạp`, `luồng`, `luồng xử lý`, `tracing`, `cause and effect`, `over-guarded`, `nested conditional`, `điều kiện lồng nhau`, `timing issue`, `race condition`, `tái cấu trúc`, `đơn giản hóa`
 - **Context:** fixing a bug spanning multiple files, tracing cause and effect across a chain
 
 ### RULE-biz.md
@@ -105,7 +107,7 @@ Load if message contains any of:
 
 ### METHOD-deep-think.md
 Load if message contains any of:
-- **Keywords:** `new feature`, `tính năng mới`, `should we`, `có nên`, `simplest way`, `đơn giản nhất`, `is this worth`, `có đáng`, `tradeoff`, `scope`, `effort`, `value`, `premature`, `complexity`, `abstraction`, `tooling`, `first principles`, `tư duy nguyên bản`, `phản biện`, `mục tiêu tối thượng`, `one-way door`, `quyết định lớn`, `decision record`, `pre-mortem`, `evaluate`, `assess`, `review the approach`, `worth refactoring`, `good idea`, `side effect`, `edge case`, `đánh giá`, `bàn luận`, `nên refactor`, `đánh giá ý tưởng`, `đánh giá chiến lược`, `tác dụng phụ`, `trường hợp biên`
+- **Keywords:** `new feature`, `tính năng mới`, `should we`, `có nên`, `simplest way`, `đơn giản nhất`, `is this worth`, `có đáng`, `tradeoff`, `scope creep`, `mở rộng scope`, `premature`, `complexity`, `abstraction`, `tooling`, `first principles`, `tư duy nguyên bản`, `phản biện`, `mục tiêu tối thượng`, `one-way door`, `quyết định lớn`, `decision record`, `pre-mortem`, `evaluate`, `assess`, `review the approach`, `worth refactoring`, `good idea`, `side effect`, `edge case`, `đánh giá`, `bàn luận`, `nên refactor`, `đánh giá ý tưởng`, `đánh giá chiến lược`, `tác dụng phụ`, `trường hợp biên`
 - **Context:** architectural or tooling decision, scope or effort/value discussion, a big or hard-to-reverse decision, a request for first-principles/critique-style thinking, or *discussing/evaluating* (rather than just executing) a refactor, a code review, a strategy/plan, or an idea — the four cases that trigger Module 5 (MVP focus, side-effects/edge-cases weighed by severity)
 
 ### METHOD-proportionality.md
@@ -127,7 +129,7 @@ Load if message contains any of:
 **Protocol — execute in order:**
 1. Run `ls ~/.aki/akidevrule/RULE-*.md ~/.aki/akidevrule/METHOD-*.md` to discover the actual file list
 2. Read each file returned (skip anything under `ref-ECC/`)
-3. Output confirmation: `[akirule:full] Loaded: <comma-separated filenames>`
+3. Emit the `[RULES]` receipt per § Load confirmation, with the loaded set marked `(router:full)`
 
 ---
 
