@@ -47,7 +47,7 @@ Interpreter convention (documented once): **Unix** uses `python3` (via `./instal
 
 ## What you get
 
-### Nine skills
+### Ten skills
 
 | Skill | Invoke | Purpose |
 |---|---|---|
@@ -60,6 +60,7 @@ Interpreter convention (documented once): **Unix** uses `python3` (via `./instal
 | `aki-article-writer` | `/aki-article-writer` or natural language | Per-project article writing pipeline: research & fact-verification, SEO metadata, JSON-LD schema, UX-psychology-aware content, and a dedicated Image Scout subagent (Gemini Flash / Haiku) for search → download → visual inspection → ffmpeg processing → slug-named WebP output. One subagent per article; image work is always isolated to a separate lightweight subagent. |
 | `akidevsync-notes` | natural language | Reads/edits a project's `.akidevsync/notes.json` — the per-project task list the Aki-Dev-Sync app itself writes (list/add/pin/mark-done/edit/delete tasks) via a bundled script that preserves the app's own JSON formatting, plus a workflow for cross-checking pinned notes against a shipped release (CHANGELOG + code) before marking them done. |
 | `akilint` | `/akilint` or a penalty card | Mechanical format lint for the penalty-card classes of `RULE-agent-behavior.md` §0: hard-wrapped code comments and markdown prose (`[WRAP]`) and oversize comments (`[YAP]`, always labeled *review* — a flag for judgment against `coding.B4`, never an auto-delete verdict). Thin wrapper over the shared `scythe.py` detector (deterministic line matching, exit-code aware, cannot fabricate evidence) — the same script akiflow's `aki-conduct` seat uses, so a card name means the same thing everywhere. `[FLUFF]` (density) is content judgment and explicitly out of a script's reach. |
+| `akiship` | `/akiship` | One-command full release: front-loads every check (release state, tree triage), then runs `RULE-release.md` B7's checklist unattended — diff-scoped hygiene (scythe, dead code, comment doc-refs on the accumulation only), external-action completeness, record truthfulness, doc sync, version mint or defer — committing via `akigitcommit` with confirmation pre-answered. Governed by the B8 contract: the invocation is the authorization, blockers are reported once as a batch or the run completes with zero mid-run questions, and it stops only for public-history ambiguity, unclassifiable work, or a design contradiction. Never pushes or deploys unless the invocation names it. |
 
 ### Five agent definitions
 
@@ -156,6 +157,7 @@ skills/                            → shared Agent Skills corpus (SKILL.md open
   akihelp/SKILL.md
   akigitcommit/SKILL.md
   akilint/SKILL.md
+  akiship/SKILL.md
   aki-article-writer/SKILL.md
   aki-article-writer/references/article-workflow.md
 
@@ -269,10 +271,10 @@ No sudo, user-local, easy to inspect and delete, consistent with the Aki ecosyst
 ```bash
 rm -rf ~/.aki/akidevrule
 rm -rf ~/.aki/agent-council     # /akiflow session workspaces (self-prunes at 30 days anyway)
-rm -rf ~/.claude/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,aki-article-writer,akidevsync-notes}
-rm -rf ~/.agents/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,aki-article-writer,akidevsync-notes}   # Codex CLI
-rm -rf ~/.kiro/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,aki-article-writer,akidevsync-notes}     # Kiro CLI
-rm -rf ~/.grok/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,aki-article-writer,akidevsync-notes}     # Grok CLI (other, non-Aki skills already in this folder are untouched)
+rm -rf ~/.claude/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,akiship,aki-article-writer,akidevsync-notes}
+rm -rf ~/.agents/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,akiship,aki-article-writer,akidevsync-notes}   # Codex CLI
+rm -rf ~/.kiro/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,akiship,aki-article-writer,akidevsync-notes}     # Kiro CLI
+rm -rf ~/.grok/skills/{akirule,akiflow,akithink,akihtmlreport,akihelp,akigitcommit,akilint,akiship,aki-article-writer,akidevsync-notes}     # Grok CLI (other, non-Aki skills already in this folder are untouched)
 rm -f  ~/.claude/agents/aki-{hands,judge,conduct,challenger,maker}.md   # your own agents in that folder are untouched
 rm -f  ~/.claude/hooks/aki-update-check.py
 rm -f  ~/.gemini/GEMINI.md          # restore from a *.akidevrule-backup-* if needed; GEMINI.local.md is left untouched

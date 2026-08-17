@@ -66,8 +66,9 @@ Load if message or file path contains any of:
 - **Keywords:** `release`, `release note`, `release notes`, `changelog`, `CHANGELOG`, `version`, `versioning`, `semver`, `bump`, `bump version`, `major.minor.patch`, `releases.json`, `phát hành`, `phiên bản`, `cập nhật phiên bản`, `nâng version`
 - **Paths:** `CHANGELOG.md`, `app/data/releases.json`, `pages/releases/**`
 - **Keywords (pre-ship gate):** `chưa push`, `trước khi push`, `trước khi deploy`, `sắp release`, `chuẩn bị ship`, `pre-release`, `ready to ship`, `xong chưa`, `đã xong hết chưa`
+- **Keywords (full autonomous run):** `akiship`, `full release`, `release trọn gói`, `chạy full release`, `ship đợt này`, `ship trọn gói`
 - **Keywords (commit/push/deploy — load even without an explicit "release" word):** `commit`, `git commit`, `push`, `git push`, `deploy`, `deployment`, `git tag`, `ship it`, `commit và push`, `push lên`, `đẩy lên`, `triển khai`
-- **Actions:** committing or pushing code, deploying, shipping a change that should be recorded for users or maintainers; bumping a version; checking whether finished-but-unpushed work is actually shippable (`release.B7`)
+- **Actions:** committing or pushing code, deploying, shipping a change that should be recorded for users or maintainers; bumping a version; checking whether finished-but-unpushed work is actually shippable (`release.B7`); running the full release ritual unattended (`release.B8`, `/akiship`)
 
 ### RULE-stack-tauri.md
 **Default ON for any Tauri project context.** Skip only when the task is provably unrelated to the Tauri/Rust backend (pure frontend copy change with no `src-tauri` involvement, isolated doc edit). Load if message or file path contains any of:

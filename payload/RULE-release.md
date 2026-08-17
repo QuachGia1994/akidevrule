@@ -1,6 +1,6 @@
 # Release & Versioning Rule
 
-<!-- Address map: release.A1-5 · release.B1-7 · release.C1-4 (⟨Aki⟩) -->
+<!-- Address map: release.A1-5 · release.B1-8 · release.C1-4 (⟨Aki⟩) -->
 
 ## A. Versioning core
 
@@ -18,7 +18,7 @@ Every Aki project, any stack (Nuxt web — see `RULE-stack-akiNuxtCf.md` — Tau
 ### A3. Version string format (ABSOLUTE — never violate)
 The version *attribute itself* is always bare semver, **never prefixed with `v`**: `package.json`/`Cargo.toml`/equivalent manifest `"version"` field, and every git tag, are `1.10.1` — not `v1.10.1`. This is a real bug class, not a style nit: an inconsistent prefix across tags silently breaks semver comparisons and diffing tools (`git describe`, `hasUpdate()`-style JS comparisons against a fetched tag name), and produces doubled-up UI text when display code does `` `v${version}` `` against a value that already contains `v` (rendered as `vv1.10.1`).
 - **Tag priority is stack-dependent.** Distributed-artifact apps (Tauri/Desktop/CLI) already cut a tag on every release build (A5's atomic bump+tag+build) — treat tagging as standard practice there, not optional, and give it real weight. Web (continuously-deployed) apps already have CHANGELOG.md/releases.json/GitHub Release as the authoritative record, so a tag there is a lighter-weight, optional checkpoint: mention it only lightly for an ordinary patch release, but actively recommend cutting one once a release bundles a major/minor bump or several substantial changes — that is exactly when a rollback/bisect anchor earns its keep.
-- Tag only if the project already tags, or the user accepts a suggestion above: `git tag -l` empty and no acceptance → skip tag creation; CHANGELOG/releases.json/GitHub Release stay authoritative. Creating and pushing a tag is visible to others once pushed — propose it, never create or push one unasked ([[RULE-agent-behavior]] B3).
+- Tag only if the project already tags, or the user accepts a suggestion above: `git tag -l` empty and no acceptance → skip tag creation; CHANGELOG/releases.json/GitHub Release stay authoritative. Creating and pushing a tag is visible to others once pushed — propose it, never create or push one unasked ([[RULE-agent-behavior]] B3). Exception — an authorized full-release run (B8): the invocation is the acceptance, so an existing tag convention is followed mechanically (create the bare tag, no ask); an empty tag list still means skip, mentioned once. Pushing the tag stays bound to the run's push authorization.
 - Create tags bare: `git tag 1.10.1`, never `git tag v1.10.1`.
 - Before cutting any release, check the existing tag convention with `git tag -l | sort -V | tail -5` — if a project's history has drifted to `v`-prefixed tags partway through, treat that drift as the bug being corrected (go back to bare), not as the precedent to keep following.
 - Human-facing display **may** prepend `v` at render time only — a GitHub Release title (`v{version}: …`, see below), a UI badge ("Update Available — v1.10.1"). That is a presentation concern, separate from and does not violate this rule. The forbidden thing is `v` baked into the stored/compared value itself.
@@ -136,14 +136,25 @@ The last moment a mistake is still cheap: the work is done, the tree is clean, a
 
 Run in order; each step names the rule that owns it.
 
+0. **Leftover triage** — a tree that is not uniformly finished is classified first: finished / mid-edit / abandoned / accidental (the `/akigitcommit` step-0 taxonomy, under [[RULE-agent-behavior]] B5's read-only floor). Mid-edit vs abandoned is undecidable from the tree alone — that is an escalation (B8), never a guess.
 1. **Release state** — derive it cold from the repo per B1, never from session memory. `Drifted` blocks everything until A5's recovery has run.
-2. **External-action completeness** — every change whose "done" depends on something outside the repo actually happened: migrations ran against the real target and their postconditions were checked, remote config/env vars/cron registrations are live, and each script sits in its completion location (B5, [[RULE-coding]] B3). A green build proves nothing about the database.
-3. **Record truthfulness** — every closed problem has its `CHANGELOG.md` entry, and no entry claims something step 2 has not cleared (B2). Web stacks additionally need `releases.json` parity (C3).
-4. **Doc sync** — plans whose work shipped moved to `docs/plan/done/`, and `arch`/`feat` docs match what is about to ship ([[RULE-docs]] B1, B3). A doc left stale here becomes next release's drift finding.
-5. **Verification honesty** — anything only checkable at runtime is reported as unverified rather than assumed ([[RULE-coding]] B3). "Untested but I expect it works" is a valid gate output; a silent "Done" is not.
-6. **Version decision** — mint or defer per A4/A5's materiality test. Do not mint a version to mark that a session ended.
+2. **Hygiene sweep — scoped to the accumulation, never the whole repo.** On the files touched since the boundary commit (B1.5): scythe `[WRAP]`/`[YAP]` lint ([[RULE-agent-behavior]] §0), dead code / redundant guards / duplication the accumulation itself introduced (`pattern.A8`; subtract-class detectors at diff scope), and doc references in touched comments still resolving ([[RULE-docs]] B3). A repo-wide subtraction or zero-trust sweep is a separately scheduled audit, never a per-release cost — diff scope is what keeps this gate affordable at many releases per day. Unlike an audit, findings here are fixed in place: this is a gate, not a report.
+3. **External-action completeness** — every change whose "done" depends on something outside the repo actually happened: migrations ran against the real target and their postconditions were checked, remote config/env vars/cron registrations are live, and each script sits in its completion location (B5, [[RULE-coding]] B3). A green build proves nothing about the database.
+4. **Record truthfulness** — every closed problem has its `CHANGELOG.md` entry, and no entry claims something step 3 has not cleared (B2). Web stacks additionally need `releases.json` parity (C3).
+5. **Doc sync** — plans whose work shipped moved to `docs/plan/done/`, and `arch`/`feat` docs match what is about to ship ([[RULE-docs]] B1, B3). A doc left stale here becomes next release's drift finding.
+6. **Verification honesty** — anything only checkable at runtime is reported as unverified rather than assumed ([[RULE-coding]] B3). "Untested but I expect it works" is a valid gate output; a silent "Done" is not.
+7. **Version decision** — mint or defer per A4/A5's materiality test. Do not mint a version to mark that a session ended.
 
 Deploy verification is deliberately **not** in this gate — it happens after the push, against the live target, and is owned by the stack rule.
+
+### B8. Autonomous full-release run — the invocation is the authorization
+
+The B7 gate plus its surrounding ritual (fix findings → sync docs → CHANGELOG/`releases.json` → grouped commits → mint → artifacts) is routinely run as one unattended pass — the `/akiship` skill is its entry point. This does not weaken [[RULE-agent-behavior]] B3 anywhere else; it exercises B3's "durably authorized" clause, scoped to the enumerated steps of one explicit invocation.
+
+- **Invocation = standing authorization for every enumerated step.** Explicitly invoking the full run authorizes: fixing gate findings, CHANGELOG/`releases.json` edits, grouped commits (the akigitcommit confirm step is pre-answered — "commit luôn" semantics), the version mint per A4/A5, and tag/GitHub Release strictly per the repo's existing convention (A3, B4). Push and deploy are included only when the invocation names them.
+- **Front-load the asks.** Derive B1 state and run B7 step 0 first; every escalation found is reported once, as one batch, and the run stops there. A clean front check means the run completes with zero mid-run questions — an automation that stalls on a question halfway through has failed this rule.
+- **Escalation floor — stop only for:** (1) public-history ambiguity — cannot determine whether a version actually shipped, or a `Mismatch`/`Drifted` state whose recovery would rewrite published versions (A5, B1); (2) work the tree cannot classify — mid-edit vs abandoned (B7 step 0); (3) contradiction with documented design, or scope beyond what the invocation named ([[RULE-agent-behavior]] B3).
+- **A question the repo already answers is a violation.** Anything determined by the repo, its docs, these rules, or the invocation itself — bump level (A4), tag or no tag (existing convention), changelog channel and tone (C1) — is self-answered, never asked. Over-asking inside an authorized run is the same failure as acting unasked (`agent.A3`, `think.B5`).
 
 ## C. ⟨Aki⟩ Web release artifacts
 
