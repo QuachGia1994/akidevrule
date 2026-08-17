@@ -12,7 +12,7 @@ Runs the shared detector — never a model sweep for what a grep settles:
 python3 ~/.claude/skills/akiflow/scripts/scythe.py <file|dir> [...]   # on other CLIs: the same path under that CLI's skills root
 ```
 
-The script is the SSoT for these detectors — akiflow's `akirule-enforcer` runs the same one, so a card name means the same thing everywhere. Exit code: 0 clean, 1 findings — usable from CI or hooks without parsing.
+The script is the SSoT for these detectors — akiflow's `aki-conduct` seat runs the same one, so a card name means the same thing everywhere. Exit code: 0 clean, 1 findings — usable from CI or hooks without parsing.
 
 ## Scope — what the script can and cannot claim
 

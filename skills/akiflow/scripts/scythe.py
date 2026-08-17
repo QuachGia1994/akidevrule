@@ -25,16 +25,11 @@ _EXEMPT_TEXT = re.compile(
 )
 
 
-def _lint_code(path: str, marker: re.Pattern) -> list[str]:
-    """Detect [WRAP] and [YAP] in code files using comment-run logic."""
-    findings = []
-    try:
-        lines = Path(path).read_text(encoding='utf-8', errors='replace').splitlines()
-    except OSError as e:
-        print(f"scythe: cannot read {path}: {e}", file=sys.stderr)
-        return findings
+def _scan_comment_runs(path: str, numbered: list[tuple[int, str]], marker: re.Pattern, in_header: bool) -> list[str]:
+    """Comment-run logic shared by whole code files and fenced code blocks inside markdown."""
+    findings: list[str] = []
 
-    header = True
+    header = in_header
     rs = 0       # run size (number of comment lines accumulated)
     rstart = 0   # 1-based line number where the run started
     cont = False # True if a lowercase-continuation line was seen
@@ -52,7 +47,7 @@ def _lint_code(path: str, marker: re.Pattern) -> list[str]:
             findings.append(f"[WRAP] {path}:{rstart}-{rstart + 1} | wrapped comment (rejoin)")
         rs = 0
 
-    for lineno, raw in enumerate(lines, 1):
+    for lineno, raw in numbered:
         m = marker.search(raw)
         if m:
             # Text after the marker, leading spaces/tabs dropped — mirrors the awk marker match's trailing [ \t]* consumption.
@@ -80,6 +75,15 @@ def _lint_code(path: str, marker: re.Pattern) -> list[str]:
     return findings
 
 
+def _lint_code(path: str, marker: re.Pattern) -> list[str]:
+    try:
+        lines = Path(path).read_text(encoding='utf-8', errors='replace').splitlines()
+    except OSError as e:
+        print(f"scythe: cannot read {path}: {e}", file=sys.stderr)
+        return []
+    return _scan_comment_runs(path, list(enumerate(lines, 1)), marker, True)
+
+
 def _marker_pattern(ext: str) -> re.Pattern | None:
     if ext in SLASH_EXT:
         return re.compile(r'^[ \t]*(//)')
@@ -93,6 +97,21 @@ def _marker_pattern(ext: str) -> re.Pattern | None:
 
 
 # --- Markdown detector -------------------------------------------------------
+
+# Fence info strings that name a real language, mapped to the extension whose comment marker they share.
+# An untagged fence stays exempt: it usually holds verbatim output, where a "comment" is not authored text.
+_FENCE_LANG = {
+    'ts': 'ts', 'typescript': 'ts', 'tsx': 'tsx', 'js': 'js', 'javascript': 'js', 'jsx': 'jsx', 'mjs': 'mjs',
+    'rs': 'rs', 'rust': 'rs', 'go': 'go', 'golang': 'go', 'c': 'c', 'h': 'h', 'cc': 'cc', 'cpp': 'cpp',
+    'c++': 'cpp', 'swift': 'swift', 'kt': 'kt', 'kotlin': 'kt', 'scss': 'scss',
+    'sh': 'sh', 'bash': 'sh', 'shell': 'sh', 'zsh': 'sh', 'py': 'py', 'python': 'py', 'rb': 'rb', 'ruby': 'rb',
+    'toml': 'toml', 'yaml': 'yaml', 'yml': 'yml',
+    'sql': 'sql', 'vue': 'vue', 'html': 'html',
+}
+
+
+def _fence_marker(info: str) -> re.Pattern | None:
+    return _marker_pattern(_FENCE_LANG.get(info.lower(), ''))
 
 def _blockish(line: str) -> bool:
     return bool(
@@ -140,6 +159,8 @@ def _lint_md(path: str) -> list[str]:
 
     front = False
     fence = False
+    fence_marker: re.Pattern | None = None
+    fence_body: list[tuple[int, str]] = []
     prev = ''
     prevset = False
 
@@ -151,10 +172,20 @@ def _lint_md(path: str) -> list[str]:
             if re.match(r'^---[ \t]*$', raw):
                 front = False
             continue
-        if re.match(r'^[ \t]*(```|~~~)', raw):
-            fence = not fence
+        fm = re.match(r'^[ \t]*(?:```|~~~)[ \t]*([A-Za-z0-9_+#-]*)', raw)
+        if fm:
+            if fence:
+                if fence_marker is not None:
+                    findings.extend(_scan_comment_runs(path, fence_body, fence_marker, False))
+                fence, fence_marker, fence_body = False, None, []
+            else:
+                fence, fence_marker, fence_body = True, _fence_marker(fm.group(1)), []
+            # A fence is a block boundary: the lines either side of it are not a wrapped pair.
+            prevset = False
             continue
         if fence:
+            if fence_marker is not None:
+                fence_body.append((lineno, raw))
             continue
 
         if prevset:
