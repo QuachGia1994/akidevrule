@@ -21,6 +21,7 @@ This Git repository is the source of truth; `dev.akitao.com` is the presentation
 
 - [Requirements](#requirements)
 - [What you get](#what-you-get)
+- [Usage model](#usage-model)
 - [Repository layout](#repository-layout)
 - [What the installer does](#what-the-installer-does)
 - [Gemini / Antigravity model](#gemini--antigravity-model)
@@ -84,7 +85,7 @@ A catalog is not a roster. Five files on disk make it easy to pick seats from a 
 
 - `RULE-*.md` — constraints: what the agent must or must not do (behavior, coding, design/patterns, docs, content, stacks — Nuxt/Cloudflare + Tauri, UI, SEO, release, DB design, business/market).
 - `METHOD-*.md` — analytical frameworks: how to reason through a specific class of problem. Heavy, loaded only when the task is genuinely analytical.
-- `index.md` — file manifest, precedence order, project-binding policy.
+- `index.md` — file manifest, precedence order, cross-cutting lens.
 
 Loading happens on two different mechanisms, and the difference matters more than the tier numbering does.
 
@@ -92,7 +93,7 @@ Loading happens on two different mechanisms, and the difference matters more tha
 
 **Everything else — routed by the `akirule` skill**, and therefore best-effort: it applies when the model invokes the skill and a signal matches. Sensitivity is deliberately high (err toward loading — a false positive costs a few tokens, a false negative causes wrong behavior).
 
-- **Tier 1 — Contextual, read on signal match:** `RULE-docs.md` (structure and lifecycle, plus the docs-vs-code drift audit), `RULE-content-write.md` (UI copy and writing style, plus the content audit — canonical-term drift, density deletion test, i18n coverage), `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context), `RULE-ui-pattern.md` (design-system layer: the subtraction pass that runs before the tier ladder, class taxonomy, tokens, variant API, and the audit playbook), `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md`, `RULE-biz.md` (market-facing decisions: positioning, pricing, audience) — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 1): `METHOD-flow-audit.md` (refactors, multi-file bugs, fragile flows), `METHOD-zero-trust-audit.md` (strict mechanical-first audit: detectors before opinion, exact matches separated from pattern-level candidates), `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking), `METHOD-ux-psych.md` (UX/user-behavior evaluation, onboarding and conversion flows), `METHOD-proportionality.md` (sizing a guard, limit or accepted risk against reach, capability, motive and blast radius — the lens that stops both over-engineering and client-side-limits-as-enforcement), and `METHOD-subtraction-audit.md` (repo-wide "does this need to exist" sweep, terminating on two dry rounds).
+- **Tier 1 — Contextual, read on signal match:** `RULE-docs.md` (structure and lifecycle, plus the docs-vs-code drift audit), `RULE-content-write.md` (UI copy and writing style, plus the content audit — canonical-term drift, density deletion test, i18n coverage), `RULE-stack-akiNuxtCf.md`, `RULE-stack-tauri.md` (Tauri v2 + Rust: never-block-the-UI, version SSOT, target context), `RULE-ui-pattern.md` (design-system layer: the subtraction pass that runs before the tier ladder, class taxonomy, tokens, variant API, and the audit playbook), `RULE-seo.md`, `RULE-release.md`, `RULE-db-design.md`, `RULE-biz.md` (market-facing decisions: positioning, pricing, audience) — plus the analytical methods (tagged `Analytical` in `index.md`, but mechanically signal-loaded like the rest of Tier 1): `METHOD-audit-flow.md` (refactors, multi-file bugs, fragile flows), `METHOD-audit-zero-trust.md` (strict mechanical-first audit: detectors before opinion, exact matches separated from pattern-level candidates), `METHOD-deep-think.md` (scope/architecture/value decisions, first-principles and critique-style thinking), `METHOD-ux-psych.md` (UX/user-behavior evaluation, onboarding and conversion flows), `METHOD-proportionality.md` (sizing a guard, limit or accepted risk against reach, capability, motive and blast radius — the lens that stops both over-engineering and client-side-limits-as-enforcement), and `METHOD-audit-subtraction.md` (repo-wide "does this need to exist" sweep, terminating on two dry rounds).
 - **Tier 2 — Full load on explicit command:** `nạp full` / `load all rules` reads every `RULE-*`/`METHOD-*` file at once.
 
 No harness magic beyond the `CLAUDE.md` import: Tier 1 is trigger instructions telling Claude to Read the file from `~/.aki/akidevrule/` when signals match; Tier 2 is the explicit-command escape hatch.
@@ -102,6 +103,12 @@ No harness magic beyond the `CLAUDE.md` import: Tier 1 is trigger instructions t
 Every rule/method file is internally organized into groups `A`/`B`/`C` and numbered items `1`/`2`/`3…`, so any single rule can be named precisely — `coding.B2` (changing existing code), `stack.C1` (canonical component names) — without touching routing or renaming any file (`topic` is the filename minus its `RULE-`/`METHOD-` prefix). The full group map lives in `payload/index.md`.
 
 Three files (`RULE-seo.md`, `RULE-release.md`, `RULE-stack-akiNuxtCf.md`) mix universal rules with content specific to Aki's own AkiNuxtCf ecosystem (usePageSeo API, releases.json schema, canonical component names, …). That ecosystem-specific content is isolated into each file's **last group**, logically flagged `⟨Aki⟩`. It stays in this public repo and auto-loads like everything else — Aki is this repo's heaviest user, so auto-load stays more valuable than a clean public/private split — but the flag marks exactly what a stripped public export would drop. Every other file, and every group outside `⟨Aki⟩`, is 100% universal.
+
+### Project binding & change policy
+
+Each project keeps a root `CLAUDE.md` that references the `akirule` skill as the rule loader, defines project-specific facts and overrides, stays short, and avoids duplicating shared rules.
+
+Aki-RULE changes affect many projects. Before changing rule files, clarify the intended rule, scope, and tradeoff unless the user explicitly requests the exact change.
 
 ### One brain, two modes
 
@@ -115,6 +122,29 @@ Content-wise, active is a superset of passive; mechanically, only `/akithink` ru
 ### Update notifications — notify-only
 
 A `SessionStart` hook compares the installed `CHANGELOG.md` against the public repo copy (at most once per 24h, fail-silent, never blocking). When the remote is newer it prints what's new and the update command (`git pull && ./install.sh` on Unix, `git pull; py -3 install.py` on Windows). It never downloads or installs anything on its own.
+
+## Usage model
+
+Install once; from then on the system has two kinds of surface. **Rules load themselves** — you never invoke them for normal work: the core four are in every session by construction, and `akirule` reads the contextual ones when your message or file paths match a signal, announcing the result in a `[RULES]` receipt line. **Skills are deliberate entry points** — each one maps to a moment in the working day, invoked when that moment arrives:
+
+| Moment | Entry point |
+|---|---|
+| Any normal task | nothing — just describe the task; rules route themselves |
+| A rule must be loaded *for certain* | name the rule file in the prompt, or `nạp full` / `load all rules` — routing is best-effort by design, naming the file is the guarantee |
+| "What is installed here and what do I say to it?" | `/akihelp` |
+| A big, hard-to-reverse, or goal-ambiguous decision | `/akithink` |
+| Work needing several kinds of judgment, or a parallel fan-out | `/akiflow` |
+| A messy working tree that needs clean commits | `/akigitcommit` |
+| Format lint — or someone called a penalty card | `/akilint` (or just say `[WRAP]` / `[YAP]`) |
+| Ship a release end-to-end | `/akiship` |
+| A dense analysis worth one self-contained page | `/akihtmlreport` |
+| A researched, SEO-complete article | `/aki-article-writer` |
+
+Three habits that make the system pay off:
+
+- **Cite rules by address, not by pasting them.** Every rule item has a stable address — `coding.B4`, `pattern.A2`, `agent.A3` — mapped in `payload/index.md`. One address in a prompt, review comment, or commit message names an exact obligation without duplicating its text.
+- **Bind each project with a short root `CLAUDE.md`** — project facts and stricter constraints only, referencing the shared corpus instead of copying it (see [Project binding & change policy](#project-binding--change-policy)).
+- **Edit rules in this repo, never in the installed copies.** Everything under `~/.aki/akidevrule`, `~/.claude/skills`, and the managed parts of `~/.claude/settings.json` is overwritten on every install; the change flow is always source repo → `./install.sh`.
 
 ## Repository layout
 
@@ -133,12 +163,12 @@ payload/                          → installed to ~/.aki/akidevrule/
   RULE-release.md
   RULE-db-design.md
   RULE-biz.md
-  METHOD-flow-audit.md
-  METHOD-zero-trust-audit.md
+  METHOD-audit-flow.md
+  METHOD-audit-zero-trust.md
   METHOD-deep-think.md
   METHOD-ux-psych.md
   METHOD-proportionality.md
-  METHOD-subtraction-audit.md
+  METHOD-audit-subtraction.md
   GEMINI.md                       → installed to ~/.gemini/GEMINI.md (NOT a rule file)
 
 skills/                            → shared Agent Skills corpus (SKILL.md open standard), deployed
@@ -171,6 +201,16 @@ claude/                           → Claude Code-only runtime assets, installed
   hooks/aki-update-check.py
   fragments/settings.akidoc.fragment.json   (illustrative reference only — never apply manually)
 
+docs/                             → repo-internal records, never installed
+  index.md                        (master doc index)
+  arch/                           (current-state design records: rule delivery, akiflow)
+  plan/ · plan/done/              (execution plans; completed plans move to done/)
+  research/                       (immutable dated findings — superseded by successors, never rewritten)
+  ref/                            (stable lookup docs: SKILL.md standard, CLI permission schemas)
+
+CLAUDE.md                                   (operating rules for agents working IN this repo — not installed anywhere)
+GEMINI.md                                   (the per-project Antigravity bootstrap, serving this repo itself; copied into other projects by hand)
+CHANGELOG.md                                (release history — also copied to ~/.aki/akidevrule/ so the update hook can compare versions)
 install.py                                  (cross-platform SSOT installer)
 install.sh                                  (thin Unix launcher → python3 install.py)
 install.ps1                                 (thin Windows launcher → py -3 install.py)
@@ -183,7 +223,7 @@ flowchart TD
     subgraph SRC["📦 Source: akidevrule Repo"]
         PAYLOAD["payload/ (18 raw rule files)"]
         PGEMINI["payload/GEMINI.md (template)"]
-        CSKILLS["skills/ (9 skills, shared open standard)"]
+        CSKILLS["skills/ (10 skills, shared open standard)"]
         CCLAUDE["claude/CLAUDE.md (template)"]
         CAGENTS["claude/agents/ (5 agent definitions)"]
         CHOOKS["claude/hooks/aki-update-check.py"]
@@ -214,7 +254,7 @@ flowchart TD
         G_MD["GEMINI.md (Managed prompt global)"]
         G_LOCAL["GEMINI.local.md (Machine local)"]
         G_RULES["config/rules/akirule-*.md (18 rules with YAML trigger)"]
-        G_SKILLS["config/skills/ (9 skills, native auto-discovery)"]
+        G_SKILLS["config/skills/ (10 skills, native auto-discovery)"]
         G_SJSON["config/skills.json (Inherits agskills, absolute path)"]
     end
 
@@ -246,7 +286,7 @@ Targets 4-6 only get the shared skill corpus (no rule corpus / no `CLAUDE.md`/`G
 5. Creates `~/.claude/CLAUDE.local.md` **only if missing** — never overwritten afterward. Put per-machine rules there (build constraints, IDE paths, remote flags); they survive every reinstall.
 6. Updates `~/.claude/settings.json` (timestamped backup first): read permission for `~/.aki/akidevrule/**`, skill script execution permissions (`Bash(python3 ~/.claude/skills/**)`), `skillOverrides.akirule = "on"`, idempotent registration of the `SessionStart` update-check hook.
 7. Installs `~/.claude/hooks/aki-update-check.py` and records the source-repo path in `~/.aki/akidevrule/.source-repo`.
-8. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 18 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 9 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), configures `~/.gemini/config/skills.json` with absolute paths as secondary, and merges skill execution permissions into `~/.gemini/antigravity-cli/settings.json` and `~/.gemini/settings.json`.
+8. Installs `payload/GEMINI.md` to `~/.gemini/GEMINI.md` — Antigravity global behavior overrides, stamped with a version marker (`[AKIRULE-AG-OVERRIDES-…]`) on line 1. Generates 18 native rule files under `~/.gemini/config/rules/` with YAML `trigger` frontmatter. Deploys 10 skills directly to `~/.gemini/config/skills/` for native auto-discovery (synced per skill folder, same never-touch-the-rest guarantee as step 2), configures `~/.gemini/config/skills.json` with absolute paths as secondary, and merges skill execution permissions into `~/.gemini/antigravity-cli/settings.json` and `~/.gemini/settings.json`.
 9. Syncs the same skill folders to `~/.agents/skills/` (Codex CLI), `~/.kiro/skills/` (Kiro CLI, plus pre-allowed shell permissions in `~/.kiro/settings/permissions.yaml`), and `~/.grok/skills/` (Grok CLI) — each a plain global skills root these CLIs read natively, synced per skill folder name exactly like step 2. Skills-only: no rule corpus is generated for these targets.
 
 Re-running the installer updates the same managed files cleanly.

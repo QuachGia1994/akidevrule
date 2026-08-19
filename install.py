@@ -249,10 +249,10 @@ AG_RULE_MAP = [
     ("RULE-biz.md", "model_decision",
      'Positioning, audience, USP, pricing, monetization and customer-psychology messaging rules. Load on any market-facing decision or when working on docs/biz content.',
      ""),
-    ("METHOD-flow-audit.md", "model_decision",
+    ("METHOD-audit-flow.md", "model_decision",
      'Method for auditing end-to-end flow integrity. Load when guards and checks keep accumulating around a flow.',
      ""),
-    ("METHOD-zero-trust-audit.md", "model_decision",
+    ("METHOD-audit-zero-trust.md", "model_decision",
      'Strict mechanical-first audit: scope locked by command, detectors run before any opinion, findings split into exact machine matches versus pattern-level candidates, short findings-only report. Load when the user asks for an uncompromising sweep of a project or of a change and everything it touches.',
      ""),
     ("METHOD-deep-think.md", "model_decision",
@@ -264,7 +264,7 @@ AG_RULE_MAP = [
     ("METHOD-proportionality.md", "model_decision",
      'Sizing a defense against its real threat: reach, capability, motive and blast radius measured before any guard, limit, quota or accepted risk is added, kept or removed; irreversibility outranks frequency; client-side limits are UX, never enforcement. Load whenever protection is being proposed, sized or dropped.',
      ""),
-    ("METHOD-subtraction-audit.md", "model_decision",
+    ("METHOD-audit-subtraction.md", "model_decision",
      'Repo-wide subtraction sweep asking what no longer needs to exist, terminating on two consecutive rounds with no new findings, with Chesterton\'s Fence as the brake before any removal is called certain. Load when the request is to minimize or strip an existing codebase rather than to check it is correct.',
      ""),
 ]
@@ -354,6 +354,7 @@ def merge_settings(settings_path: Path, install_root: Path, claude_dir: Path) ->
     for old in ["akidoc-rules", "akidoc-flow-audit", "akidoc-techbiz-optimizer"]:
         data["skillOverrides"].pop(old, None)
     data["skillOverrides"]["akirule"] = "on"
+    data["skillOverrides"].setdefault("akihelp", "name-only")
 
     if not isinstance(data.get("hooks"), dict):
         data["hooks"] = {}
