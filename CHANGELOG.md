@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.5.0] - 2026-08-19
 
 ### Added
 - **`agent.A3` kill-tests: three checks every candidate question must survive before it reaches the user** — impact (if the user answers against your default, does any artifact change?), already-authorized (the request may have settled it — re-confirming a just-ordered course charges the owner twice), silence-is-not-contradiction (a doc that omits X does not conflict with X — that is a work item, not a question), with reversibility as the existing fourth; the "decision with a recommendation" shape is not exempt. Evidence: the 2026-08-18 aiobox council run escalated four owner questions, all four self-answerable, each killed by one of these tests (`docs/plan/done/redundant-owner-interrupts.md`). Pointer sites, no restatement: `release.B8` (candidate questions run through the kill-tests), akiflow `SKILL.md` Step 4 (a seat-raised `CONFLICT` is a candidate the lead filters — closes the decision-with-recommendation loophole), `aki-judge`/`aki-challenger` (a seat never escalates to the owner; a verdict that holds under either answer is a recorded default, not a conflict).
