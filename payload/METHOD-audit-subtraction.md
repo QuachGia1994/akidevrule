@@ -4,7 +4,7 @@
 
 **Tier: Analytical.** Load when the request is to minimize, strip, or maximally simplify an existing repository rather than to check whether it is correct.
 
-`METHOD-zero-trust-audit.md` asks *is this right*. This file asks **does this need to exist at all** — over the whole locked scope, across every domain, not one flow and not one component tree. It **inherits** zero-trust's discipline unchanged and never restates it: scope locked by command before the first read (`zero-trust` A), detectors before opinion (B), CERTAIN versus SUGGESTED evidence classes (C), signature propagation from any confirmed instance (D). What changes is the question the detectors are pointed at, and therefore the terminating condition, the severity classes, and the mandatory brake in B3.
+`METHOD-audit-zero-trust.md` asks *is this right*. This file asks **does this need to exist at all** — over the whole locked scope, across every domain, not one flow and not one component tree. It **inherits** zero-trust's discipline unchanged and never restates it: scope locked by command before the first read (`zero-trust` A), detectors before opinion (B), CERTAIN versus SUGGESTED evidence classes (C), signature propagation from any confirmed instance (D). What changes is the question the detectors are pointed at, and therefore the terminating condition, the severity classes, and the mandatory brake in B3.
 
 Read-only by construction (`agent.B5`): it writes the report and the plan that schedules the removals. It deletes nothing. Deletion is a separate run, sized through the normal gate.
 
@@ -28,7 +28,7 @@ Run only what the project actually has; name what was skipped and why (`zero-tru
 |---|---|---|
 | Code reachability | unreferenced exports, unreachable branches, dead files, parameters nobody passes | the project's own linter / typecheck |
 | Abstraction | a shared layer with fewer call sites than its evidence bar — the inverse of the Rule of Three | `pattern.A2`, `pattern.B3` |
-| Guards | repeated checks, fallbacks, and defensive branches around one transition | `pattern.A8`, `METHOD-flow-audit.md` B4, sized by `METHOD-proportionality.md` B4 |
+| Guards | repeated checks, fallbacks, and defensive branches around one transition | `pattern.A8`, `METHOD-audit-flow.md` B4, sized by `METHOD-proportionality.md` B4 |
 | Duplication | one concept defined in two places, one name with two live definitions | `pattern.A1`, `ui.B4` |
 | UI surface | class strings, arbitrary values, style blocks that survive the delete/inherit/hoist pass | `ui.A1`, `ui.C1` |
 | Dependencies | packages nobody imports, polyfills the runtime no longer needs | package manifest versus import graph |

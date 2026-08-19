@@ -9,7 +9,7 @@ It **sharpens** `RULE-coding.md` (which owns baseline DRY/YAGNI/SRP and the Resu
 ## Relationship to existing rules — read, do not duplicate
 
 - **`RULE-coding.md`** owns baseline DRY, YAGNI, "no abstraction for its own sake", one-responsibility functions, Result pattern, error handling, security. This file assumes all of it and adds the *when-and-how-to-abstract / how-to-decompose* layer.
-- **`METHOD-flow-audit.md`** owns flow-integrity thinking. When you keep adding guards/checks around the same path, defer to it — this file only points there.
+- **`METHOD-audit-flow.md`** owns flow-integrity thinking. When you keep adding guards/checks around the same path, defer to it — this file only points there.
 - **`METHOD-deep-think.md`** owns first-principles and the mandatory critique pass. Run its critique mini-pass before introducing any new abstraction.
 - **`RULE-db-design.md`** owns bounded-context and normalization for data. Law 6 below is the same boundary principle generalized to code modules.
 
@@ -37,7 +37,7 @@ These are constraints on **structure and reuse**, not style. Reach for this file
 **A7 — Name by role, never by concrete value.** Name things for what they *mean*, not what they *currently are*: `retryLimit` not `three`, `PrimaryAction` not `BlueButton`, `AuthBoundary` not `FirebaseWrapper`. Value-names rot the instant the value changes and force codebase-wide find-and-replace.
 - *Root rule for naming.* Every other naming item in this corpus (`agent.C1` file names, `ui.A` tokens, `stack.C1` component names, `release.A3` version/tag format, `content` semantic stability) is a **domain application** of A7, not a competing rule — do not restate A7 in them, and do not move them out of their domain. Address map: `index.md` § Cross-cutting lens.
 
-**A8 — One flow, made natural — not guarded.** When the same guard / check / fallback keeps reappearing around a path, the path's shape is wrong. Reshape the flow so the correct behavior is automatic; do not stack more enforcement on a weak path. Full method: `METHOD-flow-audit.md`.
+**A8 — One flow, made natural — not guarded.** When the same guard / check / fallback keeps reappearing around a path, the path's shape is wrong. Reshape the flow so the correct behavior is automatic; do not stack more enforcement on a weak path. Full method: `METHOD-audit-flow.md`.
 
 ---
 
@@ -52,7 +52,7 @@ These are constraints on **structure and reuse**, not style. Reach for this file
 ### B2. The "forest" pass — before you patch
 Before adding a feature or fixing a bug in unfamiliar code, do a quick whole-flow scan instead of a local patch. This is the direct antidote to "seeing the leaf, missing the forest":
 
-1. **Flow** — what is the end-to-end path this change touches, start to end? (`METHOD-flow-audit.md`)
+1. **Flow** — what is the end-to-end path this change touches, start to end? (`METHOD-audit-flow.md`)
 2. **Reuse** — does this problem already have a solution elsewhere in the codebase? Reuse before reimplementing (`RULE-coding.md`: "prefer existing code and patterns").
 3. **Third instance** — is this the third occurrence of a shape? If so, extract now (Law 2).
 4. **Symptom vs shape** — am I patching a symptom? If three patches cluster at one transition, stop and reshape the flow (Law 8) rather than adding a fourth.

@@ -37,4 +37,4 @@ One dense summary (`agent.A4`): state derived → findings fixed (counts per gat
 
 - The B8 escalation floor is the only reason to stop mid-run; everything else is self-answered from repo, docs, and rules.
 - Never push, deploy, or push tags on an invocation that neither named them nor carried completion-intensity phrasing.
-- A repo-wide hygiene/subtraction sweep is out of scope — point the user at `METHOD-subtraction-audit.md` instead of widening the gate.
+- A repo-wide hygiene/subtraction sweep is out of scope — point the user at `METHOD-audit-subtraction.md` instead of widening the gate.

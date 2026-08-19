@@ -90,7 +90,7 @@ Required fields, in order:
 
 ## C. Drift audit
 
-B3 is a **process** rule — sync the docs while the code changes. This group is the **verification** rule — check afterwards whether that sync actually held. Every discipline decays, and a topology that mandates plan lifecycles, supersede chains, and a master index needs a way to prove it was followed. Sibling audits own their own domains and must not be restated here: `release.B` (version/CHANGELOG state), `ui.C` (class and token drift), `METHOD-flow-audit.md` (flow and state drift). This group owns **docs-vs-reality** only.
+B3 is a **process** rule — sync the docs while the code changes. This group is the **verification** rule — check afterwards whether that sync actually held. Every discipline decays, and a topology that mandates plan lifecycles, supersede chains, and a master index needs a way to prove it was followed. Sibling audits own their own domains and must not be restated here: `release.B` (version/CHANGELOG state), `ui.C` (class and token drift), `METHOD-audit-flow.md` (flow and state drift). This group owns **docs-vs-reality** only.
 
 ### C1. When it runs — and when it does not
 

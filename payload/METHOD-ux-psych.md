@@ -33,7 +33,7 @@ Take the primary audience from `docs/biz/` and traverse the real flow start-to-e
 Audit the very first experience separately: what does the user see before any data exists? An empty state must explain what is missing and the one action that fixes it (`RULE-content-write.md` B1). First impressions are formed in seconds and rarely revised.
 
 ### B3. Friction ledger
-Count, per core task: steps, decisions, waits, context switches, and things to remember. Record the numbers — friction is measured, not felt. Then ask which entries the flow's *shape* could eliminate (defer to `METHOD-flow-audit.md` when the answer is "reshape the flow, not the screen").
+Count, per core task: steps, decisions, waits, context switches, and things to remember. Record the numbers — friction is measured, not felt. Then ask which entries the flow's *shape* could eliminate (defer to `METHOD-audit-flow.md` when the answer is "reshape the flow, not the screen").
 
 ### B4. Error, failure, and dead ends
 Walk every failure path: wrong input, denied permission, offline, stale data. Each must state the problem in user language and offer a next action. A dead end (error with no exit) is always a severe finding.

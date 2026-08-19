@@ -14,7 +14,7 @@ The last two used to be routed here as "default ON" Tier 1 entries. That phrasin
 
 ## Addressing scheme (recall only — does not affect routing)
 
-Every rule file is internally organized into groups `A`/`B`/`C` and numbered items `1`/`2`/`3…` (e.g. `coding.B2`, `stack.C1`). `topic` = filename minus its `RULE-`/`METHOD-` prefix. This is a naming convention for referring to a specific rule precisely — it has no effect on which files load or when; that is still governed entirely by the tiers below. Full map: `~/.aki/akidevrule/index.md`.
+Every rule file is internally organized into groups `A`/`B`/`C` and numbered items `1`/`2`/`3…` (e.g. `coding.B2`, `stack.C1`). `topic` = the manifest's Topic column in `index.md` — usually the filename minus its `RULE-`/`METHOD-` prefix; the audit methods keep their short topics (`flow`, `zero-trust`, `subtract`). This is a naming convention for referring to a specific rule precisely — it has no effect on which files load or when; that is still governed entirely by the tiers below. Full map: `~/.aki/akidevrule/index.md`.
 
 ---
 
@@ -84,7 +84,7 @@ Load if message or file path contains any of:
 - **Paths:** any `.sql`; `migrations/**`, `schema.sql`, `**/d1/**`
 - **Actions:** designing a new table/schema, writing a DB migration, refactoring how data is stored
 
-### METHOD-flow-audit.md
+### METHOD-audit-flow.md
 Load if message contains any of:
 - **Keywords:** `refactor`, `restructure`, `simplify`, `fragile`, `complicated`, `state machine`, `async chain`, `tại sao phức tạp`, `luồng`, `luồng xử lý`, `tracing`, `cause and effect`, `over-guarded`, `nested conditional`, `điều kiện lồng nhau`, `timing issue`, `race condition`, `tái cấu trúc`, `đơn giản hóa`
 - **Context:** fixing a bug spanning multiple files, tracing cause and effect across a chain
@@ -100,7 +100,7 @@ Load if message contains any of:
 - **Keywords:** `UX`, `user experience`, `usability`, `user behavior`, `user psychology`, `onboarding`, `user flow`, `friction`, `cognitive load`, `empty state`, `first run`, `dead end`, `dark pattern`, `trải nghiệm người dùng`, `tâm lý người dùng`, `hành vi người dùng`, `khó dùng`, `rối`, `luồng người dùng`, `đánh giá giao diện`, `review UI`, `review UX`
 - **Context:** evaluating an interface or flow through user behavior (not just visual styling — that is `RULE-ui-pattern.md`), designing an onboarding/conversion flow, diagnosing "why don't users do X"
 
-### METHOD-zero-trust-audit.md
+### METHOD-audit-zero-trust.md
 Load if message contains any of:
 - **Keywords:** `audit khắt khe`, `ép rule`, `force audit`, `quét tuyệt đối`, `zero-trust audit`, `rà soát toàn bộ`, `quét toàn dự án`, `chứng minh sạch`, `audit tuyệt đối`
 - **Context:** when the user asks for an uncompromising sweep — of the whole project or of a change plus everything that reads it — that must be driven by detectors rather than by impression. Read-only: it produces a short findings report, not fixes.
@@ -115,10 +115,10 @@ Load if message contains any of:
 - **Keywords:** `rate limit`, `quota`, `throttle`, `abuse`, `spam`, `bot`, `exploit`, `bypass`, `tamper`, `client-side check`, `guard`, `defensive`, `hardening`, `threat model`, `attack surface`, `over-engineering`, `overthinking`, `paranoid`, `is it worth defending`, `lạm dụng`, `giới hạn`, `chặn`, `hạn mức`, `phòng thủ`, `bảo mật quá mức`, `nghĩ quá nhiều`, `vẽ vời`, `có cần chặn không`, `bao nhiêu user`, `mấy ai làm được`, `rủi ro`, `mức độ nghiêm trọng`
 - **Context:** any proposal to add, keep, size, or remove a guard / limit / validation / permission check; deciding whether a client-side restriction is enough; accepting a risk deliberately; weighing MVP speed against security or abuse resistance. Also load when a discussion is stacking protection with no evidence of who could actually reach the state being protected.
 
-### METHOD-subtraction-audit.md
+### METHOD-audit-subtraction.md
 Load if message contains any of:
 - **Keywords:** `subtraction audit`, `dead code`, `unused`, `unreferenced`, `bloat`, `strip down`, `minimize the repo`, `tối giản tuyệt đối`, `tối giản tối đa`, `tinh gọn toàn bộ`, `cắt giảm tối đa`, `dọn sạch repo`, `xoá code thừa`, `code chết`, `refactor hạng nặng`, `không còn gì để bớt`, `gọn nhất có thể`
-- **Context:** a request to minimize or strip an existing repository rather than to check its correctness. Pairs with `METHOD-zero-trust-audit.md`, whose scope-lock, detector-first order and evidence classes it inherits. Read-only: it reports and plans removals, it never deletes.
+- **Context:** a request to minimize or strip an existing repository rather than to check its correctness. Pairs with `METHOD-audit-zero-trust.md`, whose scope-lock, detector-first order and evidence classes it inherits. Read-only: it reports and plans removals, it never deletes.
 
 ---
 
@@ -143,7 +143,7 @@ One line at the start of the response, reporting the **whole rule context**, not
 
 | Element | Rule |
 |---|---|
-| Names | topic addresses — filename minus the `RULE-`/`METHOD-` prefix and `.md` (`~/.aki/akidevrule/index.md` § addressing scheme). No new vocabulary. |
+| Names | topic addresses per the manifest Topic column (`~/.aki/akidevrule/index.md` § addressing scheme). No new vocabulary. |
 | `(core)` | the four `@`-imported files. Always listed, even though this skill did not load them: their presence is otherwise unobservable, and they are the most-violated group. Listing them reports context state; it does not claim credit for the load. |
 | `(router)` | files this skill loaded this turn. Tier 2 writes `(router:full)`. |
 | `(brief)` | for a worker/subagent — the files its spawning prompt named and it actually read. A worker inherits no router, so it uses this instead of `(router)` and emits the line as the first line of its single round (`agent.A5`). |
