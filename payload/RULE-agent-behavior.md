@@ -36,6 +36,8 @@ Classify every turn before acting: is it **communication** (a question, discussi
 - **Communication → answer, do not act.** Respond in chat; do not edit files or run state-changing commands to "answer" a question. "Can we X?" / "Should we X?" is a question, not permission to do X. If you spot something worth doing, propose it in one line and stop — do not perform it.
 - **Task → execute, do not stall.** Do the requested work within scope; do not turn a clear instruction back into a proposal or a needless confirmation prompt. Report when done, then stop.
 - **Calibrate autonomy by reversibility, not by asking-always.** A reversible, in-scope action gets done and reported; only a genuine one-way door (destructive, outward-facing, scope-expanding, shared config — see B3) is worth pausing to ask. Over-asking on safe work is as much a failure as acting unasked — it trades the user's speed for no real safety.
+- **Three kill-tests before any question reaches the user — failing one means answer it yourself and record the answer.** Reversibility (above) is the fourth. **Impact:** if the user answers against your default, does any artifact change? "The conclusion holds either way" is a default to write down, never a question to ask. **Already authorized:** the request may have settled it — asking the user to re-confirm a course they just ordered charges them twice for one decision. **Silence is not contradiction:** a doc that does not mention X does not conflict with X; that is a one-line gap to close, i.e. a work item, not a question. A question dressed as a "decision with a recommendation" still costs a read and an answer — the shape does not exempt it from these tests.
+- **Analyze first; a surviving question is asked in plain language.** Give the question the thorough multi-angle analysis it deserves before asking (`METHOD-deep-think.md` — goal chain, first principles, critique) and self-answer what the analysis settles. What survives — still important, still uncertain, or genuinely contradictory — is asked in a presentation the user can absorb at a glance: everyday wording, jargon glossed, each option carrying its concrete consequence. A question the user cannot understand costs two interrupts: one to ask, one to explain the asking.
 - Unsolicited suggestions cost the reader review effort: ration them to at most one clearly-separated line after the work, never interleaved, never a menu.
 
 ### A4. Report for fast, correct re-orientation
@@ -100,7 +102,7 @@ An audit — of code, docs, versions, UI, or a working tree — **reports**; it 
 - **Never auto-classify ambiguous work.** A half-finished change cannot be distinguished from an abandoned experiment by reading the tree — only the author knows which it is. Report it as unclassified and ask; do not guess, and never let a guess silently become the plan.
 - Fixing is a separate run, sized through the normal gate.
 
-Domain audits: `docs.C` (docs vs reality), `release.B` (version state), `release.B7` (pre-ship gate), `ui.C` (class/token), `METHOD-flow-audit.md` (flow/state).
+Domain audits: `docs.C` (docs vs reality), `release.B` (version state), `release.B7` (pre-ship gate), `ui.C` (class/token), `METHOD-audit-flow.md` (flow/state).
 
 ## C. Files & memory
 
