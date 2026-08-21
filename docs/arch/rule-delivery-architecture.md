@@ -1,6 +1,6 @@
 # Architecture — how rules reach the two agents
 
-> updated 2026-08-12 · v2.1.0
+> updated 2026-08-22 · v2.5.0
 
 akidevrule is the single source of truth for a reusable rule baseline. That baseline has to reach two different agents that load context in fundamentally different ways: **Claude Code** and **Gemini / Antigravity**. This document describes how one source is installed onto a machine and consumed by each.
 
@@ -13,6 +13,12 @@ akidevrule is the single source of truth for a reusable rule baseline. That base
 | Consequence | Rule *content* always arrives | Rule *content* arrives only if it sits in a file the tool hard-loads — not behind a chain of pointers |
 
 **Design conclusion:** behavior rules that Gemini/Antigravity must always obey cannot live behind a soft pointer chain. They are placed in the one file the tool hard-loads globally — `~/.gemini/GEMINI.md` — as literal content, not as a link to go fetch.
+
+## The same asymmetry inside a skill — the description is resident, the body is not
+
+A rule file is either loaded or not. A **skill** is split across two residencies, and the split is where the traps are: its `description:` is present in every session — that is how the model discovers the skill at all — while everything below the frontmatter loads only once the skill is invoked. A trigger word placed in a description is therefore permanently armed, and any condition qualifying that trigger, written in the body or in a rule file the router may or may not load, is usually absent at the moment the match happens.
+
+**Rule: a trigger word in a `description:` carries its own guard, in that same line.** A guard stored one hop away is not a guard, it is a comment on one. Worked case: `/akiship` fired on the completion-intensity word `trọn vẹn` inside an ordinary question and pushed to a public remote, because the word was in the description and the "in the invocation" condition that scoped it was not — see [research/akiship-literal-activation-aug22.md](../research/akiship-literal-activation-aug22.md).
 
 ## What the source provides
 
