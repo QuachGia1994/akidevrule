@@ -1,6 +1,6 @@
 # Tauri v2 + Rust Stack Rule
 
-<!-- Address map: tauri.A1-2 · tauri.B1-6 -->
+<!-- Address map: tauri.A1-2 · tauri.B1-7 -->
 
 ## Scope — when this applies
 Every Aki desktop project built on Tauri v2 + Rust (backend commands) + any JS frontend framework. Generic lessons only — project-specific facts (titlebar height, bundle naming, etc.) stay in that project's own `CLAUDE.md`.
@@ -42,3 +42,18 @@ Declare variables **inside** the cfg block. Declared outside but used only insid
 
 ### B6. Salient target context up front in the project CLAUDE.md
 State the few decision-shaping target facts the agent must grasp without inferring — first of them the platform(s) the app actually ships to (drives shortcut glyphs ⌘ vs Ctrl, path shapes, packaging, the A2 candidate list). Surface the load-bearing few, not an inventory; when a platform-specific string is needed and the target is undeclared, ask — don't guess.
+
+### B7. macOS: a sidecar that works in Terminal can be denied inside the shipped `.app`
+
+Symptom first: `git`/`rsync`/`ssh`/a CLI agent runner spawned by the backend (`std::process::Command`, `tauri-plugin-shell`, a PTY) fails only inside the bundled app — silent `EPERM`, or a consent dialog naming *your app* for a folder the user never associated with it. Cause: TCC — Transparency, Consent and Control, the macOS subsystem behind every "X would like to access your Documents" dialog — judges a child process by the **responsible process** at the head of the chain, inherited across `fork`/`posix_spawn`. For a shipped Tauri app that is the `.app` bundle, never the user's Terminal — so the child inherits your bundle's permission state, not the terminal's freedom, and every grant is charged to your bundle identity.
+
+Three switches, routinely confused — pick by what each actually controls:
+- **Full Disk Access** (`kTCCServiceSystemPolicyAllFiles`) — the top of the decision chain and a superset, not a peer: if the responsible app holds it, protected locations are readable with no per-folder prompt. Request it only when the app's reach is genuinely unbounded (backup, indexing); for a project-scoped tool it is far more privilege than the task needs.
+- **Files & Folders** (`kTCCServiceSystemPolicyDocumentsFolder`, `…DesktopFolder`, `…DownloadsFolder`, plus separate removable/network-volume entries) — the least-privilege path, consulted only when the responsible app has no FDA; with no entry, first access prompts. A refusal is **sticky**: one "Don't Allow" persists as a denial with no re-prompt, so the user's reflexive dismissal looks like a bug in your app forever. Recovery is `tccutil reset` or **removing** the app's entry — flipping the existing toggle back on restores access but not prompting, so it does not reproduce a first-run.
+- **Developer Tools** (`kTCCServiceDeveloperTool`) — **not file access.** It exempts the app from the system security policy when it *runs* software (unsigned/ad-hoc sidecars, local toolchains), i.e. Gatekeeper for what you spawn. It silences no file-consent dialog; reaching for it to stop folder prompts is the standard misdiagnosis and wastes a debugging session.
+
+- **Scope every spawn.** Bind subprocesses, sidecars and filesystem probes to an explicit target (`cwd`, the project workspace, the app data dir). An unbounded walk from `$HOME` or `/` hits protected domains and turns into a prompt storm or a silent-`EPERM` storm — and per the sticky rule above, the damage outlives the run.
+- **Ad-hoc signing loses the grant on every rebuild.** `codesign --sign -` (Xcode's "Sign to Run Locally") produces a new signature each build, and the authorization is tied to that exact build — so a permission granted yesterday is simply gone today, which reads as a random TCC bug. The fix is a **stable self-signed certificate**, which keeps grants across rebuilds; `tccutil reset All <bundle-id>` only clears the stale state, it does not prevent the next loss.
+- **Scope limit — this chain governs consent-based reads.** It does not apply to paths the user picked in an Open/Save dialog or by drag-and-drop (user intent grants access directly), and Apple's own analysis excludes file *writes* from it. A write-only or file-picker-driven sidecar failing is a different diagnosis; don't reach for these switches first.
+
+When you cannot tell which switch fired, watch it rather than guess: `log show --predicate 'subsystem == "com.apple.TCC"' --last 5m` prints the `AttributionChain` (which process was held responsible) and the request's result. Claims and sources: `docs/research/macos-tcc-tauri-boundary-aug21.md` in the akidevrule repo.
