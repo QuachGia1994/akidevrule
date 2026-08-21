@@ -116,6 +116,11 @@ def prune_backups(base: Path) -> None:
 # Directory sync (replaces rsync -a --delete, scoped to Aki-owned names)
 # ---------------------------------------------------------------------------
 
+def _is_build_artifact(p: Path) -> bool:
+    # .gitignore already excludes these from the repo; the installer must honour the same intent or a stray local run ships bytecode to every skill root.
+    return p.name == "__pycache__" or p.suffix in {".pyc", ".pyo"} or p.name == ".DS_Store"
+
+
 def sync_dir_delete(src: Path, dest: Path) -> None:
     """Mirror src → dest, removing files/dirs in dest that no longer exist in src.
 
@@ -123,9 +128,9 @@ def sync_dir_delete(src: Path, dest: Path) -> None:
     This is ONLY used for directories we fully own (e.g. payload/, per-skill folders).
     """
     dest.mkdir(parents=True, exist_ok=True)
-    src_names = {p.name for p in src.iterdir()}
+    src_names = {p.name for p in src.iterdir() if not _is_build_artifact(p)}
 
-    # Remove anything in dest that is not in src.
+    # Remove anything in dest that is not in src — which also prunes artifacts shipped by earlier installs.
     for child in list(dest.iterdir()):
         if child.name not in src_names:
             if child.is_dir():
@@ -135,6 +140,8 @@ def sync_dir_delete(src: Path, dest: Path) -> None:
 
     # Copy everything from src to dest.
     for child in src.iterdir():
+        if _is_build_artifact(child):
+            continue
         dst_child = dest / child.name
         if child.is_dir():
             sync_dir_delete(child, dst_child)
@@ -389,7 +396,37 @@ def merge_antigravity_permissions() -> None:
     if not GEMINI_DIR.is_dir():
         return
 
-    managed_commands = [
+    # agy matcher is literal string-prefix, no glob/tilde — one rule per akiflow script, derived from the repo (docs/ref/cli-permission-allowlist-standard.md §1.2)
+    skill_scripts = sorted(
+        f"akiflow/scripts/{p.name}"
+        for p in (REPO_ROOT / "skills" / "akiflow" / "scripts").glob("*.py")
+    )
+    # Claude root is a transition net for stale deployed SKILL.md copies; drop it once a live agy run confirms the updated § Harness notes guidance is deployed
+    skill_roots = [GEMINI_SKILLS_DIR, CLAUDE_DIR / "skills"]
+
+    # Windows has no `python3` launcher; README § interpreter convention governs, and a python3-only rule set is 100% deny there
+    launchers = ["py -3", "python", "python3"] if sys.platform == "win32" else ["python3"]
+
+    # Both renderings per script: the matcher compares strings literally and agy copies the skill's literal `~/…` line (measured, plan V1 2026-08-21)
+    managed_commands = []
+    for launcher in launchers:
+        for root in skill_roots:
+            for script in skill_scripts:
+                target = root / script
+                managed_commands.append(f"command({launcher} {target})")
+                if HOME in target.parents:
+                    managed_commands.append(f"command({launcher} ~/{target.relative_to(HOME).as_posix()})")
+    # Same dual rendering as the command rules: untested for file actions (plan V2), but a rendering mismatch is exactly the failure S7 came from
+    managed_commands += [
+        f"write_file({HOME / '.aki' / 'agent-council'}/)",
+        f"read_file({HOME / '.aki' / 'akidevrule'}/)",
+        "write_file(~/.aki/agent-council/)",
+        "read_file(~/.aki/akidevrule/)",
+    ]
+
+    # Dead on arrival — literal `*` never matches a real command on agy's matcher.
+    # Strip these fossils from any settings file the installer previously wrote them into.
+    legacy_commands = [
         "command(python3 ~/.gemini/config/skills/*)",
         "command(python3 ~/.claude/skills/*)",
         "command(python3 ~/.aki/akidevrule/agskills/*)",
@@ -403,12 +440,15 @@ def merge_antigravity_permissions() -> None:
     for target in target_files:
         data: dict = {}
         if target.is_file():
+            # Never rebuild a live config from {} — a torn/unparseable file (e.g. a racing agy session mid-rewrite) would lose every user rule; skip and let a re-run pick it up
             try:
                 data = json.loads(target.read_text(encoding="utf-8"))
-            except Exception:
-                data = {}
-        if not isinstance(data, dict):
-            data = {}
+            except Exception as e:
+                print(f"  ⚠️  Antigravity: {target} is not parseable JSON ({e}) — skipped, re-run install.py to retry.")
+                continue
+            if not isinstance(data, dict):
+                print(f"  ⚠️  Antigravity: {target} top-level is not an object — skipped, fix it manually.")
+                continue
 
         if not isinstance(data.get("permissions"), dict):
             data["permissions"] = {}
@@ -417,6 +457,10 @@ def merge_antigravity_permissions() -> None:
             perms["allow"] = []
 
         changed = False
+        for cmd in legacy_commands:
+            if cmd in perms["allow"]:
+                perms["allow"].remove(cmd)
+                changed = True
         for cmd in managed_commands:
             if cmd not in perms["allow"]:
                 perms["allow"].append(cmd)
@@ -582,10 +626,11 @@ def inspect_status() -> None:
             try:
                 data = json.loads(ag_settings.read_text(encoding="utf-8"))
                 allow = data.get("permissions", {}).get("allow", [])
-                if "command(python3 ~/.gemini/config/skills/*)" in allow:
-                    print("  ✅ Antigravity CLI: Skill scripts command execution permission already granted.")
+                probe_rule = f"command(python3 {GEMINI_SKILLS_DIR / 'akiflow' / 'scripts' / 'council_open.py'})"
+                if probe_rule in allow:
+                    print("  ✅ Antigravity CLI: per-script skill permissions already granted.")
                 else:
-                    print("  ⚠️  Antigravity CLI: Skill scripts command execution permission will be added.")
+                    print("  ⚠️  Antigravity CLI: per-script skill permissions will be added.")
             except Exception as e:
                 print(f"  ❌ Error reading Antigravity settings: {e}")
         else:
@@ -649,7 +694,7 @@ def print_summary() -> None:
     print(cyan_bold("Permissions configured:"))
     print("  ⚙️  Claude Code     : Read(~/.aki/akidevrule/**), Bash(python3 ~/.claude/skills/*)")
     if GEMINI_DIR.is_dir():
-        print("  ⚙️  Antigravity     : command(python3 ~/.gemini/config/skills/*, ~/.claude/skills/*)")
+        print("  ⚙️  Antigravity     : per-script command() rules (akiflow scripts ×2 roots ×2 path renderings ×the platform's python launchers), write_file(~/.aki/agent-council/), read_file(~/.aki/akidevrule/)")
     if (HOME / ".kiro").is_dir():
         print("  ⚙️  Kiro CLI        : capability:shell (python3 ~/.kiro/skills/*, ~/.claude/skills/*)")
 
