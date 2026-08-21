@@ -2,7 +2,7 @@
 
 **Status:** ✅ **all three batches approved and landed, 2026-08-07.** The owner reviewed the full detail and answered *"đồng ý"*, adding one requirement to Batch 2 — that `aki-hands` name the cross-CLI lanes (`agy`, `kiro-cli`, `cl-9rt`) with a pointer to the recorded harness facts so they are not re-probed, and say per lane which context and rule files must be passed. That requirement is implemented in `claude/agents/aki-hands.md` § Substrates.
 
-**Finding record:** [`../research/akiflow-drift-diagnosis-aug6.md`](../research/akiflow-drift-diagnosis-aug6.md) — why two council sessions answered the wrong question, the 2 roots, the measurement that killed one proposed change, and the decisions already locked.
+**Finding record:** [`docs/research/akiflow-drift-diagnosis-aug6.md`](../../research/akiflow-drift-diagnosis-aug6.md) — why two council sessions answered the wrong question, the 2 roots, the measurement that killed one proposed change, and the decisions already locked.
 
 **Baseline:** commit `54a9007`, working tree 16 modified / 7 untracked. The owner declared that tree **disposable** — do not preserve it, do not reconcile it, do not treat a conflict with it as a blocker.
 

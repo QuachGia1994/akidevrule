@@ -4,7 +4,7 @@
 - **Date:** 2026-07-11
 - **Participants:** Antigravity (AI) & Aki (Owner)
 - **Topic:** Improving versioning and release rule robustness in `RULE-release.md` to prevent skipped versions.
-- **Reference Proposal:** [versioning-principle-rewrite.md](../plan/versioning-principle-rewrite.md)
+- **Reference Proposal:** [versioning-principle-rewrite.md](../plan/done/versioning-principle-rewrite.md)
 
 ---
 
@@ -46,7 +46,7 @@ The current release rule set in [RULE-release.md](../../payload/RULE-release.md)
 * **Why keep `git log -3`?** It is simple, deterministic, fast, and uses negligible tokens. It works well if releases are strictly linear and made after every single task.
 * **Why restrict large jumps?** Forbidding jumps like `1.4.2 -> 1.6.0` prevents agents from accidentally skipping a minor version. (For example, jumping over `1.5.0` to `1.6.0` when no `1.5.0` ever existed is a violation of semver). The constraint was meant to prevent double-bumping.
 
-### 2. Attack the Proposed Rewrite (from [versioning-principle-rewrite.md](../plan/versioning-principle-rewrite.md))
+### 2. Attack the Proposed Rewrite (from [versioning-principle-rewrite.md](../plan/done/versioning-principle-rewrite.md))
 * **Vulnerability in finding the "Last Version's Commit":** The proposal assumes we can magically find "the commit tied to the last CHANGELOG version". But if there is no matching git tag, and the commit message is messy (e.g. no `release: v1.4.2` message), how does the agent find the start commit?
 * **Unbounded git log risk:** If the start commit cannot be found, and we do not cap the search, the agent will scan the entire history of the repository, hitting token limits in large projects.
 * **Over-complication:** Running a multi-step audit on every single minor change is slow and wastes tokens.

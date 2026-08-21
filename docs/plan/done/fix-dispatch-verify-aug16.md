@@ -14,11 +14,9 @@
 ```bash
 export AKI_COUNCIL_ROOT=$(mktemp -d)
 python3 skills/akiflow/scripts/council_open.py --dispatch t "sửa script A và cập nhật docs B"
-# fill checklist.md with two lanes (covers/worker/writes/reads/returns), worker: aki-maker (sonnet) on both,
-# write [RULES]+FACT lines into scripts.md and docs.md (the lane names), no chat turns, then:
+# fill checklist.md with two lanes (covers/worker/writes/reads/returns), worker: aki-maker (sonnet) on both, write [RULES]+FACT lines into scripts.md and docs.md (the lane names), no chat turns, then:
 python3 skills/akiflow/scripts/council_verify.py "$AKI_COUNCIL_ROOT"/akidevrule/*-t
-# observed: FAIL ghost-seats: declared but left no turn and no file: aki-maker
-# rename scripts.md → aki-maker.md and delete docs.md: 7 PASS — one file covered both lanes
+# observed: FAIL ghost-seats: declared but left no turn and no file: aki-maker — then rename scripts.md → aki-maker.md and delete docs.md: 7 PASS, one file covered both lanes
 ```
 
 **Fix — trace dispatch by lane name, not worker type.** The lane is the unit of dispatch; the worker is a substrate detail. Concretely:
