@@ -53,6 +53,26 @@ Domain application of the density root (`agent.A4` — every line must carry inf
 - Comments rot: no compiler checks a comment, so it drifts silently as the code under it changes, and a stale comment misleads worse than none — one more reason deletion is the default, and why a rationale that must stay current lives in a doc the code references ([[RULE-docs]] B3), never duplicated inline.
 - One line when a comment is genuinely needed; a rationale bigger than that lives in docs, with the comment holding only the reference (see [[RULE-docs]] B3).
 
+### B5. Handing a check to the human is the last rung of a ladder, never the default
+
+`B3` decides what counts as verification; this decides **who performs it**. A hand-off is not neutral bookkeeping — it costs the owner a context switch, a read, and an action, and it converts a finished report into homework. It is a question in disguise, so it faces `agent.A3`'s kill-tests *and* this ladder first. Climb in order, stop at the first rung that settles the doubt, and record which rung settled it.
+
+1. **Read the flow.** Static reading is verification when the property is fully determined by visible code (`B3`). Most "needs testing" items are really "nobody traced the call path yet".
+2. **Search the local tree.** The answer is often already written down here — a convention line in `README`, an existing platform branch, a CI matrix, a sibling implementation. Grep before assuming it is unknown. *Worked example: "does the Windows rendering break?" was answered by one `README` line stating this repo's own `py -3` interpreter convention — no Windows machine involved.*
+3. **Search the vendor's docs and the open web.** A claim about someone else's platform is settled by their published behavior, not by re-observing it locally. **A check that would only reproduce documented vendor behavior is already answered**: cite the source and write a reopen trigger instead of scheduling an experiment.
+4. **Probe mechanically, right here.** Simulate the environment you do not have instead of requesting it — render the other OS's path with `PureWindowsPath`, stub the clock/env var, run the pure function that builds the artifact and read the string it produces. A derived artifact can almost always be computed without the machine that would consume it.
+5. **Run the real thing, reversibly.** First **check whether the tool is actually present** (`command -v`, `--version`) — "the owner's machine has that CLI" is an assumption until the shell says otherwise, and it is the single most common false hand-off. A setting that can be backed up, flipped, exercised and restored is a two-way door (`think.A1`): that is available work, not owner work. Back up first, restore in a `trap`, and report the before/after state.
+6. **Hand off** — only what survives all five.
+
+Rules for whatever residue reaches rung 6:
+- **Each handed-off item names the rung that failed and why**, in one line, in the artifact that carries it ("needs the paid vendor account: rung 5, no sandbox tier exposes this endpoint"). An item with no such line is a violation, not a to-do — it is indistinguishable from an item nobody tried to settle.
+- **Hand over a result to confirm, not a task to design.** The exact command, the expected output, and what a deviation would mean. If you cannot state the expected output, you have not finished rung 1.
+- **Re-climb the ladder at closing time.** A ledger that accumulated during a long run is full of items that later work made answerable; the state of knowledge at the end is not the state that filed them.
+- **Default to the report.** A plan whose ending is five owner-run items and no findings has usually skipped rungs 1–5. "Here is the result and what it means" is the deliverable; "please run this and tell me" is the fallback.
+- Forbidden rationalizations, all of which mean *the ladder was not climbed*: "can only be verified end-to-end", "needs a real machine", "only the owner can decide", "I don't have access to that platform" — each is a claim about rungs 3–5 that must be demonstrated, not asserted.
+
+None of this weakens `B3`'s honesty floor: what genuinely stays unverified is still reported as unverified and never as "Done". The target is the manufactured hand-off, not the real one.
+
 ## C. Runtime safety
 
 ### C1. Error handling
