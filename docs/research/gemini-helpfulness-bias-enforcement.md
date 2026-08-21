@@ -4,6 +4,8 @@
 **Author:** Antigravity / Gemini 3.6 Flash  
 **Target:** `payload/GEMINI.md` (Installed to `~/.gemini/GEMINI.md`)
 
+> ⚠ **Superseded 2026-08-21 by `docs/research/gemini-helpfulness-bias-enforcement-2.md` (`docs.B2`).** The root-cause analysis below stands and its three trap prompts are inherited as regression cases. What the successor retires is §4's causal reading: the 3/3 passes were recorded with no control arm, and the same trap shapes pass with `~/.gemini/GEMINI.md` deleted entirely. "No regression observed" is what those tests support; "eliminating unrequested file modifications" is not.
+
 ---
 
 ## 1. Executive Summary
