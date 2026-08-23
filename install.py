@@ -843,7 +843,7 @@ def run_install() -> None:
         gemini_content = gemini_template.replace("__VERSION__", gemini_version)
 
         gemini_source_block = (
-            "\n## 9. Shared rule source — edit source, not deployed copy (ABSOLUTE)\n\n"
+            "\n## 15. Shared rule source — edit source, not deployed copy (ABSOLUTE)\n\n"
             f"The deployed rule corpus at `{INSTALL_ROOT}` is **overwritten on every install**.\n"
             "To change any shared rule:\n"
             f"1. Edit in the **source repo**: `{REPO_ROOT}/payload/` (rules) or `{REPO_ROOT}/claude/` (runtime assets).\n"

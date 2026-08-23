@@ -77,6 +77,7 @@ A worker is a subagent, or the same or another CLI called headlessly (`claude -p
 - Separate verified facts from assumptions
 - If unverifiable right now, say so directly
 - Cite the source of truth when making important claims
+- **Closure re-anchor:** before reporting a multi-step task complete, re-read the originating request verbatim — not your memory of it — and tick off every explicit demand (content, named mechanism, output shape) against the delivered state; report any unmet demand as a miss, never absorb it silently.
 - **Naming a rule is not complying with it.** A rule address in your output carries zero evidentiary weight — it proves the address was available to you, nothing about what you did. State compliance only as a checkable fact (`read-only: --tools Read,Grep`, `git mutations: none`, `files edited: 0`), never as allegiance to a citation. The same asymmetry applies to the `[RULES]` receipt in `A5`: it is self-reported, so it is a diagnostic signal about delivery, never evidence of conduct.
 
 ### B3. Decision boundaries
