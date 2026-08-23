@@ -20,12 +20,17 @@ Topic folders follow `RULE-docs.A2`. Only the folders that currently hold conten
 
 ## `plan/` — active plans
 
-None active as of 2026-08-22 — every scheduled plan has been executed; see `plan/done/` below.
+| Doc | Purpose |
+|-----|---------|
+| [`plan/from-aug22.md`](plan/from-aug22.md) | Register of parked/pending corpus proposals. Four from the 2026-08-22 verification-redundancy review, **parked, not scheduled** — each with the argument for it, the argument that beat it, and the condition that would reopen it. Painpoint: a hand-off step whose evidence another step in the same plan already produced, which slipped past `agent.A3`, `coding.B3` and the same-day `coding.B5` alike. Verdict: no `payload/` change — the evidence was three occurrences in one repository with one root cause, fixed by a single line in that project's own `CLAUDE.md`. Plus §6b (open): gate `seo.B2`'s `parentOrganization` on the parent declaring an `Organization` `@id`, after UNIDOC demanded a parent link to an entity that has none |
+
+Nothing else is active as of 2026-08-23; see `plan/done/` below.
 
 ## `plan/done/` — completed plans
 
 | Doc | Purpose |
 |-----|---------|
+| [v2.7-agy-suppression.md](plan/done/v2.7-agy-suppression.md) | agy/Gemini suppression pack + closure re-anchor, owner-ordered 2026-08-23 after the aiobox `/akiflow`-skip transcript: `agent.B2` gains the always-loaded closure re-anchor (re-read the originating prompt verbatim at acceptance), `payload/GEMINI.md` gains rule 14 (skill-token dispatch — process before product, plus `CHECK 0` in rule 12) and the NO YAPPING / SUSPENDED BIASES intensity pack (knowingly unmeasured — the trap suite's null arm passes), and the installer's appended block is renumbered off the duplicate `## 9`. Executed 2026-08-23. |
 | [release-b1-web-drift-ssot.md](plan/done/release-b1-web-drift-ssot.md) | `release.B1` Drifted threshold typed per app (web ≥1, distributed-artifact ≥2) with the web Pre-bump conclusion gated on the production baseline and recovery direction fixed as squash-backward-never-backfill; completion-intensity phrase list and B8 escalation floor consolidated to `release.B8` as sole canonical site, `/akiship`/index/README trimmed to pointers. Executed 2026-08-22. |
 | [akiship-literal-activation.md](plan/done/akiship-literal-activation.md) | Activation of the `/akiship` run made literal — exact token `/akiship` **and** an imperative turn, with `/akiship` inside a question demoted to a read-only consult — and the guard moved into the skill's `description:`, the only line resident in every session. `release.B8` kept for its release signals but stripped of the power to authorize. Executed 2026-08-22. |
 | [agy-helpful-bias-containment.md](plan/done/agy-helpful-bias-containment.md) | Contain Gemini/agy helpful-bias & shortcut-bias by structure rather than by more rule text: role limits, mechanism-over-wording, a lean failure-report prompt contract (failure clause 2-for-2 on real denial events; primacy sentence untested), a GEMINI.md slim-down A/B, and a 6-trap mechanical regression suite as the scythe-equivalent for bias. The suite met its 6/6 × 3 × 2 bar; the slim-down was **not adopted** after a null-control arm showed the suite scores 6/6 with the rule file deleted entirely. Executed 2026-08-21. |
