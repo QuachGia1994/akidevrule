@@ -5,6 +5,17 @@
 ### Added
 - **`RULE-agent-engineering.md` (`agent-eng`).** New contextual rule layer distilled from current agent-skill engineering practices in Matt Pocock Skills, Superpowers, Ponytail, and Strix: skill-first/process-before-implementation, shared domain language, red-green-refactor TDD, root-cause debugging, independent spec/standards review, verification-before-completion, context-isolated handoffs, validated security findings, and skill self-testing. `akirule` routes it on agent/skill/subagent/TDD/debugging/review/security-testing signals.
 
+## [2.7.0] - 2026-08-23
+
+### Added
+- **`agent.B2` closure re-anchor** — before reporting a multi-step task complete, re-read the originating request verbatim and tick off every explicit demand against the delivered state; misses are reported, never silently absorbed. Always-loaded (core `@` import) so it covers plain tasks, `/akiship` acceptance, and akiflow leads alike; akiflow's REQ-coverage gate keeps owning the in-council case. Evidence: an aiobox `/akiflow` run whose lead skipped the prompt's explicit final self-check demand at acceptance, plus the agy incident below dropping prompt parts. Owner-ordered 2026-08-23; plan `docs/plan/done/v2.7-agy-suppression.md`.
+- **`payload/GEMINI.md` rule 14 — skill-token dispatch, process before product.** A `/token` naming an installed skill must be dispatched (read `SKILL.md`, follow its protocol) before any other action, even mid-sentence; a prompt bundling a process directive with a product task runs the process first; the closure re-anchor duty is mirrored here for agy. Root cause it closes: 2026-08-23 aiobox session where "cho /akiflow nạp hết mọi /akirule…" produced a solo implementation — agy's skill expansion is model-voluntary for mid-sentence tokens, and rules 0–13 governed scope, never routing. Rule 12's mandatory checklist gains `CHECK 0` (undispatched skill token) so the dispatch fires pre-action.
+- **`payload/GEMINI.md` anti-bias intensity pack** (owner-ordered, knowingly unmeasured — the 2.6.0 trap suite's null arm scores 6/6, so no instrument currently distinguishes these lines from their absence; reopen trigger stays a multi-turn fixture): rule 8 gains a SUSPENDED BIASES block (helpfulness, shortcut/summarize, eagerness-to-act) and a "never improvise under correction" bullet (the aiobox session's panic icon copy/delete while being scolded); rule 9 is retitled **NO YAPPING AT ALL** with an enforcement bullet plus the guard that brevity never licenses skipping prompt demands; the preamble's deliberate-repetition note now also covers the communication read-only restatements (8/9/12).
+
+### Fixed
+- **Deployed `~/.gemini/GEMINI.md` carried two `## 9` headings** — `install.py`'s appended "Shared rule source" block was numbered 9, colliding with rule 9 (Direct, minimal communication). Renumbered to `## 15`, following the new rule 14.
+- **`skills/akiflow/references/harness-facts.md` stale rule count** — the agy cross-CLI worker fact row still said GEMINI.md carries "13 sections"; the new rule 14 makes it 15. Caught by the pre-ship doc-sync sweep.
+
 ## [2.6.1] - 2026-08-22
 
 ### Fixed
