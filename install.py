@@ -181,6 +181,48 @@ def sync_aki_agents() -> None:
         shutil.copy2(agent_file, dest / agent_file.name)
 
 
+def validate_skill_sources() -> None:
+    """Fail before deployment when this repo's restricted SKILL.md frontmatter violates the Agent Skills metadata contract."""
+    name_re = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+    for skill_file in sorted((REPO_ROOT / "skills").glob("*/SKILL.md")):
+        lines = skill_file.read_text(encoding="utf-8").splitlines()
+        if not lines or lines[0] != "---":
+            raise ValueError(f"{skill_file}: missing YAML frontmatter")
+        try:
+            end = lines.index("---", 1)
+        except ValueError as e:
+            raise ValueError(f"{skill_file}: unclosed YAML frontmatter") from e
+        frontmatter = lines[1:end]
+        name_lines = [line for line in frontmatter if line.startswith("name: ")]
+        desc_indexes = [i for i, line in enumerate(frontmatter) if line.startswith("description: ")]
+        if len(name_lines) != 1 or len(desc_indexes) != 1:
+            raise ValueError(f"{skill_file}: frontmatter must contain exactly one name and description")
+        name = name_lines[0][len("name: "):].strip()
+        desc_index = desc_indexes[0]
+        raw_desc = frontmatter[desc_index][len("description: "):].strip()
+        if raw_desc in {">", ">-", "|", "|-"}:
+            block = []
+            for line in frontmatter[desc_index + 1:]:
+                if line.startswith((" ", "\t")):
+                    block.append(line.strip())
+                    continue
+                break
+            description = " ".join(block).strip()
+        elif raw_desc.startswith('"'):
+            try:
+                description = json.loads(raw_desc)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"{skill_file}: invalid quoted description: {e}") from e
+        else:
+            if ": " in raw_desc:
+                raise ValueError(f"{skill_file}: plain YAML description contains ': '; quote it")
+            description = raw_desc
+        if name != skill_file.parent.name or len(name) > 64 or not name_re.fullmatch(name):
+            raise ValueError(f"{skill_file}: invalid skill name {name!r}")
+        if not description or len(description) > 1024 or "<" in description or ">" in description:
+            raise ValueError(f"{skill_file}: description violates Agent Skills limits (length={len(description)})")
+
+
 # ---------------------------------------------------------------------------
 # Text file writing (always LF, never CRLF)
 # ---------------------------------------------------------------------------
@@ -220,7 +262,7 @@ def git_branch(repo: Path) -> str:
 # Antigravity rule map
 # ---------------------------------------------------------------------------
 
-# Each entry: (rule_file, trigger, description, globs) — globs is a raw JSON array string or empty string.
+# Each entry: (rule_file, trigger, description, globs) — globs is a tuple of patterns or an empty tuple. Antigravity 1.1.x currently deserializes `globs` as one string, so multiple patterns are emitted as one comma-separated scalar.
 AG_RULE_MAP = [
     ("RULE-agent-behavior.md", "always_on", "", ""),
     ("RULE-coding.md", "model_decision",
@@ -237,10 +279,10 @@ AG_RULE_MAP = [
      ""),
     ("RULE-stack-akiNuxtCf.md", "glob",
      'Nuxt, Vue, Cloudflare Pages and Workers, Tailwind, i18n, state and build conventions. Load when working in a Nuxt or Cloudflare project.',
-     '["**/*.vue", "**/*.ts", "nuxt.config.*", "server/**/*.ts"]'),
+     ("**/*.vue", "**/*.ts", "nuxt.config.*", "server/**/*.ts")),
     ("RULE-stack-tauri.md", "glob",
      'Tauri v2 and Rust conventions, including the never-block-the-UI rule for subprocess and network commands. Load when working in a Tauri project.',
-     '["src-tauri/**", "**/*.rs", "tauri.conf.json"]'),
+     ("src-tauri/**", "**/*.rs", "tauri.conf.json")),
     ("RULE-ui-pattern.md", "model_decision",
      'Frontend design-system layer: the subtraction pass that runs before the class-tier ladder, class taxonomy, design tokens in whichever mechanism the installed framework version uses, the aggregate style-block budget, arbitrary-value policy, variant APIs and the audit playbook. Load when building, minimizing or auditing UI components and styles.',
      ""),
@@ -285,7 +327,7 @@ def _ag_dest_name(rule_file: str) -> str:
 
 
 def install_ag_rules() -> int:
-    """Generate Antigravity rule files with YAML frontmatter. Returns count written."""
+    """Generate small Antigravity rule wrappers with YAML frontmatter. Returns count written."""
     GEMINI_RULES_DIR.mkdir(parents=True, exist_ok=True)
     # Remove stale akirule-* files from a previous install.
     for stale in GEMINI_RULES_DIR.glob("akirule-*.md"):
@@ -294,6 +336,7 @@ def install_ag_rules() -> int:
     written = 0
     for rule_file, trigger, desc, globs in AG_RULE_MAP:
         src = REPO_ROOT / "payload" / rule_file
+        installed_src = INSTALL_ROOT / rule_file
         if not src.is_file():
             print(f"  ⚠️  {rule_file} listed in AG_RULE_MAP but missing from payload/")
             continue
@@ -301,16 +344,17 @@ def install_ag_rules() -> int:
 
         lines = ["---", f"trigger: {trigger}"]
         if globs:
-            lines.append(f"globs: {globs}")
+            lines.append(f"globs: {json.dumps(','.join(globs))}")
         if trigger != "always_on" and desc:
             lines.append(f"description: {json.dumps(desc)}")
         lines.append("---")
         lines.append("")
         lines.append(f"<!-- Generated by akidevrule install.py from payload/{rule_file}. Do not edit here. -->")
         lines.append("")
-        lines.append(src.read_text(encoding="utf-8"))
+        # Antigravity caps a Rule file at 12k characters. Keep the native trigger wrapper tiny and import the installed corpus through an absolute path instead of duplicating the full rule body here.
+        lines.append(f"@{installed_src.as_posix()}")
 
-        write_text_lf(dest, "\n".join(lines))
+        write_text_lf(dest, "\n".join(lines) + "\n")
         written += 1
     return written
 
@@ -540,10 +584,9 @@ def update_skills_json() -> None:
         data["entries"] = []
 
     abs_path = str(INSTALL_ROOT / "agskills")
-    tilde_path = "~/.aki/akidevrule/agskills"
-    for p in [abs_path, tilde_path]:
-        if not any(isinstance(e, dict) and e.get("path") == p for e in data["entries"]):
-            data["entries"].append({"path": p})
+    stale_paths = {"~/.aki/akidevrule/agskills", abs_path}
+    data["entries"] = [e for e in data["entries"] if not (isinstance(e, dict) and e.get("path") in stale_paths)]
+    data["entries"].append({"path": abs_path})
 
     write_text_lf(skills_json, json.dumps(data, indent=2) + "\n")
 
@@ -770,6 +813,7 @@ def run_install() -> None:
     write_text_lf(INSTALL_ROOT / ".version", "\n".join(version_lines) + "\n")
 
     # --- 2. Skills ---
+    validate_skill_sources()
     sync_aki_skills(CLAUDE_DIR / "skills")
     sync_aki_skills(CODEX_SKILLS_DIR)
     sync_aki_skills(KIRO_SKILLS_DIR)
@@ -837,13 +881,15 @@ def run_install() -> None:
         print("🧹 Pruning GEMINI.md backups (keeping the 2 most recent):")
         prune_backups(gemini_file)
 
-        # Apply version marker to GEMINI.md template.
+        # Apply version marker to the deployed hard-load source, then keep ~/.gemini/GEMINI.md itself below Antigravity's 12k Rule-file limit by importing that source through an absolute path.
         gemini_version = f"V{datetime.now().strftime('%Y%m%d')}"
         gemini_template = (REPO_ROOT / "payload" / "GEMINI.md").read_text(encoding="utf-8")
         gemini_content = gemini_template.replace("__VERSION__", gemini_version)
+        installed_gemini_source = INSTALL_ROOT / "GEMINI.md"
+        write_text_lf(installed_gemini_source, gemini_content)
 
         gemini_source_block = (
-            "\n## 15. Shared rule source — edit source, not deployed copy (ABSOLUTE)\n\n"
+            "\n## Shared rule source — edit source, not deployed copy (ABSOLUTE)\n\n"
             f"The deployed rule corpus at `{INSTALL_ROOT}` is **overwritten on every install**.\n"
             "To change any shared rule:\n"
             f"1. Edit in the **source repo**: `{REPO_ROOT}/payload/` (rules) or `{REPO_ROOT}/claude/` (runtime assets).\n"
@@ -853,7 +899,7 @@ def run_install() -> None:
         )
 
         local_content = gemini_local.read_text(encoding="utf-8")
-        full_gemini = gemini_content + gemini_source_block + "\n---\n\n" + local_content
+        full_gemini = f"# [AKIRULE-AG-OVERRIDES-{gemini_version}]\n\n@{installed_gemini_source.as_posix()}\n" + gemini_source_block + "\n---\n\n" + local_content
         write_text_lf(gemini_file, full_gemini)
 
         print(f"🤖 Installed {gemini_file} (marker {gemini_marker}{gemini_version}])")

@@ -1,6 +1,6 @@
 ---
 name: akiship
-description: Full release ritual end-to-end — front-loaded checks, then an unattended pass. ACTIVATION IS LITERAL: this skill runs only on a user turn containing the exact token `/akiship` that asks for the run to be performed. Nothing else activates it — not the bare word "akiship", not a release-flavored paraphrase, and never a completion-intensity phrase on its own ("trọn vẹn" and its siblings — canonical list in RULE-release.md B8): outside a valid invocation those are ordinary vocabulary carrying zero authorization to fix, commit, push, tag, or release. `/akiship` inside a question means consult the checklist and answer in chat — read-only. Sequences RULE-release.md B7's checklist under the B8 autonomy contract; the escalation floor, completion-intensity semantics, and push/deploy authorization are owned by B8 and referenced, never restated, here.
+description: "Runs the full release ritual only when the current user turn contains the exact token /akiship and asks to execute it. Questions mentioning /akiship are read-only consultations. The skill sequences RULE-release.md B7 under the B8 autonomy contract, front-loads blockers, and never treats release-flavored vocabulary alone as authorization to fix, commit, push, tag, deploy, or release."
 ---
 
 # akiship — one-command full release

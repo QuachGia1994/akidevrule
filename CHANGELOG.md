@@ -5,6 +5,9 @@
 ### Added
 - **`RULE-agent-engineering.md` (`agent-eng`).** New contextual rule layer distilled from current agent-skill engineering practices in Matt Pocock Skills, Superpowers, Ponytail, and Strix: skill-first/process-before-implementation, shared domain language, red-green-refactor TDD, root-cause debugging, independent spec/standards review, verification-before-completion, context-isolated handoffs, validated security findings, and skill self-testing. `akirule` routes it on agent/skill/subagent/TDD/debugging/review/security-testing signals.
 
+### Fixed
+- **Antigravity/Agy global bootstrap hardening.** Generated native rules are now small absolute-path wrappers instead of full rule copies, keeping every Rule below Antigravity's 12,000-character limit; current Agy 1.1.x glob rules emit comma-separated scalar `globs` instead of the YAML sequence its parser rejects; `skills.json` removes the non-absolute `~/.aki/akidevrule/agskills` duplicate; `SKILL.md` metadata is validated before deployment; `akiship`'s YAML-breaking unquoted colon and `akiflow`'s >1024-character description are corrected. The install-smoke matrix now seeds Antigravity and mechanically checks these artifacts on Linux/macOS/Windows.
+
 ## [2.7.0] - 2026-08-23
 
 ### Added

@@ -21,6 +21,15 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Seed optional Antigravity root
+        shell: python
+        env:
+          HOME: ${{ runner.temp }}/akihome
+          USERPROFILE: ${{ runner.temp }}/akihome
+        run: |
+          import os, pathlib
+          (pathlib.Path(os.path.expanduser("~")) / ".gemini").mkdir(parents=True, exist_ok=True)
+
       - name: Run installer into sandbox HOME
         env:
           HOME: ${{ runner.temp }}/akihome
@@ -43,8 +52,11 @@ jobs:
               home / ".claude" / "CLAUDE.md",
               home / ".claude" / "skills" / "akiflow" / "SKILL.md",
               home / ".claude" / "agents" / "aki-conduct.md",
+              home / ".gemini" / "GEMINI.md",
+              home / ".gemini" / "config" / "skills.json",
+              home / ".gemini" / "config" / "rules" / "akirule-agent-behavior.md",
+              home / ".gemini" / "config" / "skills" / "akiship" / "SKILL.md",
           ]
-          # ~/.gemini artifacts (skills.json, AG rules) are generated only when the user already has Antigravity installed — a clean HOME correctly skips them.
           missing = [str(p) for p in must_exist if not p.is_file()]
           if missing:
               print("MISSING after install on", sys.platform, ":", *missing, sep="\n  ")
@@ -58,4 +70,32 @@ jobs:
           if crlf:
               print("CRLF found in installed files on", sys.platform, ":", *crlf[:20], sep="\n  ")
               sys.exit(1)
-          print("OK: manifest present and LF-clean on", sys.platform)
+
+          gemini = home / ".gemini" / "GEMINI.md"
+          if len(gemini.read_text(encoding="utf-8")) > 12000:
+              print("GEMINI.md exceeds Antigravity 12k rule-file limit")
+              sys.exit(1)
+
+          rules = list((home / ".gemini" / "config" / "rules").glob("akirule-*.md"))
+          if len(rules) != 18:
+              print("Expected 18 Antigravity rules, got", len(rules))
+              sys.exit(1)
+          for rule in rules:
+              text = rule.read_text(encoding="utf-8")
+              if len(text) > 12000 or "@" not in text:
+                  print("Invalid Antigravity wrapper", rule)
+                  sys.exit(1)
+              if "trigger: glob" in text:
+                  globs = next((line for line in text.splitlines() if line.startswith("globs: ")), "")
+                  if not globs or globs.startswith("globs: ["):
+                      print("Glob rule must use the current Agy scalar globs shape:", rule)
+                      sys.exit(1)
+
+          import json
+          skills_json = json.loads((home / ".gemini" / "config" / "skills.json").read_text(encoding="utf-8"))
+          entries = [e.get("path") for e in skills_json.get("entries", []) if isinstance(e, dict)]
+          if any(not pathlib.Path(p).is_absolute() for p in entries if isinstance(p, str)):
+              print("Antigravity skills.json contains a non-absolute path:", entries)
+              sys.exit(1)
+
+          print("OK: manifest, Antigravity wrappers, skill roots and LF discipline clean on", sys.platform)
