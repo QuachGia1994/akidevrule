@@ -8,6 +8,19 @@
 ### Fixed
 - **Antigravity/Agy global bootstrap hardening.** Generated native rules are now small absolute-path wrappers instead of full rule copies, keeping every Rule below Antigravity's 12,000-character limit; current Agy 1.1.x glob rules emit comma-separated scalar `globs` instead of the YAML sequence its parser rejects; `skills.json` removes the non-absolute `~/.aki/akidevrule/agskills` duplicate; `SKILL.md` metadata is validated before deployment; `akiship`'s YAML-breaking unquoted colon and `akiflow`'s >1024-character description are corrected. The install-smoke matrix now seeds Antigravity and mechanically checks these artifacts on Linux/macOS/Windows.
 
+## [2.8.0] - 2026-09-07
+
+### Added
+- **Installer/version status is shared and checkable.** `install.py --check` and the SessionStart hook use `claude/hooks/aki_version_check.py`, skip `[Unreleased]`, classify `missing/current/update/ahead/unknown`, register `py -3` on Windows, and write released semver into `.version` without weakening the fork's installer validation or Antigravity hardening.
+- **Stable lookup delivery.** `docs/ref/macos-codesign-tcc.md` is deployed under the installed rule tree and `docs/ref/agents-md-standard.md` records current `AGENTS.md` host behavior.
+
+### Changed
+- **Agent seats are host-neutral tiers.** `/akiflow` declares `top` / `mid` / `cheap` and resolves them per host through `harness-facts.md`, rather than embedding Claude model aliases into shared skill instructions.
+- **Rule/release ownership is explicit.** `stack.C8` owns reversible additive D1 migration execution, `docs.B2` supports dated research errata without rewriting the event body, `release.B7` enumerates every record surface, `release.C2/C3` accepts `internal`, and `/akiship` points qualifying migrations and record sync at those canonical rules.
+
+### Fixed
+- **Windows propagation now uses the native Python launcher.** Generated CLAUDE/GEMINI source instructions use `py -3 install.py` on Windows instead of a bash command that mangles native paths; update detection no longer compares `[Unreleased]` against `[Unreleased]` forever.
+
 ## [2.7.0] - 2026-08-23
 
 ### Added
