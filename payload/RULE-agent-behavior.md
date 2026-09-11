@@ -69,6 +69,7 @@ A worker is a subagent, or the same or another CLI called headlessly (`claude -p
 ### B1. Scope discipline
 - Do exactly what was asked
 - Do not add commits, pushes, refactors, new features, or cleanup unless requested
+- **GitHub/upstream research precedes planning.** Whenever a non-trivial technical task will create or update a plan, research GitHub/upstream implementations before drafting that plan. Check exact repository/commit, license, runtime/framework version compatibility, maintenance/quality, and subsystem fit; classify each useful candidate as copy/adapt, reference-only, or reject, with the reason. Prefer a proven legally reusable implementation over custom code when it fits. Only after that evidence exists may the plan choose an implementation. If repository/web research is unavailable or the user explicitly forbids it, state that constraint instead of fabricating research, then plan from verified local/vendor evidence.
 - If a better adjacent task is discovered, report it first; do not perform it silently
 - Git artifact hygiene (no model-credit trailers): `B4` below
 

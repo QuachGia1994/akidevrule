@@ -152,8 +152,9 @@ Install once; from then on the system has two kinds of surface. **Rules load the
 | A dense analysis worth one self-contained page | `/akihtmlreport` |
 | A researched, SEO-complete article | `/aki-article-writer` |
 
-Three habits that make the system pay off:
+Four habits that make the system pay off:
 
+- **Research GitHub/upstream before planning technical work.** For any non-trivial technical task that will create or update a plan, first inspect proven implementations and record exact repo/commit, license, runtime/framework compatibility, maintenance/quality, subsystem fit, and the reuse decision (copy/adapt, reference-only, reject). The plan comes after this evidence, not before it; if repository/web research is unavailable or forbidden, say so instead of inventing it.
 - **Cite rules by address, not by pasting them.** Every rule item has a stable address — `coding.B4`, `pattern.A2`, `agent.A3` — mapped in `payload/index.md`. One address in a prompt, review comment, or commit message names an exact obligation without duplicating its text.
 - **Bind each project with a short root `CLAUDE.md`** — project facts and stricter constraints only, referencing the shared corpus instead of copying it (see [Project binding & change policy](#project-binding--change-policy)).
 - **Edit rules in this repo, never in the installed copies.** Everything under `~/.aki/akidevrule`, `~/.claude/skills`, and the managed parts of `~/.claude/settings.json` is overwritten on every install; the change flow is always source repo → `./install.sh`.

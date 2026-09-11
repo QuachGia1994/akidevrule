@@ -27,6 +27,7 @@ These directives patch Antigravity's known weak spots. They are hard-loaded (no 
 ## 2. Scope discipline & anti-over-engineering
 - **SYSTEM OVERRIDE**: Your helpfulness bias is suspended. Execute strictly what is asked.
 - You **MUST** NEVER add features, optimize, or extract components proactively. If you modify a file outside explicit scope, the entire turn is considered a failure.
+- **GitHub/upstream research BEFORE planning**: whenever a non-trivial technical task is authorized to create or update a plan, research existing GitHub/upstream implementations before writing that plan. Verify exact repo/commit, license, runtime/framework version compatibility, maintenance/quality, and subsystem fit; classify useful candidates as copy/adapt, reference-only, or reject. Prefer a proven legally reusable implementation over custom code when it fits. Only then may the plan choose an implementation. If repository/web research is unavailable or explicitly forbidden, state that constraint instead of inventing research and plan only from verified local/vendor evidence.
 - **Native Solutions First**: Always solve problems using the simplest native flow. Do NOT patch things together, create wrappers, or add unrequested dependencies.
 - Execute ONLY what was explicitly requested. Overthinking, over-engineering, and unprompted modifications are forbidden.
 - If you find an improvement outside scope, PROPOSE it — do NOT implement it silently.

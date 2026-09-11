@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- **`agent.B1` GitHub/upstream research-before-plan rule.** Any non-trivial technical task that will create or update a plan must research proven GitHub/upstream implementations first, recording exact repo/commit, license, runtime/framework compatibility, maintenance/quality, subsystem fit, and a copy/adapt vs reference-only vs reject decision before the plan chooses custom or reused implementation. `payload/GEMINI.md` mirrors the same ordering for the hard-loaded Antigravity/Gemini surface; unavailable/forbidden web research must be stated, never fabricated.
 - **`RULE-agent-engineering.md` (`agent-eng`).** New contextual rule layer distilled from current agent-skill engineering practices in Matt Pocock Skills, Superpowers, Ponytail, and Strix: skill-first/process-before-implementation, shared domain language, red-green-refactor TDD, root-cause debugging, independent spec/standards review, verification-before-completion, context-isolated handoffs, validated security findings, and skill self-testing. `akirule` routes it on agent/skill/subagent/TDD/debugging/review/security-testing signals.
 
 ### Fixed
